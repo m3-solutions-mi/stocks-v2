@@ -743,7 +743,7 @@
             const data = resp.bars[name];
 
             // `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`
-            const start_at = new Date(Date.now() - (0.5 * 24 * 60 * 60 * 1000)).toISOString();
+            const start_at = new Date(Date.now() - (1.5 * 24 * 60 * 60 * 1000)).toISOString();
             // const resp_2 = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=2030-01-01&feed=iex&limit=5000&sort=asc`, {
             const resp_2 = await fetch(`https://m3-solutions-mi.com/${name}/1Min/${start_at}/2027-01-01`, {
                 method: 'GET',
