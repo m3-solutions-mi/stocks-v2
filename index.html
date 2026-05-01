@@ -251,8 +251,70 @@
                         </div>
                     </div> -->
                 </h2>
+            </div>
+            
+            <div class="w3-col s12 w3-padding">
+                <div _id="output" class="w3-row-padding w3-center">
 
+                    <div class="w3-third">
+                        <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:210px;">
+                            <div class="w3-col s12 {3} w3-center">
+                                <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                                    <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>GAIN</b></div>
+                                    <div class="w3-text-green" style="font-size:48px;"><span
+                                            class="w3-xxlarge w3-text-grey">$ </span><b id="day-status-gain"></b></div>
+                                    <div class="w3-text-grey" style="font-size:24px;">&nbsp;&nbsp;<b
+                                            id="day-status-gain-pct"></b><span class="w3-xlarge"> %</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="w3-third">
+                        <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:210px;">
+                            <div class="w3-col s12 {3} w3-center">
+                                <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                                    <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>TODAY</b></div>
+                                    <div class="" style="font-size:48px;color:#e98b00;"><span
+                                            class="w3-xxlarge w3-text-grey">$ </span><b id="day-status-today"></b></div>
+                                    <div class="w3-text-grey" style="font-size:24px;">&nbsp;&nbsp;<b
+                                            id="day-status-today-pct"></b><span class="w3-xlarge"> %</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w3-third">
+                        <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:210px;">
+                            <div class="w3-col s12 {3}">
+                                <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                                    <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>DAY TARGET</b></div>
+                                    <div class="" style="font-size:48px;color:#0a8d82;"><span
+                                            class="w3-xxlarge w3-text-grey">$ </span><b
+                                            id="day-status-target-delta"></b></div>
+                                    <div class="w3-text-grey" style="font-size:24px;"><span class="w3-xlarge">$
+                                        </span>&nbsp;<b id="day-status-target"></b></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w3-hide w3-third">
+                        <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:210px;">
+                            <div class="w3-col s12 {3} w3-center">
+                                <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                                    <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>ACCOUNT</b></div>
+                                    <div class="" style="font-size:48px;color:#5392c5;"><span
+                                            class="w3-xxlarge w3-text-grey">$ </span><b id="day-status-equity"></b>
+                                    </div>
+                                    <div class="w3-text-grey" style="font-size:24px;"><span class="w3-xlarge">$
+                                        </span>&nbsp;<b id="day-status-invested"></b></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
             <div id="content-overview" class="w3-hide" w3-include-html="./views/content-overview.html"></div>
@@ -544,8 +606,8 @@
             });
         }
         function apply_settings() {
-            localStorage.setItem('KEY',document.getElementById('settings-key').value);
-            localStorage.setItem('SECRET',document.getElementById('settings-secret').value);
+            localStorage.setItem('KEY', document.getElementById('settings-key').value);
+            localStorage.setItem('SECRET', document.getElementById('settings-secret').value);
             // ['settings-key', 'settings-secret', 'settings-token'].forEach((id) => {
             //     let value = document.getElementById(id).value;
             //     if (value) {
@@ -1009,22 +1071,22 @@
                 document.getElementById('day-status-gain').innerText = round(g).toLocaleString();
                 document.getElementById('day-status-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
                 document.getElementById('day-status-gain-pct').innerText = round1((g) / RESULTS.CALCS.INVESTED * 100).toLocaleString();
-                document.getElementById('day-analysis-gain').innerText = round(g).toLocaleString();
-                document.getElementById('day-analysis-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
+                // document.getElementById('day-analysis-gain').innerText = round(g).toLocaleString();
+                // document.getElementById('day-analysis-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
 
                 document.getElementById('day-status-today').innerText = RESULTS.CALCS.TODAY.toLocaleString();
                 document.getElementById('day-status-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : (RESULTS.CALCS.TODAY === 0 ? 'grey' : '#e50000');
                 document.getElementById('day-status-today-pct').innerText = round2(RESULTS.CALCS.TODAY / RESULTS.CALCS.INVESTED * 100).toLocaleString();
-                document.getElementById('day-analysis-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
-                document.getElementById('day-analysis-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : '#e50000';
+                // document.getElementById('day-analysis-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
+                // document.getElementById('day-analysis-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : '#e50000';
 
                 document.getElementById('day-status-target').innerText = RESULTS.CALCS.TARGET.toLocaleString();
                 document.getElementById('day-status-target-delta').innerText = round1(RESULTS.CALCS.DELTA).toLocaleString();
-                document.getElementById('day-analysis-target').innerText = RESULTS.CALCS.DELTA.toLocaleString();
+                // document.getElementById('day-analysis-target').innerText = RESULTS.CALCS.DELTA.toLocaleString();
 
                 document.getElementById('day-status-equity').innerText = round(RESULTS.CALCS.EQUITY).toLocaleString();
                 document.getElementById('day-status-invested').innerText = round(RESULTS.CALCS.INVESTED).toLocaleString();
-                document.getElementById('day-analysis-equity').innerText = round(RESULTS.CALCS.EQUITY).toLocaleString();
+                // document.getElementById('day-analysis-equity').innerText = round(RESULTS.CALCS.EQUITY).toLocaleString();
 
                 const map = {
                     name: 'Symbol',
