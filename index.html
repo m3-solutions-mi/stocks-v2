@@ -1015,7 +1015,7 @@
                 document.getElementById('day-status-today').innerText = RESULTS.CALCS.TODAY.toLocaleString();
                 document.getElementById('day-status-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : (RESULTS.CALCS.TODAY === 0 ? 'grey' : '#e50000');
                 document.getElementById('day-status-today-pct').innerText = round2(RESULTS.CALCS.TODAY / RESULTS.CALCS.INVESTED * 100).toLocaleString();
-                document.getElementById('day-analysis-today').innerText = RESULTS.CALCS.TODAY.toLocaleString();
+                document.getElementById('day-analysis-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
                 document.getElementById('day-analysis-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : '#e50000';
 
                 document.getElementById('day-status-target').innerText = RESULTS.CALCS.TARGET.toLocaleString();
