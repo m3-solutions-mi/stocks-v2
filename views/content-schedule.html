@@ -1,0 +1,215 @@
+<!-- <div class="w3-container w3-panel w3-xlarge w3-margin">
+    <div class="w3-col s12 w3-padding">
+        <div class="w3-row-padding w3-xxlarge">
+            <div class="w3-text-green"><b>Forecast</b></div>
+        </div>
+    </div>
+</div> -->
+
+<div class="w3-col s12 w3-padding">
+    <div _id="output" class="w3-row-padding _w3-center">
+
+        <div class="w3-col s12">
+            <div id="chart-forecast" style=""></div>
+        </div>
+    </div>
+</div>
+
+<div class="w3-col s12 w3-padding w3-margin w3-xlarge">
+    <h2 class="w3-text-green" style="letter-spacing: 4px;"><b>Forecast</b> | 6 weeks</h2>
+    <table id="table-entries-forecast" class="w3-table w3-striped">
+        <thead style="border-bottom: 1px solid;">
+            <tr id="table-header-forecast">
+                <th>Location Type</th>
+                <th>04-Apr</th>
+                <th>W15</th>
+                <th>W16</th>
+                <th>W17</th>
+                <th>W18</th>
+                <th>W19</th>
+                <th>Unit</th>
+                <th>Total Qty</th>
+            </tr>
+        </thead>
+        <tbody id="table-rows-forecast">
+            <tr>
+                <td>Packout Table</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hose-Sleeve Cut</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Crippa Pack</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Leak Test</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Kohler</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Crimp</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Crippa Pack</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+    <h2 class="w3-text-green" style="letter-spacing: 4px;"><b>Schedule</b> | 6 weeks</h2>
+    <table id="table-entries-forecast" class="w3-table _w3-bordered w3-striped">
+        <thead style="border-bottom: 1px solid;">
+            <tr id="table-header-forecast">
+                <th>Location Type</th>
+                <th>W14</th>
+                <th>W15</th>
+                <th>W16</th>
+                <th>W17</th>
+                <th>W18</th>
+                <th>W19</th>
+                <th>Unit</th>
+                <th>Total Qty</th>
+            </tr>
+        </thead>
+        <tbody id="table-rows-forecast">
+            <tr>
+                <td>Packout Table</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Hose-Sleeve Cut</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Crippa Pack</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Leak Test</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Kohler</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Crimp</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Crippa Pack</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>#</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="w3-col s12">
+    <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-right w3-margin"
+        style="letter-spacing:4px;" onclick="update()">UPDATE</button>
+</div>

@@ -1,0 +1,58 @@
+<!-- <div class="w3-container w3-panel w3-xlarge w3-margin">
+    <div class="w3-col s12 w3-padding">
+        <div class="w3-row-padding w3-xxlarge">
+            <div class="w3-text-green"><b>Forecast</b></div>
+        </div>
+    </div>
+</div> -->
+
+<div class="w3-col s12 w3-padding">
+    <div _id="output" class="_w3-row-padding _w3-center">
+
+        <div class="w3-col s12 w3-padding">
+            <div class="w3-col s9 w3-border w3-margin">
+                <div id="chart-forecast" class="w3-padding" style=""></div>
+            </div>
+            <div class="w3-rest w3-border w3-center w3-border w3-margin">
+                <div class="" style="height:349px;">
+                    <div class="w3-xxlarge w3-margin" style="letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b><br />SCHEDULED</b></div>
+                        <hr style="border-top:1px solid gray" />
+                        <div class="" style="font-size:72px;color:#5392c5;"><b id="complete-forecast">115.6</b><span
+                                class="w3-xxlarge"> %</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="w3-col s12 w3-padding w3-margin w3-xlarge">
+    <h2 class="w3-text-green" style="letter-spacing: 4px;"><b>WR Schedule</b> | 10 days
+        <div id="" class="w3-right w3-margin-right" style="_min-width:350px;"><i class="fa fa-step-backward w3-margin-right"></i> <b>Week 13</b> <i class="fa fa-step-forward w3-margin-left"></i></div>
+    </h2>
+
+    <table id="table-entries-forecast" class="w3-table w3-striped">
+        <thead style="border-bottom: 1px solid;">
+            <tr id="table-header-forecast">
+            </tr>
+        </thead>
+        <tbody id="table-rows-forecast">
+        </tbody>
+    </table>
+    <!-- <br /> -->
+    <h2 class="w3-hide w3-text-green" style="letter-spacing: 4px;"><b>Schedule</b> | 6 weeks</h2>
+    <table id="table-entries-forecast" class="w3-hide w3-table _w3-bordered w3-striped">
+        <thead style="border-bottom: 1px solid;">
+            <tr id="table-header-schedule">
+            </tr>
+        </thead>
+        <tbody id="table-rows-schedule">
+        </tbody>
+    </table>
+</div>
+
+<div class="w3-col s12">
+    <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-right w3-margin"
+        style="letter-spacing:4px;" onclick="update()">UPDATE</button>
+</div>

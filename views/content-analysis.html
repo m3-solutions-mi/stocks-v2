@@ -1,0 +1,201 @@
+<div class="w3-col s12 w3-padding">
+    <div _id="output" class="w3-row-padding w3-center">
+
+        <div class="w3-hide-small w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:175px;">
+                <div class="w3-col s12 {3} w3-center">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>GAIN</b></div>
+                        <div class="w3-text-green" style="font-size:48px;"><span class="w3-xxlarge w3-text-grey">$
+                            </span><b id="day-analysis-gain"></b></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:175px;">
+                <div class="w3-col s12 {3} w3-center">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>TODAY</b></div>
+                        <div class="" style="font-size:48px;color:#e98b00;"><span class="w3-xxlarge w3-text-grey">$
+                            </span><b id="day-analysis-today"></b></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:175px;">
+                <div class="w3-col s12 {3}">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>DAY TARGET</b></div>
+                        <div class="" style="font-size:48px;color:#0a8d82;"><span class="w3-xxlarge w3-text-grey">$
+                            </span><b id="day-analysis-target"></b></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-hide w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:175px;">
+                <div class="w3-col s12 {3} w3-center">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>ACCOUNT</b></div>
+                        <div class="" style="font-size:48px;color:#5392c5;"><span class="w3-xxlarge w3-text-grey">$
+                            </span><b id="day-analysis-equity"></b></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!--@ CHARTS -->
+<div class="w3-container">
+    <div class="w3-hide-small w3-hide-medium w3-col s12 m6 l8 w3-padding w3-margin-top w3-xlarge">
+        <div id="symbol-chart-title" class="w3-xxlarge"><b>-</b></div>
+        <div id="chart-symbol"></div>
+        <!-- <div id="chart1" class='w3-col s12 m3 w3-padding' style=""></div> -->
+    </div>
+    <div class="w3-col s12 m12 l4 w3-padding w3-margin-top w3-xlarge">
+        <div id="symbol-chart-recent-title" class="w3-xxlarge"><b>Recent</b></div>
+        <div id="chart-symbol-recent"></div>
+    </div>
+    <div class="w3-col s12 m12 l9 w3-padding w3-margin-top w3-xlarge">
+        <div id="symbol-chart-day-title" class="w3-hide-small w3-xxlarge"><b>Day</b></div>
+        <div id="chart-symbol-minutes"></div>
+    </div>
+    <div class="w3-col s12 m12 l3 w3-padding w3-margin-top w3-xlarge w3-padding">
+        <div class="w3-xlarge w3-border-bottom w3-padding">GAIN: <span class="w3-right w3-wide"><b id="symbol-gain">$
+                    450.03</b> | <span id="symbol-gain-pct" class="w3-xlarge">30.2 %</span></span></div>
+        <div class="w3-xlarge w3-border-bottom w3-padding">TODAY: <span class="w3-right w3-wide"><b
+                    id="symbol-today">242.90</b> | <span id="symbol-today-pct" class="w3-xlarge">14.19 %</span></span>
+        </div>
+        <div class="w3-xlarge w3-border-bottom w3-padding">SCORE: <span class="w3-right w3-wide"><b
+                    id="symbol-score">7.8</b> | <span id="symbol-score-baseline" class="w3-xlarge">5</span></span></div>
+        <div class="w3-xlarge w3-border-bottom w3-padding">INVESTED: <span class="w3-right w3-wide"><b
+                    id="symbol-invested">$ 1,500</b></span></div>
+        <!-- <table class="w3-table-all">
+            <thead>
+                <tr id="_table-header-billing">
+                    <th style="letter-spacing:4px;">Status</th>
+                </tr>
+            </thead>
+            <tbody id="_table-rows-billing" class="w3-center">
+                <tr><td>GAIN</td><td>212.19</td></tr>
+                <tr><td>Percent</td><td>3.47 %</td></tr>
+            </tbody>
+        </table> -->
+    </div>
+</div>
+
+<hr />
+
+<!--@ SYMBOL CARDS -->
+<div class="w3-container">
+    <div class="w3-col s12 w3-padding w3-xlarge">
+
+        <div class="w3-col s12 w3-xlarge w3-center w3-margin-bottom">
+            <!-- <div class="w3-xlarge w3-right w3-margin-right">Raw <i class="fa fa-toggle-on w3-xlarge"></i></div> -->
+            <span class="w3-hide-small w3-hide-medium  w3-left">
+                <input id="radio-100" class="w3-radio" type="radio" name="amount" value="positions"
+                    onclick="click_analysis_view(this.value)" checked>
+                <label class="w3-margin-right">Positions</label>
+                <input class="w3-radio" type="radio" name="amount" value="symbols"
+                    onclick="click_analysis_view(this.value)">
+                <label class="w3-margin-right">Symbols</label>
+                <input class="w3-radio" type="radio" name="amount" value="search"
+                    onclick="click_analysis_view(this.value)">
+                <label class="w3-margin-right">Search</label>
+                <input class="w3-radio" type="radio" name="amount" value="watch-list"
+                    onclick="click_analysis_view(this.value)">
+                <label class="w3-margin-right">Watch List</label>
+                <input class="w3-radio" type="radio" name="amount" value="indicators"
+                    onclick="click_analysis_view(this.value)">
+                <label class="w3-margin-right">Indicators</label>
+            </span>
+
+            <span class="w3-hide-small w3-right">
+                <span id="analysis-buying-power" class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$ -</span>
+                <i class="fa fa-credit-card w3-xxlarge w3-text-green w3-margin-right pointer"
+                    onclick="buy_symbol()"></i>
+                <i class="fa fa-credit-card w3-xxlarge w3-text-red w3-margin-right pointer" onclick="sell_symbol()"></i>
+                <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer" onclick="liquidate_symbols()"></i>
+            </span>
+
+            <span class="w3-hide-medium w3-hide-large w3-center">
+                <span id="analysis-buying-power" class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$ -</span>
+                <i class="fa fa-credit-card w3-xxlarge w3-text-green w3-margin-right pointer"
+                    onclick="buy_symbol()"></i>
+                <i class="fa fa-credit-card w3-xxlarge w3-text-red w3-margin-right pointer" onclick="sell_symbol()"></i>
+                <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer" onclick="liquidate_symbols()"></i>
+            </span>
+
+            <span class="w3-right" style="display:none;">
+                <i class="fa w3-xxlarge w3-margin-right w3-margin-left"></i>
+                <i class="fa fa-plus-square-o w3-xxlarge w3-text-green w3-margin-right"></i>
+                <i class="fa fa-plus-square-o w3-xxlarge w3-text-blue w3-margin-right"></i>
+                <i class="fa fa-plus-square-o w3-xxlarge w3-text-orange w3-margin-right"></i>
+                <i class="fa fa-plus-square-o w3-xxlarge w3-text-purple w3-margin-right"></i>
+            </span>
+
+        </div>
+
+        <div id="analysis-symbol-cards" class="_w3-row w3-center w3-margin-top"
+            style="display:inline-flex;flex-wrap:wrap;flex-direction:row;justify-content:center;">
+        </div>
+
+        <div id="letters" class="w3-hide-small w3-center w3-margin-top" style="_display:none;"
+            _style="display:inline-flex;flex-wrap:wrap;flex-direction:row;justify-content:center;">
+        </div>
+
+        <div id="letter-symbols" class="w3-hide-small w3-center w3-margin-top w3-margin-bottom"
+            style="display:inline-flex;flex-wrap:wrap;flex-direction:row;justify-content:center;">
+        </div>
+
+        <div id="watch-symbols" class="w3-center w3-margin-top w3-margin-bottom"
+            style="_display:inline-flex;flex-wrap:wrap;flex-direction:row;justify-content:center;">
+        </div>
+
+        <div id="indicator-symbols" class="w3-hide-small w3-center w3-margin-top w3-margin-bottom"
+            style="_display:inline-flex;flex-wrap:wrap;flex-direction:row;justify-content:center;">
+        </div>
+
+        <!-- <div class="w3-center">
+            <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-margin-right"
+                style="letter-spacing:4px;width:200px;" onclick="update()">$ 100&nbsp;</button>
+            <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-margin-right"
+                style="letter-spacing:4px;width:200px;" onclick="update()">$ 250&nbsp;</button>
+            <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-margin-right"
+                style="letter-spacing:4px;width:200px;" onclick="update()">$ 500&nbsp;</button>
+            <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-margin-right"
+                style="letter-spacing:4px;width:200px;" onclick="update()">$ 1000</button>
+            <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-margin-right"
+                style="letter-spacing:4px;width:200px;" onclick="update()">&nbsp;DUMP&nbsp;</button>
+        </div> -->
+    </div>
+
+    <!-- <div class="w3-col s12">
+        <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-right w3-margin"
+            style="letter-spacing:4px;" onclick="update()">SNAPSHOT</button>
+    </div> -->
+</div>
+
+<!-- <hr /> -->
+
+<!--@ SYMBOL SEARCH -->
+<div class="w3-hide-small w3-container w3-center w3-wide" style="_display:inline-block;">
+    <label>SYMBOL:&nbsp;</label>
+    <input id="symbol-input" class="_w3-input" type="text"
+        onkeyup="key_up(document.getElementById('symbol-input').value.toUpperCase())">
+    <i class="fa fa-search w3-text-grey" style="cursor:pointer;"
+        onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
+    <i class="fa fa-plus-square-o w3-text-grey" style="cursor:pointer;"
+        onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
+    <i class="fa fa-minus-square-o w3-text-grey" style="cursor:pointer;"
+        onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
+</div>
+&nbsp;
+<br/>

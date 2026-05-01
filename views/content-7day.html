@@ -1,0 +1,72 @@
+<div class="w3-col s12 w3-padding">
+    <div _id="output" class="w3-row-padding w3-center">
+
+        <div class="w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
+                <div class="w3-col s12 {3}">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>COMPLETE</b></div>
+                        <hr style="border-top:1px solid gray" />
+                        <div class="w3-text-green" style="font-size:72px;"><b id="complete"></b><span
+                                class="w3-xxlarge"> %</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
+                <div class="w3-col s12 {3}">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>N C</b></div>
+                        <hr style="border-top:1px solid gray" />
+                        <div class="" style="font-size:72px;color:#e98b00;"><b id="nc"></b><span class="w3-xxlarge">
+                                %</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-hide w3-quarter">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
+                <div class="w3-col s12 {3}">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>DELTA</b></div>
+                        <hr style="border-top:1px solid gray" />
+                        <div class="w3-text-red" style="font-size:72px;"><b id="delta"></b><span class="w3-xxlarge">
+                                %</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
+                <div class="w3-col s12 {3}">
+                    <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
+                        <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>SCORE</b></div>
+                        <hr style="border-top:1px solid gray" />
+                        <div class="" style="font-size:72px;color:#5392c5;"><b id="score"></b><span class="w3-xxlarge">
+                                %</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="w3-col s12 w3-padding w3-margin-top w3-xlarge">
+    <table id="table-entries" class="w3-table _w3-bordered w3-striped">
+        <thead>
+            <tr id="table-header-day">
+            </tr>
+        </thead>
+        <tbody id="table-rows-day">
+        </tbody>
+    </table>
+</div>
+
+<div class="w3-col s12">
+    <button id="button-submit" class="w3-button w3-xlarge w3-light-grey w3-border w3-right w3-margin"
+        style="letter-spacing:4px;" onclick="update()">UPDATE</button>
+</div>

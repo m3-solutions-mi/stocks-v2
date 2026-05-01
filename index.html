@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>M3&nbsp;|&nbsp;WBD</title>
+    <meta charset="UTF-8">
+    <link id="favicon" rel="icon" href="./favicon.ico" type="image/png" sizes="16x16">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1 minimum-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <!-- <link rel="manifest" href="manifest.json"> -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- <link rel="stylesheet" href="./style.css"> -->
+</head>
+
+<style>
+    @font-face {
+        font-family: 'rebellion-squad';
+        /* A name you define */
+        src: url('fonts/rebellion-squad.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        /* Ensures text is visible while the font loads */
+    }
+
+    html,
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: "Raleway", "Roboto", sans-serif
+    }
+
+    /* Change font size for the entire picker */
+    .flatpickr-calendar {
+        font-size: 24px;
+        /* Adjust as needed */
+    }
+
+    /* Specific target for the month and year dropdowns */
+    .flatpickr-month,
+    .flatpickr-current-month {
+        font-size: 20px;
+    }
+
+    /* input[type="date"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 2px;
+    } */
+
+    /* input::-webkit-calendar-picker-indicator {
+        color: #4CAF50; Change the icon color
+        opacity: 1;
+        cursor: pointer;
+    } */
+
+    .pointer {
+        cursor: pointer;
+    }
+</style>
+
+<body class="w3-light-grey w3-xxlarge" style="font-family:Raleway;">
+
+    <!--@ SCRIPT IMPORTS -->
+    <script src="./index.js"></script>
+    <script src="./configuration.js"></script>
+    <script src="./csv.js"></script>
+    <script src="./helpers.js"></script>
+    <script src="./HackTimer.js"></script>
+    <script src="./chart-definitions/mixed.js"></script>
+    <script src="./chart-definitions/treemap.js"></script>
+    <script src="./chart-definitions/colors.js"></script>
+    <script src="./chart-definitions/stock_symbols_detail.js"></script>
+    <script src="./chart-definitions/nasdaq-symbols.js"></script>
+    <script src="./chart-definitions/bollinger-bands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!--@ PAGE CONTENT -->
+    <div class="w3-content w3-margin-top" style="max-width:1800px;"> <!-- 1450 -->
+
+        <div class="w3-row-padding">
+            <span class="">
+                <!--@ Header -->
+                <div class="w3-col s12" style="margin-bottom:20px;">
+                    <div class="w3-large w3-container w3-card _w3-green w3-padding" style="background-color:#6dc573;">
+                        <div class="w3-hide-small w3-col s2 w3-center">
+                            <img class="_w3-hide-small w3-padding"
+                                src="https://offsite-ryan.github.io/m3-trader/favicon-black.png" style="width:70%"
+                                alt="M3 Solutions">
+                        </div>
+
+                        <div class="w3-col s7 w3-padding _w3-xxlarge w3-bold w3-text-black">
+                            <div class="w3-container w3-text-black">
+                                <h1 style="margin-top:10px;">
+                                    <b class="w3-hide-large">M3&nbsp;Solutions&nbsp;MI</b>
+                                    <b class="w3-hide-medium w3-hide-small">M3&nbsp;Solutions&nbsp;MI&nbsp;&nbsp;|&nbsp;&nbsp;<span
+                                            style="letter-spacing:4px;">STOCKS</span></b>
+                                    <div class="w3-hide-small w3-hide medium"
+                                        style="display:flex;font-size:28px !important;letter-spacing:4px;">
+                                        Stock ○ Trading ○ Advisor
+                                        <!-- Status ○ Metrics ○ Insights -->
+                                    </div>
+                            </div>
+                            </h1>
+                        </div>
+
+                        <div class="w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
+                            style="margin-top:8px;display:inline-grid;justify-content: center;">
+                            <b><span id="clock" style="letter-spacing:4px;"></span></b>
+                            <span id="date" class="w3-xxlarge"></span>
+                        </div>
+                    </div>
+
+                </div>
+        </div>
+        <!--@ End | Header -->
+
+        <!--@ OUTPUT -->
+        <div class="w3-hide w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+            <div id="output" class="w3-row-padding w3-center">
+            </div>
+        </div>
+        <!--@ End | OUTPUT -->
+
+        <!--@ PANEL -->
+        <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+
+            <!-- <div class="w3-hide w3-container w3-card-2 w3-xlarge w3-margin">
+                <h2 class="w3-margin-top" style="letter-spacing:4px;"><b>TODAY SUMMARY</b></h2>
+                <hr />
+                <div class="w3-col s12 w3-padding">
+                    <table class="w3-table w3-bordered">
+                        <thead>
+                            <tr id="table-header-summary">
+                                <th style="letter-spacing:4px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-rows-summary">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="w3-col s12">
+                    <button class="w3-button w3-light-grey w3-border w3-right w3-margin"
+                        style="letter-spacing:4px;">UPDATE</button>
+                </div>
+            </div> -->
+
+            <!--@ NAVIGATION -->
+            <div class="_w3-hide w3-container w3-panel w3-xlarge w3-margin">
+
+                <div class="w3-hide-small w3-right" style="margin-top:10px !important;">
+                    <input id="selected-date" class="flatpickr flatpickr-input w3-input w3-border"
+                        style="font-size:28px;" type="text" value="2026-04-17" onchange="load_day(this.value)">
+                </div>
+
+                <!--@ TIMEFRAME -->
+                <!-- <h2 class="w3-margin-top w3-text-green w3-right" style="letter-spacing:4px;">
+                    <b></b>
+
+                    <div class="w3-hide w3-dropdown-hover">
+                        <div id="selected-timeframe" class="_w3-button" style="display:none;_min-width:350px;"><b>7 DAY
+                            </b>&nbsp;&nbsp;▼</div>
+                        <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card"
+                            style="width:100%;min-width:450px;">
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-pie-chart"></i> 7 Day</a>
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-pie-chart"></i> This Week</a>
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-pie-chart"></i> Last Week</a>
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-pie-chart"></i> This Month</a>
+                        </div>
+                    </div>
+                </h2> -->
+
+                <!-- <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;"><b>SCHEDULE ● PLAN ● STATUS ▼</b> -->
+                <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;">
+                    <b></b>
+
+                    <div class="w3-dropdown-hover">
+                        <div class="w3-maargin-right w3-xxlarge" style="min-width:350px;"><b
+                                id="selected-view">-</b>&nbsp;&nbsp;▼
+                        </div>
+                        <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-xxlarge"
+                            style="width:100%;min-width:450px;">
+                            <a onclick="navigate('overview')" class="w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-pie-chart"></i> Overview</a>
+                            <a onclick="navigate('day')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-table"></i> Day&nbsp;Detail</a>
+                            <a onclick="navigate('analysis')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-area-chart"></i> Analysis</a>
+                            <!-- <a onclick="navigate('forecast')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-calendar-o"></i> Schedule</a> -->
+                            <!-- <a onclick="navigate('summary')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-bar-chart"></i> Summary</a> -->
+                            <!-- <a onclick="navigate('schedule')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-calendar"></i> Schedule</a> -->
+                            <!-- <a onclick="navigate('snowplow')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-line-chart"></i> Trend</a> -->
+                            <!-- <a onclick="navigate('indicators')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-thermometer-quarter"></i> Indicators</a> -->
+                            <!-- <a onclick="navigate('analysis')" class="w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-area-chart"></i> Analysis</a> -->
+                            <!-- <a onclick="navigate('dashboards')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-th"></i> Dashboards</a> -->
+                            <!-- <a onclick="navigate('billing')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-list"></i> Billing</a> -->
+                            <!-- <hr />
+                            <a onclick="navigate('input')" class="w3-padding w3-bar-item w3-button"> <i
+                                    class="fa fa-mobile" style="font-size:42px"></i> &nbsp;Update Status</a> -->
+                            <hr />
+                            <a onclick="navigate('settings')" class="w3-padding w3-bar-item w3-button"> <i
+                                    class="fa fa-cogs" style="font-size:42px"></i> &nbsp;Settings</a>
+                            <!-- <a onclick="navigate('configuration')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-gear"></i> Configuration</a>
+                            <a onclick="navigate('about')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-question-circle-o"></i> About</a> -->
+                            <!-- <a onclick="navigate('license')" class="w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-list"></i> License
+                                Usage</a> -->
+                            <!-- <a onclick="navigate('pricing')" class="w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-usd"></i> Pricing</a> -->
+                        </div>
+                    </div>
+
+                    <!-- <div class="w3-right w3-margin-right w3-dropdown-hover">
+                        <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card"
+                            style="width:100%;min-width:450px;">
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-circle"></i> ALL</a>
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-circle-o"></i> This Week</a>
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-circle-o"></i> Last Week</a>
+                            <a onclick="navigate(this, 'overview')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-circle-o"></i> This Month</a>
+                        </div>
+                    </div> -->
+                </h2>
+
+
+            </div>
+
+            <div id="content-overview" class="w3-hide" w3-include-html="./views/content-overview.html"></div>
+            <div id="content-summary" class="w3-hide" w3-include-html="./views/content-summary.html"></div>
+            <div id="content-forecast" class="w3-hide" w3-include-html="./views/content-forecast.html"></div>
+            <div id="content-schedule" class="w3-hide" w3-include-html="./views/content-schedule.html"></div>
+            <div id="content-snowplow" class="w3-hide" w3-include-html="./views/content-snowplow.html"></div>
+            <div id="content-day" class="_w3-hide" w3-include-html="./views/content-day.html"></div>
+            <div id="content-analysis" class="_w3-hide" w3-include-html="./views/content-analysis.html"></div>
+            <div id="content-7day" class="w3-hide" w3-include-html="./views/content-7day.html"></div>
+            <div id="content-input" class="w3-hide" w3-include-html="./views/content-input.html"></div>
+            <div id="content-dashboards" class="w3-hide" w3-include-html="./views/content-dashboards.html"></div>
+            <div id="content-billing" class="w3-hide" w3-include-html="./views/content-billing.html"></div>
+            <div id="content-indicators" class="w3-hide" w3-include-html="./views/content-indicators.html"></div>
+            <!-- <div id="content-billing" class="w3-hide" w3-include-html="./views/content-billing.html"></div> -->
+            <div id="content-settings" class="" w3-include-html="./views/content-settings.html"></div>
+            <div id="content-pricing" class="w3-hide" w3-include-html="./views/content-pricing.html"></div>
+            <div id="content-configuration" class="w3-hide" w3-include-html="./views/content-configuration.html"></div>
+            <div id="content-about" class="w3-hide" w3-include-html="./views/content-about.html"></div>
+
+
+        </div>
+    </div>
+
+    <!--@ ROW INPUT -->
+    <!-- <div class="w3-hide w3-container w3-panel w3-border w3-xlarge w3-margin">
+        <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;"><b>CURRENT STATUS</b></h2>
+        <hr />
+        <div id="current-status-reasons" class="w3-col s4 w3-padding">
+        </div>
+
+        <div class="w3-col s8 w3-padding">
+            <div class="w3-col s4 w3-padding">
+                <label class="">Work Request</label>
+                <input class="w3-input w3-border" type="text" placeholder="Enter Work Request #">
+            </div>
+            <div class="w3-col s4 w3-padding">
+                <label class="">Part #</label>
+                <input class="w3-input w3-border" type="text" placeholder="Enter Part #">
+            </div>
+            <div class="w3-col s4 w3-padding">
+                <label class="">Count</label>
+                <input class="w3-input w3-border" type="number" placeholder="0">
+            </div>
+
+            <div class="w3-col s12 w3-padding w3-margin-top">
+                <label class="">Comment</label>
+                <input class="w3-input w3-border" type="text" placeholder="Enter comment">
+            </div>
+
+        </div>
+
+        <div class="w3-col s12">
+            <button class="w3-button w3-light-grey w3-border w3-right w3-margin"
+                style="letter-spacing:4px;">SUBMIT</button>
+        </div>
+    </div> -->
+
+    <!--@ BILLING -->
+    <!-- <div class="w3-hide w3-container w3-panel w3-border w3-xlarge w3-margin">
+        <div class="w3-right w3-margin">
+            <input class="w3-input w3-border" type="date" value="2026-03-23">
+        </div>
+
+        <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;"><b>BILLING</b></h2>
+        <hr />
+        <div class="w3-col s12 w3-padding">
+            <table class="w3-table-all">
+                <thead>
+                    <tr id="table-header-billing">
+                        <th style="letter-spacing:4px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="table-rows-billing">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="w3-col s12">
+            <button class="w3-button w3-light-grey w3-border w3-right w3-margin"
+                style="letter-spacing:4px;">UPDATE</button>
+        </div>
+    </div> -->
+    <!-- </div> -->
+    <!--@ End | PANEL -->
+
+    <!--@ CONTEXT MENU -->
+    <div id="contextMenu" class="w3-margin w3-padding w3-border w3-white"
+        style="display:none;position:absolute; z-index:100;">
+        <div _onclick="handleAction('edit')">Edit</div>
+        <div _onclick="handleAction('delete')">Delete</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://www.w3schools.com/lib/w3.js"></script>
+    <script>
+
+        //* TODO: MOVE TO SETTINGS PAGE */
+        const base_url = 'https://api.alpaca.markets'
+        const ALPACA_KEY = localStorage.getItem('KEY') || '';
+        const ALPACA_SECRET = localStorage.getItem('SECRET') || '';
+        console.log(ALPACA_KEY, ALPACA_SECRET);
+
+        <!--@ HTML INCLUDES -->
+        w3.includeHTML(() => {
+            console.log(' content loaded');
+
+            document.getElementById('settings-key').value = ALPACA_KEY;
+            document.getElementById('settings-secret').value = ALPACA_SECRET;
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const param = urlParams.get('id'); // "123"
+            console.log(Array.from(urlParams.entries())[0][0]);
+            navigate(Array.from(urlParams.entries())[0][0]);
+
+            flatpickr("#selected-date", {
+                // Optional configuration
+                dateFormat: "Y-m-d",
+                minDate: "2026-01-01"
+            });
+
+            load_day();
+            load_data();
+            load_schedule();
+
+            click_symbol('NDAQ');
+
+            const form = document.getElementById('settings-form');
+            form.addEventListener('submit', function (event) {
+                // Prevent the default browser submit/refresh
+                event.preventDefault();
+
+                // Custom logic (e.g., validation or logging)
+                console.log("Form submitted via function!");
+
+                // To send data to a server manually:
+                const formData = new FormData(form);
+                // console.log("Name entered:", formData.get('username'));
+                console.log(formData);
+            });
+
+
+            //@ CONTEXT MENU */
+            // const table = document.getElementById('table-entries');
+            // const menu = document.getElementById('contextMenu');
+
+            // table.addEventListener('contextmenu', function (e) {
+            //     e.preventDefault(); // Stop default browser menu
+            //     menu.style.display = 'block';
+            //     menu.style.left = e.pageX + 'px'; // Position at click
+            //     menu.style.top = e.pageY + 'px';
+            // });
+
+            // // Hide menu when clicking elsewhere
+            // document.addEventListener('click', () => menu.style.display = 'none');
+        });
+    </script>
+
+    <script>
+        <!--@ UPDATE TABLE COUNTS -->
+        function update_table_counts() {
+            const table = document.getElementById('table-entries');
+            const csv_rows = [];
+            let csv = [];
+            const rows = table.querySelectorAll("tr");
+            let qty = 0;
+            let done = 0;
+            let nc = 0;
+            let delta = 0;
+            rows.forEach((r, i) => {
+                let cols = rows[i].querySelectorAll("td, th");
+                // if (i !== 0 && i !== rows.length - 1) {
+                //     qty += +(cols[11].innerText);
+                //     done += +(cols[12].innerText);
+                //     nc += +(cols[13].innerText);
+                //     delta += +(cols[14].innerText);
+                // } else if (i === rows.length - 1) {
+                //     cols[11].innerHTML = `<b>${qty}</b>`;
+                // cols[12].innerHTML = `<b>${done}</b>`;
+                // cols[13].innerHTML = `<b>${nc}</b>`;
+                // cols[14].innerHTML = `<b>${delta}</b>`;
+                // }
+            });
+
+            // document.getElementById('complete').innerHTML = isNaN(done) ? '-' : done;
+            // document.getElementById('nc').innerHTML = isNaN(nc) ? '-' : nc;
+            // document.getElementById('delta').innerHTML = isNaN(delta) ? '-' : delta;
+            // document.getElementById('score').innerHTML = isNaN(score) ? '-' : score;
+        }
+    </script>
+
+    <script>
+        const WRM = new Data();
+    </script>
+
+    <script>
+        const menu_item_map = {
+            overview: 'OVERVIEW',
+            summary: '<i class="fa fa-bar-chart"></i> SUMMARY',
+            snowplow: '<i class="fa fa-line-chart"></i> TREND',
+            forecast: '<i class="fa fa-calendar-o"></i> SCHEDULE',
+            schedule: 'SCHEDULE',
+            day: '<i class="fa fa-calendar"></i> DAY STATUS',
+            '7day': '7 DAY PLAN | STATUS',
+            input: 'Input',
+            dashboards: '<i class="fa fa-th"></i> DASHBOARDS',
+            billing: '<i class="fa fa-usd"></i> BILLING',
+            indicators: '<i class="fa fa-thermometer-quarter"></i> INDICATORS',
+            pricing: '<i class="fa fa-tag"></i> PRICING',
+            configuration: 'CONFIGURATION',
+            about: 'ABOUT',
+            settings: '<i class="fa fa-cogs"></i> Settings',
+            analysis: '<i class="fa fa-area-chart"></i> Analysis',
+        }
+        function navigate(value) {
+            Object.keys(menu_item_map).forEach((v) => {
+                document.getElementById(`content-${v}`).classList.add('w3-hide');
+                if (v === value) {
+                    document.getElementById(`content-${v}`).classList.remove('w3-hide');
+                }
+            })
+            document.getElementById('selected-date').style.display = value === 'day' ? 'block' : 'none';
+            // document.getElementById('selected-timeframe').style.display = value !== 'day' ? 'block' : 'none';
+            document.getElementById('selected-view').innerHTML = menu_item_map[value];
+            // elem.parentElement.parentElement.children[0].children[0].innerText = menu_item_map[value];
+            window.history.pushState('stateObj', '', `./?${value}`)
+        }
+        window.addEventListener('popstate', function (event) {
+            console.log('popstate', event.target.window.location.search);
+            // Handle the state change (e.g., re-load content for the new URL)
+            // Example: fetchNewContent(location.pathname);
+        });
+    </script>
+
+
+    <script>
+        function buy_symbol() {
+            const amount = +(prompt(`BUY | ${SELECTED_SYMBOL}`, 1000));
+            console.log(SELECTED_SYMBOL, amount);
+            if (amount > 10) {
+                buy(SELECTED_SYMBOL, amount);
+            } else {
+                console.log('cancelled');
+            }
+        }
+
+        function sell_symbol() {
+            // const amount = +(prompt('Enter dollar amount', 250));
+            // console.log(SELECTED_SYMBOL, amount);
+            // if (amount > 10) {
+            //     sell(SELECTED_SYMBOL);
+            // }
+            if (confirm(`SELL SHARES | ${SELECTED_SYMBOL}`)) {
+                console.log('confirmed');
+                sell(SELECTED_SYMBOL);
+            } else {
+                console.log('cancelled');
+            }
+        }
+
+        function liquidate_symbols() {
+            if (confirm(`LIQUIDATE SHARES | ${SELECTED_SYMBOL}`)) {
+                console.log('confirmed');
+                liquidate();
+            } else {
+                console.log('cancelled');
+            }
+        }
+    </script>
+
+    <script>
+        setInterval(async () => {
+            const d = new Date()
+            document.getElementById('clock').innerHTML = d.toLocaleTimeString().split(' ')[0];
+            document.getElementById('date').innerHTML = getDMMM(d);
+
+            if ([0, 20, 40].indexOf(d.getSeconds()) >= 0) {
+                setTimeout(() => load_data(), round(Math.random() * 1000));
+            }
+        }, 1000);
+    </script>
+
+    <script>
+        function test() {
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/ADBE?period1=1773359940&period2=1773597600&interval=1m&includePrePost=true&events=div%7Csplit%7Cearn&lang=en-US&region=US&source=cosaic`;
+            fetch(url).then((v) => {
+                console.log(v);
+            });
+        }
+        function apply_settings() {
+            localStorage.setItem('KEY',document.getElementById('settings-key').value);
+            localStorage.setItem('SECRET',document.getElementById('settings-secret').value);
+            // ['settings-key', 'settings-secret', 'settings-token'].forEach((id) => {
+            //     let value = document.getElementById(id).value;
+            //     if (value) {
+            //         console.log(id, '|', value);
+            //     }
+            // });
+        }
+        async function update() {
+            // This line stops the reload
+            event.preventDefault();
+
+            // Add your update logic here
+            console.log('CLICKED');
+
+            const date = document.getElementById('selected-date').value;
+            let payload = exportTableToCSV('table-entries', 'temp.csv');
+            payload = payload.map((v, i) => i === 0 ? v : v.slice(0, -1));
+            payload.forEach((r, i) => {
+                if (i > 0) {
+                    if (r[2] === '') { r[2] = payload[i - 1][2]; }
+                    if (r[3] === '' && payload[i - 1][2] === r[2]) { r[3] = payload[i - 1][3]; }
+                    if (r[4] === '' && payload[i - 1][2] === r[2]) { r[4] = payload[i - 1][4]; }
+                    if (r[5] === '' && payload[i - 1][2] === r[2]) { r[5] = payload[i - 1][5]; }
+                    if (r[6] === '' && payload[i - 1][2] === r[2]) { r[6] = payload[i - 1][6]; }
+                }
+            })
+            console.log(payload);
+            const response = await fetch(`http://localhost:3000/submit/${date}`, {
+                method: 'POST', // Specify the method
+                headers: {
+                    'Content-Type': 'application/json' // Inform the server of the data format
+                },
+                body: JSON.stringify(payload) // Convert the JavaScript object to a JSON string
+            });
+        }
+    </script>
+
+    <!-- //* TODAY'S STATUS */ -->
+    <script>
+        const round = (v) => {
+            return Math.round(v * 1) / 1;
+        }
+        const round1 = (v) => {
+            return Math.round(v * 10) / 10;
+        }
+        const round2 = (v) => {
+            return Math.round(v * 100) / 100;
+        }
+        // function getYMD(date_string, includeYear = true) {
+        //     const d = new Date(date);
+        //     let month = '' + (d.getMonth() + 1);
+        //     let day = '' + d.getDate();
+        //     const year = d.getFullYear();
+
+        //     if (month.length < 2)
+        //         month = '0' + month;
+        //     if (day.length < 2)
+        //         day = '0' + day;
+
+        //     // return '2025-06-04'
+        //     return (includeYear ? [year, month, day] : [year, month]).join('-');
+        // }
+    </script>
+
+    <!-- //* ========================= */ -->
+    <!-- //* ALPACA METHODS */ -->
+    <!-- //* ========================= */ -->
+    <script>
+
+        /** BUY SYMBOL SHARES */
+        function buy(symbol, spend = 1000) {
+            return new Promise((resolve, reject) => {
+                const payload = {
+                    side: 'buy',
+                    type: 'market',
+                    time_in_force: 'day',
+                    symbol: symbol,
+                    // qty: qty.toString(), // /** quantity to buy */
+                    notional: round2(spend).toString() // /** dollar amount to buy */
+                };
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        accept: 'application/json',
+                        'APCA-API-KEY-ID': ALPACA_KEY,
+                        'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                    },
+                    body: JSON.stringify(payload),
+                };
+                let url = `${base_url}/v2/orders`;
+                fetch(url, options)
+                    // fetch(url, options('POST', payload))
+                    .then(res => res.json())
+                    .then(res => { console.log('BUY', symbol, res); resolve(res) })
+                    .catch((err) => { console.error('error in buy()', err) });
+            });
+        }
+        /** SELL SYMBOL SHARES */
+        function sell(symbol) {
+            return new Promise((resolve, reject) => {
+                const options = {
+                    method: 'DELETE',
+                    headers: {
+                        accept: 'application/json',
+                        'APCA-API-KEY-ID': ALPACA_KEY,
+                        'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                    }
+                };
+                let url = `${base_url}/v2/positions/${symbol.replace('/', '')}?percentage=100`;
+                fetch(url, options)
+                    .then(res => res.json())
+                    .then(res => { console.log('SELL', symbol, res); resolve(res); })
+                    .catch(err => console.error('error in sell()', err));
+            });
+        }
+        /** LIQUIDATE ALL POSITIONS */
+        function liquidate() {
+            return new Promise((resolve, reject) => {
+                const options = {
+                    method: 'DELETE',
+                    headers: {
+                        accept: 'application/json',
+                        'APCA-API-KEY-ID': ALPACA_KEY,
+                        'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                    }
+                };
+                // https://paper-api.alpaca.markets/v2/positions
+                let url = `${base_url}/v2/positions`;
+                fetch(url, options)
+                    .then(res => res.json())
+                    .then(res => { console.log('LIQUIDATE', res); resolve(res); })
+                    .catch(err => console.error('error in liquidate()', err));
+            });
+        }
+    </script>
+
+    <!-- //* SCHEDULE | PLAN */ -->
+    <script>
+
+        let RESULTS = null;
+        const CHART_DAY_HISTORY = new Treemap('chart-days-history');
+        const CHART_24H_HISTORY = new Treemap('chart-24h-history');
+        const CHART_POSITIONS = new Treemap('chart-positions');
+        const CHART_POSITIONS_TODAY = new Treemap('chart-positions-today');
+        const CHART_SYMBOL = new Treemap('chart-symbol');
+        const CHART_SYMBOL_RECENT = new Treemap('chart-symbol-recent');
+        const CHART_SYMBOL_MINUTES = new Treemap('chart-symbol-minutes');
+
+        function key_up(symbol) {
+            if (event.key === 'Enter') {
+                console.log(symbol);
+                click_symbol(symbol.toUpperCase());
+                document.getElementById('symbol-input').value = '';
+            }
+        }
+        function click_letter(letter) {
+            console.log(letter + ' clicked');
+            const symbols = stock_symbols_detail.filter((v) => v.symbol.toUpperCase().indexOf(letter.toUpperCase()) === 0);
+            // console.log(symbols.map((v) => v.symbol).join(','));
+
+            // let watch_list = 'ADI,ATOM,AVT,BB,BBGI,BLDP,CORZ,ENTG,EVLV,HIMX,HUT,KLAC,KOD,KOPN,KYMR,MARA,MBX,MCHP,MKSI,MPWR,MRNA,MXL,NVMI,ORKA,PENG,PLAB,POET,POWL,ROIV,TIGO,UCTT,VECO,VICR,VRT,WULF'.split(',');
+            let watch_list = []; //'AMD,AMZN,AVT,CAT,DHC,DIOD,DRAM,GEV,GOOGL,INTC,KOPN,MCHP,MPWR,MU,ON,PENG,POWL,QCOM,SITM,SNDK,SOXL,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC'.split(',').sort();
+            const template = `<div class="w3-button" style="width:100px;border-bottom:{1}px solid {2}" onclick=(click_symbol("{0}"))>{0}</div>`;
+            let html = '';
+            const names = symbols.map((v) => v.symbol).forEach((v) => {
+                html += template
+                    .replace('{0}', v)
+                    .replace('{0}', v)
+                    .replace('{1}', watch_list.indexOf(v) >= 0 ? 7 : 0)
+                    .replace('{2}', 'orange');
+            });
+            document.getElementById('letter-symbols').innerHTML = html;
+        }
+        function click_analysis_view(value) {
+            console.log(value);
+        }
+        let SELECTED_SYMBOL = 'NDAQ';
+        let INDICATORS = 'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
+        async function click_symbol(name) {
+            SELECTED_SYMBOL = name;
+            const raw = INDICATORS.indexOf(name) >= 0;
+
+            const position = RESULTS?.POSITIONS ? RESULTS.POSITIONS.find((v) => v.name === name) : null;
+            // console.log(position);
+
+            // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
+            const resp = await fetch(`https://m3-solutions-mi.com/${name}/1D/2025-10-01T23:59:59/2027-01-01`, {
+                method: 'GET',
+                headers: {
+                    accept: 'application/json',
+                    'APCA-API-KEY-ID': ALPACA_KEY,
+                    'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                }
+            }).then((resp) => resp.json());
+            const data = resp.bars[name];
+
+            // `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`
+            const start_at = new Date(Date.now() - (0.5 * 24 * 60 * 60 * 1000)).toISOString();
+            // const resp_2 = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=2030-01-01&feed=iex&limit=5000&sort=asc`, {
+            const resp_2 = await fetch(`https://m3-solutions-mi.com/${name}/1Min/${start_at}/2027-01-01`, {
+                method: 'GET',
+                headers: {
+                    accept: 'application/json',
+                    'APCA-API-KEY-ID': ALPACA_KEY,
+                    'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                }
+            }).then((resp) => resp.json());
+            const data_m = resp_2.bars[name];
+
+            // console.log(name + ' selected');
+            // console.log(name, elem, data);
+
+            let series = [
+                { name: 'Gain', type: 'area', data: [] },
+                { name: '0.5% / d', type: 'line', data: [] },
+                { name: '1.0% / d', type: 'line', data: [] },
+                { name: 'Bollinger', type: 'line', data: [] },
+                { name: 'Trendline', type: 'line', data: [] },
+            ];
+            let start = data[0].c;
+            let shares = raw ? 1 : 1000 / start;
+            const increment = (start * shares * 0.005);
+            series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
+            series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+            series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            const bollinger = calculateBollingerBands(series[0].data.map((v) => v.y), 7, 1);
+            series[0].data.forEach((v, i) => {
+                series[3].data.push({ x: v.x, y: bollinger.lowerBand[i] });
+            });
+            const tl = calculateTrendline(series[0].data.map((v) => v.y));
+            series[0].data.forEach((v, i) => {
+                series[4].data.push({ x: v.x, y: tl.calculateY(i) });
+            });
+            // console.log('score','|', round1(tl.slope - increment));
+            CHART_SYMBOL.options.tooltip.enabledOnSeries = [0];
+            CHART_SYMBOL.options.annotations.xaxis = [];
+            let n = new Date(series[0].data[0].x).getFullYear();
+            series[0].data.forEach((v) => {
+                const n2 = new Date(v.x).getFullYear();
+                if (n !== n2) {
+                    CHART_SYMBOL.options.annotations.xaxis.push(add_annotation_x(v.x));
+                }
+                n = n2;
+            })
+            // CHART_SYMBOL.options.yaxis.min = Math.min(...series[0].data.map((v)=>v.y));
+            CHART_SYMBOL.options.chart.height = 380;
+            CHART_SYMBOL.options.series = series;
+            CHART_SYMBOL.render();
+
+            const num = -14
+            const series_2 = deepClone(series);
+            series_2[0].data = series[0].data.slice(num);
+            series_2[1].data = series[1].data.slice(num);
+            series_2[2].data = series[2].data.slice(num);
+            series_2[3].data = series[3].data.slice(num);
+            series_2[4].data = series[4].data.slice(num);
+            CHART_SYMBOL_RECENT.options.tooltip.enabledOnSeries = [0];
+            CHART_SYMBOL_RECENT.options.chart.height = 325;
+            CHART_SYMBOL_RECENT.options.series = series_2;
+            CHART_SYMBOL_RECENT.render();
+
+            let series_3 = deepClone(series);
+            start = data_m[0].c;
+            shares = raw ? 1 : 1000 / start;
+            series_3 = [{ name: 'Gain', type: 'area', data: [] },]
+            series_3[0].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
+            // series[1].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+            // series[2].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            const d1 = new Date(series[0].data[series[0].data.length - 1].x);
+            const d2 = new Date(series[0].data[series[0].data.length - 1].x - (24 * 60 * 60 * 1000));
+            // console.log(d2);
+            CHART_SYMBOL_MINUTES.options.annotations.xaxis = [
+                // add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
+                add_annotation_x(d1.setHours(9, 30), null, colors.darkcyan),
+                add_annotation_x(d1.setHours(10, 0), null, colors.lightgrey),
+                add_annotation_x(d1.setHours(11, 30), null, colors.orangered),
+                // add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(14, 0)),
+                add_annotation_x(d1.setHours(15, 50), null, colors.darkcyan),
+                add_annotation_x(d1.setHours(20, 0), null, colors.grey),
+
+                add_annotation_x(d2.setHours(9, 30), null, colors.darkcyan),
+                add_annotation_x(d2.setHours(11, 0), null, colors.deeppink),
+                add_annotation_x(d2.setHours(11, 30), null, colors.orangered),
+                add_annotation_x(d2.setHours(15, 50), null, colors.darkcyan),
+            ];
+            CHART_SYMBOL_MINUTES.options.annotations.yaxis = [add_annotation_y(series_3[0].data[series_3[0].data.length - 1].y)];
+            CHART_SYMBOL_MINUTES.options.chart.height = 150;
+            CHART_SYMBOL_MINUTES.options.series = series_3;
+            CHART_SYMBOL_MINUTES.render();
+
+            const buy_at = new Date(series_3[0].data[series_3[0].data.length - 1].x).setHours(11, 0, 0, 0);
+            const sell_at = new Date(series_3[0].data[series_3[0].data.length - 1].x).setHours(15, 50, 0, 0);
+            const value_start = series_3[0].data.find((v) => v.x >= buy_at)?.y | 0;
+            const value_end = series_3[0].data.find((v) => v.x >= sell_at)?.y | 0; //series_3[0].data[series_3[0].data.length - 1].y;
+            const g = value_end - value_start;
+            // console.log(round2(value_start), round2(value_end), round2(g));
+
+            const g_days = series[0].data[series[0].data.length - 1].y - series[0].data[0].y
+            document.getElementById('symbol-chart-recent-title').innerHTML = `<b>${name}</b>`;
+            document.getElementById('symbol-chart-title').innerHTML = `<b>${name}</b> | ${get_description(name).slice(0, 45)}`;
+            document.getElementById('symbol-chart-title').innerHTML += `<div class="w3-right w3-wide ${g_days >= 0 ? 'w3-text-green' : 'w3-text-red'}" style="width:180px;">$&nbsp;${round2(g_days)}</div>`;
+            // document.getElementById('symbol-chart-title').innerHTML += `<div class="w3-right w3-text-blue" style="width:120px;">$ ${position ? position.seed : '-'}</div>`;
+
+            document.getElementById('symbol-chart-day-title').innerHTML = `<b>Day&nbsp;&nbsp;&nbsp;&nbsp;<span class="w3-wide ${g > 0 ? 'w3-text-green' : 'w3-text-red'}">$&nbsp;${round2(g)}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="w3-text-grey w3-xlarge">${round1(g / 1000 * 100)} %</span></b>`;
+            document.getElementById('symbol-chart-day-title').innerHTML += `<div class="w3-right w3-text-blue w3-wide" style="_width:150px;"></div>`;
+
+            //* UPDATE DETAIL CARD */
+            // console.log(position);
+            document.getElementById('symbol-gain').innerHTML = position ? '$ ' + position.gain : '-';
+            document.getElementById('symbol-gain-pct').innerHTML = position ? position.gain_pct + ' %' : '-';
+            document.getElementById('symbol-today').innerHTML = position ? '$ ' + position.day : '-';
+            document.getElementById('symbol-today-pct').innerHTML = position ? position.day_pct + ' %' : '-';
+            document.getElementById('symbol-score').innerHTML = round1(tl.slope);
+            document.getElementById('symbol-score-baseline').innerHTML = round1(increment);
+            document.getElementById('symbol-invested').innerHTML = position ? '$ ' + position.seed : '-';
+            document.getElementById('analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
+
+            // document.getElementById('chart-symbol-recent').scrollIntoView();
+        }
+        async function load_data() {
+
+            const promises = [
+                `http://localhost:3000/wrm/v1/csv/ama/2026-04-17`,
+                // `https://m3-solutions-mi.com/CL=F/1d/2026-03-13T23:59:59/2027-01-01`,
+                // `https://m3-solutions-mi.com/^IXIC/1d/2026-03-13T23:59:59/2027-01-01`,
+                // `https://m3-solutions-mi.com/^VIX/1d/2026-03-13T23:59:59/2027-01-01`,
+                // `https://api.alpaca.markets/v2/positions`
+                // `https://paper-api.alpaca.markets/v2/positions`
+            ].map((v) => fetch(v, {}).then((resp) => resp.json()));
+
+            [
+                `https://api.alpaca.markets/v2/positions`,
+                `https://api.alpaca.markets/v2/account`,
+                `https://api.alpaca.markets/v2/account/activities?category=non_trade_activity&direction=desc&page_size=100`,
+                `https://api.alpaca.markets/v2/account/portfolio/history?period=14D&timeframe=1D&intraday_reporting=extended_hours&pnl_reset=per_day`,
+                `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`,
+                `https://api.alpaca.markets/v2/orders?status=all&limit=500&direction=desc`
+                // `https://api.alpaca.markets/v2/account/portfolio/history?start=2026-04-19&timeframe=1Min&intraday_reporting=continuous&pnl_reset=per_day`
+            ].forEach((v) => {
+                promises.push(fetch(v, {
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        'APCA-API-KEY-ID': ALPACA_KEY,
+                        'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                    }
+                }).then(res => res.json()));
+            });
+            // promises.push(fetch(`https://m3-solutions-mi.com/CL=F/1Min/2026-04-18T23:59:59/2027-01-01`, {}).then((resp) => resp.json()))
+
+            let results = await Promise.allSettled(promises);//.map((v)=>v.value);
+            results = results.map((v) => v.value);
+            RESULTS = {
+                DAY_TABLE: results[0],
+                // OIL: results[1],
+                // NASDAQ: results[2],
+                // VIX: results[3],
+                POSITIONS_RAW: results[1],
+                ACCOUNT: results[2],
+                ACTIVITIES: results[3],
+                ORDERS: results[6],
+                HISTORY_1W_DAY: results[4],
+                HISTORY_1D_MIN: results[5],
+            }
+            RESULTS.POSITIONS = results[1].map((v) => {
+                const description = get_description(v.symbol);
+                const buys = RESULTS.ORDERS
+                    .filter((v2) => v2.side === 'buy')
+                    .filter((v2) => v2.symbol === v.symbol);
+                const buy_date = getYMD(buys[0].filled_at, false);
+                return {
+                    name: v.symbol,
+                    description,
+                    date: buy_date,
+                    seed: round(v.cost_basis),
+                    gain: round2(v.unrealized_pl),
+                    gain_pct: round2(v.unrealized_plpc * 100),
+                    day: round2(v.unrealized_intraday_pl),
+                    day_pct: round2(v.unrealized_intraday_plpc * 100),
+                }
+            }),
+                RESULTS.CALCS = {
+                    EQUITY: +(RESULTS.ACCOUNT.equity),
+                    TODAY: round2(RESULTS.ACCOUNT.equity - RESULTS.HISTORY_1W_DAY.equity[RESULTS.HISTORY_1W_DAY.equity.length - 1]),
+                    INVESTED: round2(RESULTS.ACTIVITIES.filter((v) => v.activity_type === 'CSD').map((v) => +(v.net_amount)).reduce((p, c) => p + c)),
+                    NUM_POSITIONS: RESULTS.POSITIONS.length,
+                }
+            RESULTS.CALCS.GAIN = round2(RESULTS.CALCS.EQUITY - RESULTS.CALCS.INVESTED);
+            // const dow = new Date().getDay();
+            // RESULTS.CALCS.TARGET = dow !== 6 && dow !== 0 ? (RESULTS.CALCS.INVESTED * 0.0075) : 0;
+            RESULTS.CALCS.TARGET = RESULTS.CALCS.INVESTED * 0.0075;
+            RESULTS.CALCS.DELTA = RESULTS.CALCS.TODAY - round2(RESULTS.CALCS.TARGET);
+            RESULTS.DEPOSITS = analyze_account_2();
+
+            console.log(RESULTS.CALCS.GAIN, '|', RESULTS.CALCS.TODAY);
+            // console.log(RESULTS.CALCS);
+            // console.log(RESULTS);
+
+            const add_letters = () => {
+                const template = `<div class="w3-button" style="width:50px;" onclick=(click_letter("{0}"))>{0}</div>`;
+                let html = '';
+                // ,⏺,🔎︎,▶,⏸
+                'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z'.split(',').forEach((letter) => {
+                    // html += template.replace('{id}', letter).replace('{c}', 'white').replace('{0}', letter).replace('{1}', '').replace('{s}', letter).replace('{f}', 'click_letter') + '\n';
+                    html += template
+                        .replace('{0}', letter)
+                        .replace('{0}', letter);
+                });
+                // html += `<i class="fa fa-filter w3-right w3-margin-right w3-xlarge w3-text-blue" aria-hidden="true"></i>`;
+                document.getElementById('letters').innerHTML = html;
+            }
+            add_letters();
+
+            const add_watch_list = () => {
+                // let watch_list = 'TNGX,TIGO,TIGR,TSEM,SWMR,SNDK,SMCI,SOXL,STRL,STX,MU,KOPN,UNH,NAUT,NEO,ATOM,MSTR,MDB'
+                // watch_list += ',BLDP,BAER,CIFR,COIN,CRWD,CRWV,CORZ,CECO,DHC,POWL,ALNT,CAT,GEV,WDC,GE';
+                // watch_list += ',CNC,DIOD,DRAM,VRT,VSAT,TER,GNRC,KOD,SMTC,GOOGL,HOOD,HUT,SITM,ORKA,INTC,MCHP,AEIS,MPWR,ON,AVGO';
+                // watch_list += ',BE';
+                let watch_list = 'AMD,AMZN,AVT,CAT,DHC,DIOD,DRAM,GEV,GOOGL,HOVR,INTC,KOPN,MCHP,MPWR,MU,ON,PENG,POWL,QCOM,SITM,SNDK,SOXL,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC';
+                // watch_list += ',GOOGL,HOOD,HUT';
+                watch_list = watch_list.split(',').filter((v, i, a) => a.indexOf(v) === i).sort();
+
+                const highlight_orange = 'HOVR'.split(',').sort(); //'BE,CECO,CNC,KOPN,NEO,ON,POWL,SITM,SOXL,STX,UNH'.split(',').sort();
+                const highlight_green = 'KOPN,VSAT'.split(',').sort();
+
+                const template = `<div class="w3-button w3-margin-right w3-margin-bottom" style="border-bottom:{1}px solid {2} !important;border:2px solid lightgrey" onclick=(click_symbol("{0}"))>{0}</div>`;
+                let html = ''
+                watch_list.forEach((v) => {
+                    html += template
+                        .replace('{0}', v)
+                        .replace('{0}', v)
+                        .replace('{1}', highlight_orange.indexOf(v) >= 0 ? 3 : '{1}')
+                        .replace('{2}', highlight_orange.indexOf(v) >= 0 ? 'orange' : '{2}')
+                        .replace('{1}', highlight_green.indexOf(v) >= 0 ? 3 : 1)
+                        .replace('{2}', highlight_green.indexOf(v) >= 0 ? 'green' : 'lightgrey')
+                        .replace('{1}', 1)
+                        .replace('{2}', 'lightgrey');
+                })
+                document.getElementById('watch-symbols').innerHTML = html;
+            }
+            add_watch_list();
+
+            const add_indicators = () => {
+                let watch_list = INDICATORS;
+
+                const template = `<div class="w3-button" style="width:150px;border-bottom:{1}px solid {2}" onclick=(click_symbol("{0}"))>{0}</div>`;
+                let html = ''
+                watch_list.forEach((v) => {
+                    html += template
+                        .replace('{0}', v)
+                        .replace('{0}', v)
+                        .replace('{1}', watch_list.indexOf(v) >= 0 ? 7 : 0)
+                    // .replace('{2}', 'orange');
+                })
+                document.getElementById('indicator-symbols').innerHTML = html;
+            }
+            add_indicators();
+
+            const update_ui = () => {
+                const g = RESULTS.CALCS.EQUITY - RESULTS.CALCS.INVESTED;
+                document.getElementById('day-status-gain').innerText = round(g).toLocaleString();
+                document.getElementById('day-status-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
+                document.getElementById('day-status-gain-pct').innerText = round1((g) / RESULTS.CALCS.INVESTED * 100).toLocaleString();
+                document.getElementById('day-analysis-gain').innerText = round(g).toLocaleString();
+                document.getElementById('day-analysis-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
+
+                document.getElementById('day-status-today').innerText = RESULTS.CALCS.TODAY.toLocaleString();
+                document.getElementById('day-status-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : (RESULTS.CALCS.TODAY === 0 ? 'grey' : '#e50000');
+                document.getElementById('day-status-today-pct').innerText = round2(RESULTS.CALCS.TODAY / RESULTS.CALCS.INVESTED * 100).toLocaleString();
+                document.getElementById('day-analysis-today').innerText = RESULTS.CALCS.TODAY.toLocaleString();
+                document.getElementById('day-analysis-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : '#e50000';
+
+                document.getElementById('day-status-target').innerText = RESULTS.CALCS.TARGET.toLocaleString();
+                document.getElementById('day-status-target-delta').innerText = round1(RESULTS.CALCS.DELTA).toLocaleString();
+                document.getElementById('day-analysis-target').innerText = RESULTS.CALCS.DELTA.toLocaleString();
+
+                document.getElementById('day-status-equity').innerText = round(RESULTS.CALCS.EQUITY).toLocaleString();
+                document.getElementById('day-status-invested').innerText = round(RESULTS.CALCS.INVESTED).toLocaleString();
+                document.getElementById('day-analysis-equity').innerText = round(RESULTS.CALCS.EQUITY).toLocaleString();
+
+                const map = {
+                    name: 'Symbol',
+                    description: 'Description',
+                    date: 'Date',
+                    seed: 'Seed',
+                    gain: 'Total',
+                    gain_pct: '%',
+                    day: 'Day',
+                    day_pct: '%',
+                };
+                const fields = 'name,description,seed,date,day_pct,day,gain,gain_pct'.split(',');
+                let html = '';
+                fields.forEach((v) => {
+                    // html += `<tr>`
+                    html += `<td style="border-bottom:1px solid;""><b>${map[v]}</b></td>`
+                    // html += `</tr>`
+                })
+                document.getElementById('day-status-table-header').innerHTML = html;
+
+                html = '';
+                RESULTS.POSITIONS.forEach((v, i) => {
+                    html += `<tr ${i === (RESULTS.POSITIONS.length - 1) ? 'style="border-bottom:1px solid;"' : ''}>`
+                    fields.forEach((f) => {
+                        html += `<td class="w3-wide">${v[f] || '-'}</td>`
+                    });
+                    html += `</tr>`
+                });
+                document.getElementById('day-status-table-rows').innerHTML = html;
+                format_table('day-status-table');
+            };
+            update_ui();
+
+            const update_charts = () => {
+                let series = [
+                    { name: 'Gain', type: 'area', data: [] },
+                    { name: 'Invested', type: 'line', data: [] }
+                ];
+                series[0].data = RESULTS.HISTORY_1W_DAY.timestamp.map((v, i) => { return { x: v * 1000, y: RESULTS.HISTORY_1W_DAY.equity[i] } });
+                series[0].data.push({ x: Date.now(), y: RESULTS.ACCOUNT.equity });
+
+                const filtered = RESULTS.DEPOSITS.slice(-(series[0].data.length));
+                series[1].data = filtered.map((v, i) => { return { x: v.e, y: v.amount } });
+                series[1].data.push({ x: Date.now(), y: series[1].data[series[1].data.length - 1].y });
+
+                // series[0].data.forEach((v,i)=>v.y -= series[1].data[i].y);
+                // series[1].data.forEach((v,i)=>v.y -= series[1].data[i].y);
+
+                let last = series[0].data[0].y;
+                series[0].data.forEach((v, i) => {
+                    if (i === 1 || i === series[0].data.length - 2) {
+                        // CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round(v.y - RESULTS.CALCS.INVESTED)))
+
+                        // const value = v.y - last
+                        // CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round1(value)));
+                        // last = series[0].data[i].y;
+
+                        // const filtered = RESULTS.DEPOSITS.filter((v2)=>v2.e >= v.x);
+                        // const invested = filtered.length > 0 ? filtered[0].amount : v.y;
+                        // value = v.y - invested;
+                        // CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round1(value)));
+
+                        // const filtered = RESULTS.DEPOSITS.filter((v2)=>v2.e >= v.x);
+                        // const invested = filtered.length > 0 ? filtered[0].amount : RESULTS.DEPOSITS[RESULTS.DEPOSITS.length-1].amount;
+                        // value = v.y - invested;
+                        const value = v.y;
+                        CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round(value).toLocaleString()));
+                    }
+                })
+                CHART_DAY_HISTORY.options.chart.height = 250;
+                // CHART_DAY_HISTORY.options.dataLabels.enabled = true;
+                // CHART_DAY_HISTORY.options.yaxis.max = Math.max(...series[0].data.map((v)=>v.y) + 500);
+                CHART_DAY_HISTORY.options.series = series;
+                CHART_DAY_HISTORY.render();
+
+                series = [{ name: 'Gain', type: 'area', data: [] }];
+                series[0].data = RESULTS.HISTORY_1D_MIN.timestamp.map((v, i) => { return { x: v * 1000, y: RESULTS.HISTORY_1D_MIN.equity[i] } });
+                series[0].data.push({ x: Date.now(), y: RESULTS.ACCOUNT.equity });
+                const equity_0930 = series[0].data.find((v) => new Date(v.x).getHours() === 9 && new Date(v.x).getMinutes() === 30) || 0
+                CHART_24H_HISTORY.options.chart.height = 250;
+                CHART_24H_HISTORY.options.series = series;
+                CHART_24H_HISTORY.options.annotations.xaxis = [
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(9, 30), round(equity_0930.y).toLocaleString()),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(11, 0)),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(16, 0)),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(14, 0)),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 0)),
+                ];
+                CHART_24H_HISTORY.options.annotations.yaxis = [add_annotation_y(series[0].data[series[0].data.length - 1].y)];
+                CHART_24H_HISTORY.render();
+
+                series = [{ name: 'Gain %', type: 'treemap', data: [] }];
+                series[0].data = RESULTS.POSITIONS.map((v, i) => { return { x: v.name, y: v.gain_pct } });
+                CHART_POSITIONS.options.chart.type = 'treemap';
+                CHART_POSITIONS.options.chart.height = 175;
+                // CHART_POSITIONS.options.dataLabels.enabled = true;
+                CHART_POSITIONS.options.xaxis.type = 'category';
+                CHART_POSITIONS.options.dataLabels.formatter = function (text, op) {
+                    return [text, op.value]
+                };
+                // CHART_POSITIONS.options.tooltip.x.format = null;
+                // CHART_POSITIONS.options.tooltip.y.format = null;
+                CHART_POSITIONS.options.series = series;
+                CHART_POSITIONS.render();
+
+                series = [{ name: 'Gain %', type: 'treemap', data: [] }];
+                series[0].data = RESULTS.POSITIONS.map((v, i) => { return { x: v.name, y: v.day_pct } });
+                CHART_POSITIONS_TODAY.options.chart.type = 'treemap';
+                CHART_POSITIONS_TODAY.options.chart.height = 175;
+                // CHART_POSITIONS_TODAY.options.dataLabels.enabled = true;
+                CHART_POSITIONS_TODAY.options.xaxis.type = 'category';
+                CHART_POSITIONS_TODAY.options.dataLabels.formatter = function (text, op) {
+                    return [text, op.value]
+                };
+                CHART_POSITIONS_TODAY.options.series = series;
+                CHART_POSITIONS_TODAY.render();
+
+
+                // let chart = new ApexCharts(document.querySelector('chart-days-history'), treemap_options);
+                // chart.render();
+                // let chart = new ApexCharts(document.querySelector('chart-days-history'), CHART_DAY_HISTORY.options);
+                // chart.render();
+            };
+            update_charts();
+
+            const update_analysis = () => {
+                //* CARDS */
+                const template = `<div class="w3-border w3-wide" style="padding:12px;margin:5px;min-width:175px;cursor:pointer;" onclick="click_symbol('{1}')">
+                    <div><i class="fa fa-circle-o {0}"></i>&nbsp;{1}</div>
+                    <div class="w3-xlarge {0}">{2}</div>
+                </div>`
+                let html = ''
+                RESULTS.POSITIONS.map((v) => v.name).forEach((v, i) => {
+                    html += template
+                        .replace('{0}', RESULTS.POSITIONS[i].gain >= 0 ? 'w3-text-green' : 'w3-text-red')
+                        .replace('{0}', RESULTS.POSITIONS[i].gain >= 0 ? 'w3-text-green' : 'w3-text-red')
+                        .replace('{1}', v)
+                        .replace('{1}', v)
+                        .replace('{2}', round1(RESULTS.POSITIONS[i].gain_pct) + '%');
+                });
+                document.getElementById('analysis-symbol-cards').innerHTML = html;
+
+                //* CHARTS */
+            };
+            update_analysis();
+            click_symbol(SELECTED_SYMBOL);
+
+            const read_only_cols = [0, 1, 8, 9];
+            fetch('http://127.0.0.1:3000/csv/forecast', {})
+                .then((resp) => resp.json())
+                .then((data) => {
+                    // console.log(data.meta);
+                    // const table = data.table;
+                    // console.table(table);
+
+                    update_table(data, {}, 'forecast', read_only_cols);
+
+                    // fetch('http://127.0.0.1:3000/csv/schedule', {})
+                    fetch(`http://localhost:3000/wrm/v1/csv/ama/2026-04-17`, {})
+                        .then((resp) => resp.json())
+                        .then((data2) => {
+                            // console.log(data.meta);
+                            // const table = data.table;
+                            // console.table(table);
+
+                            update_table(data2, {}, 'day', read_only_cols);
+
+                            //* chart */
+                            let options = deepClone(chart_mixed_options);
+                            options.labels = data[0].filter((v, i) => i >= 5 && i <= 13);
+                            // chart_mixed_options.series[0].data = data2[data2.length - 1].filter((v, i) => i >= 3 && i <= 7);
+                            options.series[0].data = data[data.length - 1].filter((v, i) => i >= 5 && i <= 13).map((v, i, a) => 0);
+                            options.series[1].data = data[data.length - 1].filter((v, i) => i >= 5 && i <= 13);
+                            options.colors[1] = '#4caf50';
+                            var chart = new ApexCharts(document.querySelector("#chart-forecast"), options);
+                            chart.render();
+
+                            options = deepClone(chart_mixed_options);
+                            options.chart.height = 600;
+                            options.series[0].name = '&nbsp;PLAN',
+                                options.series[1].name = '&nbsp;COMPLETE',
+                                options.series.push({
+                                    name: '&nbsp;NC',
+                                    type: 'line',
+                                    data: [532, 480, 229, 478, 621, 720]
+                                });
+                            options.series.push({
+                                name: '&nbsp;SCORE',
+                                type: 'line',
+                                data: [1532, 1480, 1229, 1478, 1621, 1720].reverse()
+                            });
+                            chart = new ApexCharts(document.querySelector("#chart-overview"), options);
+                            chart.render();
+
+                            options = deepClone(options);
+                            options.series.push({
+                                name: '&nbsp;CoQ',
+                                type: 'column',
+                                data: [837, 521, 954, 1120, 721, 841]
+                            });
+                            options.series.push({
+                                name: '&nbsp;Weighted',
+                                type: 'column',
+                                data: [1532, 1480, 1229, 1478, 1621, 1720].reverse()
+                            });
+                            options.series.push({
+                                name: '&nbsp;Custom 1',
+                                type: 'column',
+                                data: [1489, 1502, 1305, 1511, 1680, 1752]
+                            });
+
+                            // options.chart.stacked = true;
+                            options.series[0].name = '&nbsp;YIELD&nbsp;';
+                            options.series[0].type = 'area';
+                            options.series[1].name = '&nbsp;OEE&nbsp;'
+                            options.series[1].type = 'column'
+                            options.series[2].name = '&nbsp;TEEP&nbsp;'
+                            options.series[2].type = 'column'
+                            options.series[0].data.reverse();
+                            options.series[1].data.reverse();
+                            // options.series[2].data.reverse();
+                            options.chart.height = 900;
+                            chart = new ApexCharts(document.querySelector("#chart-dashboards"), options);
+                            chart.render();
+
+                            //* SUMMARY */
+                            fetch('http://localhost:3000/smi_status/days_summary/2026-04-02', {})
+                                .then((resp) => resp.json())
+                                .then((data3) => {
+                                    // console.log(data.meta);
+                                    // const table = data.table;
+                                    // console.table(data3);
+
+                                    update_table(data3, {}, 'summary');
+
+                                    const planned_values = data3.slice(1).map((v) => v[1]);
+                                    const complete_values = data3.slice(1).map((v) => v[2]);
+                                    const nc_values = data3.slice(1).map((v) => v[3]);
+                                    const delta_values = data3.slice(1).map((v) => v[4]);
+
+                                    options = deepClone(options);
+                                    options.series = []
+                                    options.series.push({
+                                        name: '&nbsp;TARGET',
+                                        type: 'area',
+                                        data: planned_values //.map((v, i) => round1(complete_values[i] / v * 100))
+                                    });
+                                    options.series.push({
+                                        name: '&nbsp;GAIN',
+                                        type: 'column',
+                                        data: complete_values
+                                    });
+                                    options.series.push({
+                                        name: '&nbsp;DELTA',
+                                        type: 'column',
+                                        data: delta_values
+                                    });
+
+                                    // options.chart.stacked = true;
+                                    // options.series[0].name = '&nbsp;YIELD&nbsp;';
+                                    // options.series[0].type = 'area';
+                                    // options.series[1].name = '&nbsp;OEE&nbsp;'
+                                    // options.series[1].type = 'column'
+                                    // options.series[2].name = '&nbsp;TEEP&nbsp;'
+                                    // options.series[2].type = 'column'
+                                    // options.series[0].data.reverse();
+                                    // options.series[1].data.reverse();
+                                    // options.series[2].data.reverse();
+                                    options.labels = data3.slice(1).map((v) => v[0])
+                                    options.chart.height = 500;
+                                    chart = new ApexCharts(document.querySelector("#chart-summary"), options);
+                                    chart.render();
+
+                                    //* UPDATE CARDS */
+                                    let qty = planned_values.reduce((p, c) => p + c);
+                                    let done = complete_values.reduce((p, c) => p + c);
+                                    let nc = nc_values.reduce((p, c) => p + c);
+                                    let delta = delta_values.reduce((p, c) => p + c);
+
+                                    let complete_pct = round1(done / qty * 100);
+                                    let nc_pct = round1(nc / done * 100);
+                                    // const delta_pct = round1(100 - (complete_pct - nc_pct));
+                                    let delta_pct = round1(100 - complete_pct - nc_pct);
+                                    let score_pct = round1(complete_pct * ((100 - nc_pct) / 100));
+
+                                    document.getElementById('complete-summary').innerHTML = complete_pct;
+                                    document.getElementById('nc-summary').innerHTML = nc_pct;
+                                    document.getElementById('delta-summary').innerHTML = delta_pct;
+                                    document.getElementById('score-summary').innerHTML = score_pct;
+
+
+                                    // =========================================================
+                                    //@ SNOW PLOW */
+                                    // =========================================================
+                                    let v1 = 0;
+                                    let v2 = 0;
+                                    let v3 = 0;
+                                    let v4 = 0;
+
+                                    const planned_values_cumulative = [];
+                                    const complete_values_cumulative = [];
+                                    const nc_values_cumulative = [];
+                                    const delta_values_cumulative = [];
+
+                                    planned_values.forEach((v, i) => {
+                                        v1 += planned_values[i];
+                                        v2 += complete_values[i];
+                                        v3 += nc_values[i];
+                                        v4 += delta_values[i];
+
+                                        planned_values_cumulative.push(v1);
+                                        complete_values_cumulative.push(v2);
+                                        nc_values_cumulative.push(v3);
+                                        delta_values_cumulative.push(v4);
+                                    })
+
+                                    options = deepClone(options);
+                                    options.series = []
+                                    options.series.push({
+                                        name: '&nbsp;TARGET',
+                                        type: 'area',
+                                        data: planned_values_cumulative //.map((v, i) => round1(complete_values[i] / v * 100))
+                                    });
+                                    options.series.push({
+                                        name: '&nbsp;GAIN',
+                                        type: 'column',
+                                        data: complete_values_cumulative
+                                    });
+                                    options.series.push({
+                                        name: '&nbsp;DELTA',
+                                        type: 'line',
+                                        data: delta_values_cumulative.map((v) => v)
+                                    });
+
+                                    options.labels = data3.slice(1).map((v) => v[0])
+                                    options.chart.height = 500;
+                                    chart = new ApexCharts(document.querySelector("#chart-snowplow"), options);
+                                    chart.render();
+
+                                    document.getElementById('complete-snowplow').innerHTML = complete_pct;
+                                    document.getElementById('nc-snowplow').innerHTML = nc_pct;
+                                    document.getElementById('delta-snowplow').innerHTML = delta_pct;
+                                    document.getElementById('score-snowplow').innerHTML = score_pct;
+                                });
+                        });
+                });
+        }
+        function load_schedule() {
+            // fetch('http://localhost:3000/smi_status/days_summary/2026-04-01', {})
+            //     .then((resp) => resp.json())
+            //     .then((data) => {
+            //         // console.log(data.meta);
+            //         // const table = data.table;
+            //         // console.table(table);
+
+            //         update_table(data, {}, 'summary');
+            //     });
+        }
+        function load_day(date_str = getYMD(new Date())) {
+            fetch(`http://127.0.0.1:3000/smi/demo/${date_str}`, {})
+                .then((resp) => resp.json())
+                .then((data) => {
+                    console.log(data.meta);
+                    const table = data.table;
+                    // console.table(table);
+
+                    update_schedule(table, data.meta, 'day');
+                });
+        }
+    </script>
+
+    <script>
+        //* CARDS */ 
+        const template = `
+        <div class="w3-third">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding w3-hover-shadow" style="height:330px;cursor:pointer;" onclick="window.location.href='{4}'">
+                <div class="w3-col s12 {3}">
+                    <div class="w3-xxlarge" style="padding-top:50px;letter-spacing:4px;">
+                        <i class="fa fa-{0}" style="font-size:124px;margin-bottom:30px;" aria-hidden="true"></i>
+                        <br/>
+                        {1}
+                        <br/>
+                        <span class="w3-large">{2}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        [
+            // { icon: 'calendar', title: 'SCHEDULE', sub: '', color: 'w3-text-grey', href: '../doma/schedule' },
+            { icon: 'table', title: 'PLAN | STATUS', sub: '', color: '', href: '../doma/update' },
+            { icon: 'bar-chart', title: 'OVERVIEW', sub: '', color: 'w3-text-grey', href: '../doma/overview' },
+            { icon: 'th', title: 'DASHBOARDS', sub: '', color: 'w3-text-grey', href: '../doma/dashboards' },
+            // { icon: 'sun-o', title: 'WEATHER', sub: 'Fishing Based Forecast', color: 'w3-text-grey', href:'../weather' },
+            // { icon: 'sticky-note-o', title: 'STICKY NOTES', sub: 'Simple Online TO DO List', color: 'w3-text-grey', href:'../notes' },
+            // { icon: 'camera-retro', title: 'GALLERY', sub: 'Hobbies | For Sale | St. Claire', color: 'w3-text-grey', href:'../gallery' },
+        ].forEach((v, i) => {
+            const html = template
+                .replace('{0}', v.icon)
+                .replace('{1}', v.title)
+                .replace('{2}', v.sub)
+                .replace('{3}', v.color)
+                .replace('{4}', v.href)
+                .replace('{5}', i === 0 ? 'w3-card-4' : '');
+            document.getElementById('output').innerHTML += html;
+        })
+    </script>
+
+</body>
+
+</html>
