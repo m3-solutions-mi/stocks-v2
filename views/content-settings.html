@@ -11,68 +11,72 @@
     <div class="w3-container w3-wide w3-xlarge" style="_display:inline-block;">
         <div class="w3-col s12 w3-margin w3-padding">
             <label class="w3-text-grey">KEY</label>
-            <input id="settings-key" class="w3-input" style="width:97.5%;" type="text" placeholder="Enter Key" name="key">
+            <input id="settings-key" class="w3-input" style="width:97.5%;" type="text" placeholder="Enter Key"
+                name="key">
 
             <br />
 
             <label class="w3-text-grey">SECRET</label>
-            <input id="settings-secret" class="w3-input" style="width:97.5%;" type="text"
-                placeholder="Enter secret" name="secret">
+            <input id="settings-secret" class="w3-input" style="width:97.5%;" type="text" placeholder="Enter secret"
+                name="secret">
 
             <br />
 
-            <label class="w3-text-grey">TOKEN</label>
-            <input id="settings-token" class="w3-input" style="width:97.5%;" type="text"
-                placeholder="Enter provided token"name="token">
+            <span class="w3-hide">
+                <label class="w3-text-grey">TOKEN</label>
+                <input id="settings-token" class="w3-input" style="width:97.5%;" type="text"
+                    placeholder="Enter provided token" name="token">
 
-            <br />
+                <br />
 
-            <!-- <label class="w3-text-grey">DATA URL</label>
+                <!-- <label class="w3-text-grey">DATA URL</label>
             <input id="settings-data-url" class="w3-input" style="width:97.5%;" type="text"
                 placeholder="Enter stock data url" name="data-url">
 
             <br /> -->
 
-            <label class="w3-text-grey">BUY AMOUNT | DEFAULT</label>
-            <!-- <input id="settings-token" class="w3-input" style="width:97.5%;" type="number" placeholder="Enter buy amount" value="250"> -->
-            <br />
-            <div class="w3-col s12 w3-margin-top w3-xlarge w3-margin-left">
-                <input id="radio-100" class="w3-radio" type="radio" name="amount" value="100">
-                <label class="w3-margin-right">$&nbsp;100</label>
-                <input class="w3-radio" type="radio" name="amount" value="250">
-                <label class="w3-margin-right">$&nbsp;250</label>
-                <input class="w3-radio" type="radio" name="amount" value="500">
-                <label class="w3-margin-right">$&nbsp;500</label>
-                <input class="w3-radio" type="radio" name="amount" value="1000" checked>
-                <label class="w3-margin-right">$&nbsp;1&nbsp;K</label>
-                <input class="w3-radio" type="radio" name="amount" value="2000">
-                <label class="w3-margin-right">$&nbsp;2&nbsp;K</label>
-                <input class="w3-radio" type="radio" name="amount" value="2500">
-                <label class="w3-margin-right">$&nbsp;2.5&nbsp;K</label>
-                <input class="w3-radio" type="radio" name="amount" value="3000">
-                <label class="w3-margin-right">$&nbsp;3&nbsp;K</label>
-            </div>
+                <label class="w3-text-grey">BUY AMOUNT | DEFAULT</label>
+                <!-- <input id="settings-token" class="w3-input" style="width:97.5%;" type="number" placeholder="Enter buy amount" value="250"> -->
+                <br />
+                <div class="w3-col s12 w3-margin-top w3-xlarge w3-margin-left">
+                    <input id="radio-100" class="w3-radio" type="radio" name="amount" value="100">
+                    <label class="w3-margin-right">$&nbsp;100</label>
+                    <input class="w3-radio" type="radio" name="amount" value="250">
+                    <label class="w3-margin-right">$&nbsp;250</label>
+                    <input class="w3-radio" type="radio" name="amount" value="500">
+                    <label class="w3-margin-right">$&nbsp;500</label>
+                    <input class="w3-radio" type="radio" name="amount" value="1000" checked>
+                    <label class="w3-margin-right">$&nbsp;1&nbsp;K</label>
+                    <input class="w3-radio" type="radio" name="amount" value="2000">
+                    <label class="w3-margin-right">$&nbsp;2&nbsp;K</label>
+                    <input class="w3-radio" type="radio" name="amount" value="2500">
+                    <label class="w3-margin-right">$&nbsp;2.5&nbsp;K</label>
+                    <input class="w3-radio" type="radio" name="amount" value="3000">
+                    <label class="w3-margin-right">$&nbsp;3&nbsp;K</label>
+                </div>
 
-            <br/>
-            &nbsp;
-            <br/>
+                <br />
+                &nbsp;
+                <br />
 
-            <label class="w3-text-grey">DATA SOURCE</label>
-            <br />
-            <div class="w3-col s12 w3-margin-top w3-xlarge w3-margin-left">
-                <input id="radio-100" class="w3-radio" type="radio" name="source" value="100" checked>
-                <label class="w3-margin-right">M<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                <input class="w3-radio" type="radio" name="source" value="250">
-                <label class="w3-margin-right">Alpaca</label>
-            </div>
+                <label class="w3-text-grey">DATA SOURCE</label>
+                <br />
+                <div class="w3-col s12 w3-margin-top w3-xlarge w3-margin-left">
+                    <input id="radio-100" class="w3-radio" type="radio" name="source" value="100" checked>
+                    <label class="w3-margin-right">M<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                    <input class="w3-radio" type="radio" name="source" value="250">
+                    <label class="w3-margin-right">Alpaca</label>
+                </div>
 
-            <br />
-            <br />
-            <br />
+                <br />
+                <br />
+                <br />
 
-            <label class="w3-text-grey">WATCH LIST</label>
-            <textarea id="settings-token" class="w3-input w3-wide" style="width:97.5%;" type="text"
-                name="WATCH_LIST">ADI,ATOM,AVT,BLDP,CORZ,DSGN,ECX,HIMX,HUT,MBX,MCHP,MXL,NVMI,ORKA,PENG,POET,POWL,ROIV,UCTT,VECO,VICR,VRT</textarea>
+                <label class="w3-text-grey">WATCH LIST</label>
+                <textarea id="settings-token" class="w3-input w3-wide" style="width:97.5%;" type="text"
+                    name="WATCH_LIST">ADI,ATOM,AVT,BLDP,CORZ,DSGN,ECX,HIMX,HUT,MBX,MCHP,MXL,NVMI,ORKA,PENG,POET,POWL,ROIV,UCTT,VECO,VICR,VRT</textarea>
+
+            </span>
 
             <br />
 
