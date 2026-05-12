@@ -100,37 +100,43 @@
         <div class="w3-col s12 w3-xlarge w3-center w3-margin-bottom">
             <!-- <div class="w3-xlarge w3-right w3-margin-right">Raw <i class="fa fa-toggle-on w3-xlarge"></i></div> -->
             <span class="w3-hide-small w3-hide-medium  w3-left">
-                <input id="radio-100" class="w3-radio" type="radio" name="amount" value="positions"
+                <input id="radio-100" class="w3-radio" type="radio" name="analysis-view" value="positions"
                     onclick="click_analysis_view(this.value)" checked>
                 <label class="w3-margin-right">Positions</label>
-                <input class="w3-radio" type="radio" name="amount" value="symbols"
+                <input class="w3-radio" type="radio" name="analysis-view" value="symbols"
                     onclick="click_analysis_view(this.value)">
                 <label class="w3-margin-right">Symbols</label>
-                <input class="w3-radio" type="radio" name="amount" value="search"
+                <input class="w3-radio" type="radio" name="analysis-view" value="search"
                     onclick="click_analysis_view(this.value)">
                 <label class="w3-margin-right">Search</label>
-                <input class="w3-radio" type="radio" name="amount" value="watch-list"
+                <input class="w3-radio" type="radio" name="analysis-view" value="watch-list"
                     onclick="click_analysis_view(this.value)">
                 <label class="w3-margin-right">Watch List</label>
-                <input class="w3-radio" type="radio" name="amount" value="indicators"
+                <input class="w3-radio" type="radio" name="analysis-view" value="indicators"
                     onclick="click_analysis_view(this.value)">
                 <label class="w3-margin-right">Indicators</label>
             </span>
 
             <span class="w3-hide-small w3-right">
-                <span id="analysis-buying-power" class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$ -</span>
+                <span id="analysis-buying-power" class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$
+                    -</span>
+                <i class="fa fa-credit-card w3-xxlarge w3-text-grey w3-margin-right pointer"
+                    onclick="buy_symbol(250)"></i>
                 <i class="fa fa-credit-card w3-xxlarge w3-text-green w3-margin-right pointer"
                     onclick="buy_symbol()"></i>
                 <i class="fa fa-credit-card w3-xxlarge w3-text-red w3-margin-right pointer" onclick="sell_symbol()"></i>
-                <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer" onclick="liquidate_symbols()"></i>
+                <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer"
+                    onclick="liquidate_symbols()"></i>
             </span>
 
             <span class="w3-hide-medium w3-hide-large w3-center">
-                <span id="analysis-buying-power" class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$ -</span>
+                <span id="analysis-buying-power" class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$
+                    -</span>
                 <i class="fa fa-credit-card w3-xxlarge w3-text-green w3-margin-right pointer"
                     onclick="buy_symbol()"></i>
                 <i class="fa fa-credit-card w3-xxlarge w3-text-red w3-margin-right pointer" onclick="sell_symbol()"></i>
-                <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer" onclick="liquidate_symbols()"></i>
+                <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer"
+                    onclick="liquidate_symbols()"></i>
             </span>
 
             <span class="w3-right" style="display:none;">
@@ -192,10 +198,26 @@
         onkeyup="key_up(document.getElementById('symbol-input').value.toUpperCase())">
     <i class="fa fa-search w3-text-grey" style="cursor:pointer;"
         onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
-    <i class="fa fa-plus-square-o w3-text-grey" style="cursor:pointer;"
-        onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
-    <i class="fa fa-minus-square-o w3-text-grey" style="cursor:pointer;"
-        onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
+
+    <br />
+
+    <div class="w3-xlarge">
+        <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="grey" checked>
+        <label class="w3-margin-right">Grey</label>
+        <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="orange">
+        <label class="w3-margin-right">Orange</label>
+        <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="blue">
+        <label class="w3-margin-right">Blue</label>
+        <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="purple">
+        <label class="w3-margin-right">Purple</label>
+
+        <div class="w3-margin-top">
+            <i class="fa fa-plus-square-o w3-text-grey w3-xxlarge" style="cursor:pointer;"
+                onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
+            <i class="fa fa-minus-square-o w3-text-grey w3-xxlarge" style="cursor:pointer;"
+                onclick="click_symbol(document.getElementById('symbol-input').value.toUpperCase())"></i>
+        </div>
+    </div>
 </div>
 &nbsp;
-<br/>
+<br />

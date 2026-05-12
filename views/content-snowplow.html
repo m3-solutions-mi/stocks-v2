@@ -1,71 +1,16 @@
 <div class="w3-col s12 w3-padding">
     <div _id="output" class="w3-row-padding">
 
-        <div class="w3-center">
-            <div class="w3-quarter w3-padding">
-                <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
-                    <div class="w3-col s12 {3}">
-                        <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
-                            <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>Complete</b></div>
-                            <hr style="border-top:1px solid gray" />
-                            <div class="w3-text-green" style="font-size:72px;"><b id="complete-snowplow">-</b><span
-                                    class="w3-xxlarge"></span>
-                                %</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="w3-quarter w3-padding">
-                <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
-                    <div class="w3-col s12 {3}">
-                        <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
-                            <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>DELTA</b></div>
-                            <hr style="border-top:1px solid gray" />
-                            <div class="" style="font-size:72px;color:#e98b00;"><b id="delta-snowplow">-</b><span
-                                    class="w3-xxlarge">
-                                    %</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w3-quarter w3-padding">
-                <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
-                    <div class="w3-col s12 {3}">
-                        <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
-                            <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>N C</b></div>
-                            <hr style="border-top:1px solid gray" />
-                            <div class="w3-text-red" style="font-size:72px;"><b id="nc-snowplow">-</b><span
-                                    class="w3-xxlarge">
-                                    %</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w3-quarter w3-padding">
-                <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:275px;">
-                    <div class="w3-col s12 {3}">
-                        <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
-                            <div class="w3-text-grey w3-xxlarge _w3-margin-top"><b>SCORE</b></div>
-                            <hr style="border-top:1px solid gray" />
-                            <div class="" style="font-size:72px;color:#5392c5;"><b id="score-snowplow">-</b><span
-                                    class="w3-xxlarge">
-                                    %</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w3-col s12 w3-padding">
-                <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="_height:275px;">
-                    <div id="chart-snowplow"></div>
-                </div>
+        <div class="w3-col s12">
+            <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="_height:275px;">
+                <div class="w3-xxlarge w3-margin-left w3-margin-top w3-wide"><b id="trend-chart-title"></b></div>
+                <div id="chart-trend"></div>
             </div>
         </div>
+    </div>
 
-        <div class="w3-col s12 w3-padding w3-margin-top w3-xlarge">
+    <!-- <div class="w3-col s12 w3-padding w3-margin-top w3-xlarge">
             <table id="table-entries-snowplow" class="w3-table _w3-bordered w3-striped">
                 <thead>
                     <tr id="table-header-snowplow">
@@ -75,41 +20,7 @@
                 </tbody>
             </table>
             &nbsp;
-        </div>
+        </div> -->
 
-    </div>
 
-    <div class="w3-hide w3-main" style="margin-top:43px;">
-
-        <div class="w3-panel">
-            <div class="w3-row-padding" style="margin:0 -16px">
-                <div class="w3-twothird">
-                    <h5>Trend Analysis (Mar 23 – Mar 31)</h5>
-                    <div class="w3-card w3-white w3-padding w3-margin-bottom">
-                        <p><b>Aggressive Scaling:</b> Planned volume surged from 2k to 12k units.</p>
-                        <div class="w3-grey w3-round-xlarge w3-small">
-                            <div class="w3-container w3-center w3-round-xlarge w3-green" style="width:71.9%">71.9%
-                                Completion Rate</div>
-                        </div>
-
-                        <p><b>Output Velocity:</b> Peak completion reached ~8,400 units. While velocity is up, the
-                            "Delta gap" is currently widening as demand outpaces capacity.</p>
-
-                        <p><b>Operational Health:</b> The Non-Conformance (NC) rate remains extremely stable at
-                            <b>2.7%</b>, confirming that quality is not being compromised for throughput.</p>
-                    </div>
-                </div>
-
-                <div class="w3-third">
-                    <h5>Strategic Insights</h5>
-                    <div class="w3-container w3-blue w3-text-white w3-padding-16 w3-card w3-round">
-                        <h6><b>Capacity Ceiling</b></h6>
-                        <p>The facility has proven it can scale 4x in a week, but resource allocation needs to align
-                            with the 12,000-unit planning peak to improve the 70% overall score.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
 </div>

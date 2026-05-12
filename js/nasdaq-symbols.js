@@ -5278,4 +5278,7 @@ SWMR|Swarmer Inc - Drone||||||
 CNC|Centene Corp||||||
 CAT|Caterpillar Inc||||||
 VRT|Vertiv Holdings Co||||||
+VCX|Fundrise Innovation Fund, LLC||||||
+COHR|Coherent Corp||||||
+DELL|Dell Technologies Inc||||||
 `;

@@ -16,59 +16,10 @@
     <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <!-- <link rel="stylesheet" href="./style.css"> -->
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <style>
-    @font-face {
-        font-family: 'rebellion-squad';
-        /* A name you define */
-        src: url('fonts/rebellion-squad.ttf') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-        font-display: swap;
-        /* Ensures text is visible while the font loads */
-    }
-
-    html,
-    body,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        font-family: "Raleway", "Roboto", sans-serif
-    }
-
-    /* Change font size for the entire picker */
-    .flatpickr-calendar {
-        font-size: 24px;
-        /* Adjust as needed */
-    }
-
-    /* Specific target for the month and year dropdowns */
-    .flatpickr-month,
-    .flatpickr-current-month {
-        font-size: 20px;
-    }
-
-    /* input[type="date"] {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 2px;
-    } */
-
-    /* input::-webkit-calendar-picker-indicator {
-        color: #4CAF50; Change the icon color
-        opacity: 1;
-        cursor: pointer;
-    } */
-
-    .pointer {
-        cursor: pointer;
-    }
 </style>
 
 <body class="w3-light-grey w3-xxlarge" style="font-family:Raleway;">
@@ -77,14 +28,15 @@
     <script src="./index.js"></script>
     <script src="./configuration.js"></script>
     <script src="./csv.js"></script>
-    <script src="./helpers.js"></script>
-    <script src="./HackTimer.js"></script>
+    <script src="./js/helpers.js"></script>
+    <script src="./js/HackTimer.js"></script>
     <script src="./chart-definitions/mixed.js"></script>
+    <script src="./chart-definitions/combo.js"></script>
     <script src="./chart-definitions/treemap.js"></script>
-    <script src="./chart-definitions/colors.js"></script>
-    <script src="./chart-definitions/stock_symbols_detail.js"></script>
-    <script src="./chart-definitions/nasdaq-symbols.js"></script>
-    <script src="./chart-definitions/bollinger-bands.js"></script>
+    <script src="./js/colors.js"></script>
+    <script src="./js/stock_symbols_detail.js"></script>
+    <script src="./js/nasdaq-symbols.js"></script>
+    <script src="./js/bollinger-bands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <!--@ PAGE CONTENT -->
@@ -106,7 +58,7 @@
                                 <h1 style="margin-top:10px;">
                                     <b class="w3-hide-large">M3&nbsp;Solutions&nbsp;MI</b>
                                     <b class="w3-hide-medium w3-hide-small">M3&nbsp;Solutions&nbsp;MI&nbsp;&nbsp;|&nbsp;&nbsp;<span
-                                            style="letter-spacing:4px;">STOCKS !!!</span></b>
+                                            style="letter-spacing:4px;">STOCKS</span></b>
                                     <div class="w3-hide-small w3-hide medium"
                                         style="display:flex;font-size:28px !important;letter-spacing:4px;">
                                         Stock ○ Trading ○ Advisor
@@ -209,8 +161,10 @@
                                     class="fa fa-bar-chart"></i> Summary</a> -->
                             <!-- <a onclick="navigate('schedule')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-calendar"></i> Schedule</a> -->
-                            <!-- <a onclick="navigate('snowplow')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-line-chart"></i> Trend</a> -->
+                            <a onclick="navigate('snowplow')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-line-chart"></i> Trend</a>
+                            <a onclick="navigate('pdt')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-bolt"></i> Day Trader</a>
                             <!-- <a onclick="navigate('indicators')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-thermometer-quarter"></i> Indicators</a> -->
                             <!-- <a onclick="navigate('analysis')" class="w3-hide w3-padding w3-bar-item w3-button"><i
@@ -322,18 +276,19 @@
             <div id="content-forecast" class="w3-hide" w3-include-html="./views/content-forecast.html"></div>
             <div id="content-schedule" class="w3-hide" w3-include-html="./views/content-schedule.html"></div>
             <div id="content-snowplow" class="w3-hide" w3-include-html="./views/content-snowplow.html"></div>
-            <div id="content-day" class="_w3-hide" w3-include-html="./views/content-day.html"></div>
-            <div id="content-analysis" class="_w3-hide" w3-include-html="./views/content-analysis.html"></div>
+            <div id="content-day" class="w3-hide" w3-include-html="./views/content-day.html"></div>
+            <div id="content-analysis" class="w3-hide" w3-include-html="./views/content-analysis.html"></div>
             <div id="content-7day" class="w3-hide" w3-include-html="./views/content-7day.html"></div>
             <div id="content-input" class="w3-hide" w3-include-html="./views/content-input.html"></div>
             <div id="content-dashboards" class="w3-hide" w3-include-html="./views/content-dashboards.html"></div>
             <div id="content-billing" class="w3-hide" w3-include-html="./views/content-billing.html"></div>
             <div id="content-indicators" class="w3-hide" w3-include-html="./views/content-indicators.html"></div>
             <!-- <div id="content-billing" class="w3-hide" w3-include-html="./views/content-billing.html"></div> -->
-            <div id="content-settings" class="" w3-include-html="./views/content-settings.html"></div>
+            <div id="content-settings" class="w3-hide" w3-include-html="./views/content-settings.html"></div>
             <!-- <div id="content-pricing" class="w3-hide" w3-include-html="./views/content-pricing.html"></div> -->
             <div id="content-configuration" class="w3-hide" w3-include-html="./views/content-configuration.html"></div>
             <!-- <div id="content-about" class="w3-hide" w3-include-html="./views/content-about.html"></div> -->
+            <div id="content-pdt" class="w3-hide" w3-include-html="./views/content-pdt.html"></div>
 
         </div>
     </div>
@@ -415,11 +370,19 @@
         const base_url = 'https://api.alpaca.markets'
         const ALPACA_KEY = localStorage.getItem('KEY') || '';
         const ALPACA_SECRET = localStorage.getItem('SECRET') || '';
-        console.log(ALPACA_KEY, ALPACA_SECRET);
+        const TOKEN = localStorage.getItem('TOKEN') || '';
+        console.log(`${ALPACA_KEY} | ${ALPACA_SECRET} | ${TOKEN}`);
+
+        const BUY_AMOUNT = +(localStorage.getItem('BUY_AMOUNT') || '250');
+        const DATA_SOURCE = localStorage.getItem('DATA_SOURCE') || 'm3';
+        const CHART_START_DATE = localStorage.getItem('CHART_START_DATE') || '2026-01-01';
+        console.log(`${BUY_AMOUNT} | ${DATA_SOURCE} | ${CHART_START_DATE}`);
 
         <!--@ HTML INCLUDES -->
         w3.includeHTML(() => {
             console.log(' content loaded');
+
+            load_settings();
 
             document.getElementById('settings-key').value = ALPACA_KEY;
             document.getElementById('settings-secret').value = ALPACA_SECRET;
@@ -440,7 +403,7 @@
             load_data();
             load_schedule();
 
-            click_symbol('NDAQ');
+            click_symbol('QQQ');
 
             const form = document.getElementById('settings-form');
             form.addEventListener('submit', function (event) {
@@ -507,7 +470,7 @@
     </script>
 
     <script>
-        const WRM = new Data();
+        // const WRM = new Data();
     </script>
 
     <script>
@@ -526,6 +489,7 @@
             // pricing: '<i class="fa fa-tag"></i> PRICING',
             // configuration: 'CONFIGURATION',
             // about: 'ABOUT',
+            pdt: 'Day Trading',
             settings: '<i class="fa fa-cogs"></i> Settings',
             analysis: '<i class="fa fa-area-chart"></i> Analysis',
         }
@@ -551,14 +515,21 @@
 
 
     <script>
-        function buy_symbol() {
-            const amount = +(prompt(`BUY | ${SELECTED_SYMBOL}`, 1000));
+        function buy_symbol(spend = 1000) {
+            const amount = +(prompt(`BUY | ${SELECTED_SYMBOL}`, spend || 1000));
             console.log(SELECTED_SYMBOL, amount);
             if (amount > 10) {
                 buy(SELECTED_SYMBOL, amount);
             } else {
                 console.log('cancelled');
             }
+        }
+        async function buy_symbols(symbols, spend) {
+            for await (const s of symbols.split(',').filter((v, i, a) => a.indexOf(v) === i)) {
+                buy(s, spend);
+                await sleep(500);
+            };
+            console.log('done');
         }
 
         function sell_symbol() {
@@ -576,7 +547,7 @@
         }
 
         function liquidate_symbols() {
-            if (confirm(`LIQUIDATE SHARES | ${SELECTED_SYMBOL}`)) {
+            if (confirm(`LIQUIDATE SHARES`)) {
                 console.log('confirmed');
                 liquidate();
             } else {
@@ -604,10 +575,37 @@
                 console.log(v);
             });
         }
+        function load_settings() {
+            document.getElementById('settings-key').value = ALPACA_SECRET;
+            document.getElementById('settings-secret').value = ALPACA_SECRET;
+            document.getElementById('settings-token').value = TOKEN;
+            document.getElementById('settings-start-date').value = CHART_START_DATE;
+            // localStorage.getItem('BUY_AMOUNT', buy_amount) || 250;
+            // localStorage.getItem('DATA_SOURCE', data_source) || 'm3';
+
+            document.getElementById('settings-watch-list-grey').value = localStorage.getItem('WATCH_LIST_GREY') || 'AAPL,SNDK';
+            document.getElementById('settings-watch-list-orange').value = localStorage.getItem('WATCH_LIST_ORANGE') || '';
+            document.getElementById('settings-watch-list-purple').value = localStorage.getItem('WATCH_LIST_PURPLE') || '';
+            document.getElementById('settings-watch-list-blue').value = localStorage.getItem('WATCH_LIST_BLUE') || '';
+        }
+
         function apply_settings() {
+            const buy_amount = +(Array.from(document.getElementsByName('settings-amount')).filter((v) => v.checked === true)[0].value);
+            const data_source = Array.from(document.getElementsByName('settings-source')).filter((v) => v.checked === true)[0].value;
+
             localStorage.setItem('KEY', document.getElementById('settings-key').value);
             localStorage.setItem('SECRET', document.getElementById('settings-secret').value);
-            // ['settings-key', 'settings-secret', 'settings-token'].forEach((id) => {
+            localStorage.setItem('TOKEN', document.getElementById('settings-token').value);
+            localStorage.setItem('CHART_START_DATE', document.getElementById('settings-start-date').value);
+            localStorage.setItem('BUY_AMOUNT', buy_amount);
+            localStorage.setItem('DATA_SOURCE', data_source);
+
+            localStorage.setItem('WATCH_LIST_GREY', document.getElementById('settings-watch-list-grey').value);
+            localStorage.setItem('WATCH_LIST_ORANGE', document.getElementById('settings-watch-list-orange').value);
+            localStorage.setItem('WATCH_LIST_PURPLE', document.getElementById('settings-watch-list-purple').value);
+            localStorage.setItem('WATCH_LIST_BLUE', document.getElementById('settings-watch-list-blue').value);
+
+            // ['settings-watch-list-grey', 'settings-watch-list-orange'].forEach((id) => {
             //     let value = document.getElementById(id).value;
             //     if (value) {
             //         console.log(id, '|', value);
@@ -646,15 +644,15 @@
 
     <!-- //* TODAY'S STATUS */ -->
     <script>
-        const round = (v) => {
-            return Math.round(v * 1) / 1;
-        }
-        const round1 = (v) => {
-            return Math.round(v * 10) / 10;
-        }
-        const round2 = (v) => {
-            return Math.round(v * 100) / 100;
-        }
+        // const round = (v) => {
+        //     return Math.round(v * 1) / 1;
+        // }
+        // const round1 = (v) => {
+        //     return Math.round(v * 10) / 10;
+        // }
+        // const round2 = (v) => {
+        //     return Math.round(v * 100) / 100;
+        // }
         // function getYMD(date_string, includeYear = true) {
         //     const d = new Date(date);
         //     let month = '' + (d.getMonth() + 1);
@@ -702,6 +700,24 @@
                     .then(res => res.json())
                     .then(res => { console.log('BUY', symbol, res); resolve(res) })
                     .catch((err) => { console.error('error in buy()', err) });
+            });
+        }
+        /** LATEST BARS */
+        function latest_bars(symbols) {
+            return new Promise((resolve, reject) => {
+                const options = {
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        'APCA-API-KEY-ID': ALPACA_KEY,
+                        'APCA-API-SECRET-KEY': ALPACA_SECRET
+                    }
+                };
+
+                fetch(`https://data.alpaca.markets/v2/stocks/bars/latest?symbols=${symbols}`, options)
+                    .then(res => res.json())
+                    .then(res => resolve(res))
+                    .catch(err => console.error('error in latest_bars()', err));
             });
         }
         /** SELL SYMBOL SHARES */
@@ -754,6 +770,13 @@
         const CHART_SYMBOL = new Treemap('chart-symbol');
         const CHART_SYMBOL_RECENT = new Treemap('chart-symbol-recent');
         const CHART_SYMBOL_MINUTES = new Treemap('chart-symbol-minutes');
+        const CHART_TREND = new Combo('chart-trend');
+        const CHART_PDT_RECENT = new Treemap('chart-pdt-chart-symbol-recent');
+        const CHART_PDT_TODAY = new Treemap('chart-pdt-chart-symbol-day');
+        const CHART_PDT_TODAY_TREE = new Treemap('chart-pdt-day-tree');
+        const CHART_PDT_ACCOUNT = new Treemap('chart-pdt-account-today');
+        const CHART_PDT_SYMBOL_DAYS = new Treemap('chart-pdt-symbol-days');
+        const CHART_PDT_SYMBOL_DAYS_RECENT = new Treemap('chart-pdt-symbol-days-recent');
 
         function key_up(symbol) {
             if (event.key === 'Enter') {
@@ -780,20 +803,26 @@
             });
             document.getElementById('letter-symbols').innerHTML = html;
         }
+
         function click_analysis_view(value) {
-            console.log(value);
+            console.log(value, Array.from(document.getElementsByName('analysis-view')).map((v) => v.value));
         }
-        let SELECTED_SYMBOL = 'NDAQ';
-        let INDICATORS = 'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
+
+        let SELECTED_SYMBOL = 'QQQ';
+        let INDICATORS = 'NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
         async function click_symbol(name) {
             SELECTED_SYMBOL = name;
-            const raw = INDICATORS.indexOf(name) >= 0;
+            const raw = false; //INDICATORS.indexOf(name) >= 0;
 
             const position = RESULTS?.POSITIONS ? RESULTS.POSITIONS.find((v) => v.name === name) : null;
             // console.log(position);
 
+            let url = DATA_SOURCE === 'm3' ?
+                `https://m3-solutions-mi.com/${name}/1D/2026-01-01T23:59:59/2027-01-01` :
+                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
+
             // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
-            const resp = await fetch(`https://m3-solutions-mi.com/${name}/1D/2025-10-01T23:59:59/2027-01-01`, {
+            const resp = await fetch(url, {
                 method: 'GET',
                 headers: {
                     accept: 'application/json',
@@ -803,10 +832,19 @@
             }).then((resp) => resp.json());
             const data = resp.bars[name];
 
+            const dow = new Date().getDay();
+            // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.35 : 1)) * 24 * 60 * 60 * 1000)).toISOString();
+            const start_at = new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString();
+            const end_at = new Date().toISOString();
+            // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
+            url = DATA_SOURCE === 'm3' ?
+                `https://m3-solutions-mi.com/${name}/1Min/${start_at}/${end_at}` :
+                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
+            // `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}V&start=2025-04-01T04:00:00.000Z&end=2026-05-11T13:24:50.305Z&timeframe=1D&limit=5000&adjustment=raw&feed=iex&sort=asc`;
+
             // `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`
-            const start_at = new Date(Date.now() - (1.5 * 24 * 60 * 60 * 1000)).toISOString();
-            // const resp_2 = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=2030-01-01&feed=iex&limit=5000&sort=asc`, {
-            const resp_2 = await fetch(`https://m3-solutions-mi.com/${name}/1Min/${start_at}/2027-01-01`, {
+            // const resp_2 = await fetch(, {
+            const resp_2 = await fetch(url, {
                 method: 'GET',
                 headers: {
                     accept: 'application/json',
@@ -856,6 +894,11 @@
             CHART_SYMBOL.options.series = series;
             CHART_SYMBOL.render();
 
+            let clone = deepClone(CHART_SYMBOL.options);
+            clone.chart.height = 275;
+            CHART_PDT_SYMBOL_DAYS.options = clone;
+            CHART_PDT_SYMBOL_DAYS.render();
+
             const num = -14
             const series_2 = deepClone(series);
             series_2[0].data = series[0].data.slice(num);
@@ -868,6 +911,11 @@
             CHART_SYMBOL_RECENT.options.series = series_2;
             CHART_SYMBOL_RECENT.render();
 
+            clone = deepClone(CHART_SYMBOL_RECENT.options);
+            clone.chart.height = 215;
+            CHART_PDT_SYMBOL_DAYS_RECENT.options = clone;
+            CHART_PDT_SYMBOL_DAYS_RECENT.render();
+
             let series_3 = deepClone(series);
             start = data_m[0].c;
             shares = raw ? 1 : 1000 / start;
@@ -879,23 +927,39 @@
             const d2 = new Date(series[0].data[series[0].data.length - 1].x - (24 * 60 * 60 * 1000));
             // console.log(d2);
             CHART_SYMBOL_MINUTES.options.annotations.xaxis = [
-                // add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
                 add_annotation_x(d1.setHours(9, 30), null, colors.darkcyan),
-                add_annotation_x(d1.setHours(10, 0), null, colors.darkcyan),
-                // add_annotation_x(d1.setHours(11, 30), null, colors.orangered),
-                // add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(14, 0)),
-                add_annotation_x(d1.setHours(16, 0), null, colors.darkcyan),
+                add_annotation_x(d1.setHours(10, 0), null, colors.grey),
+                add_annotation_x(d1.setHours(15, 30), null, colors.darkcyan),
+                add_annotation_x(d1.setHours(16, 0), null, colors.grey),
                 add_annotation_x(d1.setHours(20, 0), null, colors.grey),
 
                 add_annotation_x(d2.setHours(9, 30), null, colors.darkcyan),
                 add_annotation_x(d2.setHours(10, 0), null, colors.darkcyan),
-                // add_annotation_x(d2.setHours(11, 30), null, colors.darkcyan),
-                add_annotation_x(d2.setHours(16, 0), null, colors.darkcyan),
+                add_annotation_x(d2.setHours(15, 30), null, colors.darkcyan),
+                add_annotation_x(d2.setHours(16, 0), null, colors.grey),
             ];
+            CHART_SYMBOL_MINUTES.options.annotations.xaxis[0].x2 = d1.setHours(10, 0);
+            CHART_SYMBOL_MINUTES.options.annotations.xaxis[0].opacity = 0.1;
+            CHART_SYMBOL_MINUTES.options.annotations.xaxis[2].x2 = d1.setHours(16, 0);
+            CHART_SYMBOL_MINUTES.options.annotations.xaxis[2].opacity = 0.1;
             CHART_SYMBOL_MINUTES.options.annotations.yaxis = [add_annotation_y(series_3[0].data[series_3[0].data.length - 1].y)];
             CHART_SYMBOL_MINUTES.options.chart.height = 150;
             CHART_SYMBOL_MINUTES.options.series = series_3;
             CHART_SYMBOL_MINUTES.render();
+
+            clone = deepClone(CHART_SYMBOL_MINUTES.options);
+            clone.chart.height = 375;
+
+            // let sod = clone.series[0].data.find((v) => v.x >= new Date(clone.series[0].data[clone.series[0].data.length - 1].x).setHours(4, 0));
+            // let eod = clone.series[0].data.find((v) => sod.x && v.x >= new Date(clone.series[0].data[clone.series[0].data.length - 1].x).setHours(9, 59));
+            // clone.annotations.xaxis[1] = add_annotation_x(d1.setHours(10, 0), `$ ${round2((eod.y || 0) - (sod.y || 0)).toString()}`, colors.grey);
+
+            // sod = clone.series[0].data.find((v) => v.x >= new Date(clone.series[0].data[clone.series[0].data.length - 1].x).setHours(15, 25));
+            // eod = clone.series[0].data.find((v) => sod.x && v.x >= new Date(clone.series[0].data[clone.series[0].data.length - 1].x).setHours(15, 59));
+            // clone.annotations.xaxis[3] = add_annotation_x(d1.setHours(16, 0), `$ ${round2((eod.y || 0) - (sod.y || 0)).toString()}`, colors.grey);
+            CHART_PDT_TODAY.options = clone;
+            CHART_PDT_TODAY.render();
+
 
             const buy_at = new Date(series_3[0].data[series_3[0].data.length - 1].x).setHours(11, 0, 0, 0);
             const sell_at = new Date(series_3[0].data[series_3[0].data.length - 1].x).setHours(15, 50, 0, 0);
@@ -904,14 +968,29 @@
             const g = value_end - value_start;
             // console.log(round2(value_start), round2(value_end), round2(g));
 
+            const last = round2(series_3[0].data[series_3[0].data.length - 1].y);
+            const min = round2(Math.min(...(series_3[0].data.map((v) => v.y))));
+            const max = round2(Math.max(...(series_3[0].data.map((v) => v.y))));
+            const swing = round2(max - min);
+            const mid = round2((max + min) / 2);
+            // console.log(last, min, max, '|', swing, mid);
+
+
+            document.getElementById('pdt-today-title').innerHTML = `<b>${name}</b>&nbsp;&nbsp;|&nbsp;&nbsp;${get_description(name)}`;
+            document.getElementById('pdt-today-title-day').innerHTML = `$ ${round2(series_3[0].data[series_3[0].data.length - 1].y - series_3[0].data[0].y)}`;
+            // document.getElementById('analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
+
             const g_days = series[0].data[series[0].data.length - 1].y - series[0].data[0].y
             document.getElementById('symbol-chart-recent-title').innerHTML = `<b>${name}</b>`;
             document.getElementById('symbol-chart-title').innerHTML = `<b>${name}</b> | ${get_description(name).slice(0, 45)}`;
             document.getElementById('symbol-chart-title').innerHTML += `<div class="w3-right w3-wide ${g_days >= 0 ? 'w3-text-green' : 'w3-text-red'}" style="width:180px;">$&nbsp;${round2(g_days)}</div>`;
             // document.getElementById('symbol-chart-title').innerHTML += `<div class="w3-right w3-text-blue" style="width:120px;">$ ${position ? position.seed : '-'}</div>`;
 
-            document.getElementById('symbol-chart-day-title').innerHTML = `<b>Day&nbsp;&nbsp;&nbsp;&nbsp;<span class="w3-wide ${g > 0 ? 'w3-text-green' : 'w3-text-red'}">$&nbsp;${round2(g)}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="w3-text-grey w3-xlarge">${round1(g / 1000 * 100)} %</span></b>`;
+            document.getElementById('symbol-chart-day-title').innerHTML = `<b>$ ${last}&nbsp;&nbsp;&nbsp;&nbsp;<span class="w3-wide w3-text-grey">$&nbsp;${swing} | </span><span class="w3-text-grey w3-xxlarge">${round1(last - max)}</span></b>`;
             document.getElementById('symbol-chart-day-title').innerHTML += `<div class="w3-right w3-text-blue w3-wide" style="_width:150px;"></div>`;
+
+            // document.getElementById('symbol-chart-day-title').innerHTML = `<b>Day&nbsp;&nbsp;&nbsp;&nbsp;<span class="w3-wide ${g > 0 ? 'w3-text-green' : 'w3-text-red'}">$&nbsp;${round2(g)}</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="w3-text-grey w3-xlarge">${round1(g / 1000 * 100)} %</span></b>`;
+            // document.getElementById('symbol-chart-day-title').innerHTML += `<div class="w3-right w3-text-blue w3-wide" style="_width:150px;"></div>`;
 
             //* UPDATE DETAIL CARD */
             // console.log(position);
@@ -923,13 +1002,14 @@
             document.getElementById('symbol-score-baseline').innerHTML = round1(increment);
             document.getElementById('symbol-invested').innerHTML = position ? '$ ' + position.seed : '-';
             document.getElementById('analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
+            document.getElementById('pdt-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
 
             // document.getElementById('chart-symbol-recent').scrollIntoView();
         }
         async function load_data() {
 
             const promises = [
-                `http://localhost:3000/wrm/v1/csv/ama/2026-04-17`,
+                // `http://localhost:3000/wrm/v1/csv/ama/2026-04-17`,
                 // `https://m3-solutions-mi.com/CL=F/1d/2026-03-13T23:59:59/2027-01-01`,
                 // `https://m3-solutions-mi.com/^IXIC/1d/2026-03-13T23:59:59/2027-01-01`,
                 // `https://m3-solutions-mi.com/^VIX/1d/2026-03-13T23:59:59/2027-01-01`,
@@ -943,7 +1023,7 @@
                 `https://api.alpaca.markets/v2/account/activities?category=non_trade_activity&direction=desc&page_size=100`,
                 `https://api.alpaca.markets/v2/account/portfolio/history?period=14D&timeframe=1D&intraday_reporting=extended_hours&pnl_reset=per_day`,
                 `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`,
-                `https://api.alpaca.markets/v2/orders?status=all&limit=500&direction=desc`
+                `https://api.alpaca.markets/v2/orders?status=all&limit=1000&direction=desc`
                 // `https://api.alpaca.markets/v2/account/portfolio/history?start=2026-04-19&timeframe=1Min&intraday_reporting=continuous&pnl_reset=per_day`
             ].forEach((v) => {
                 promises.push(fetch(v, {
@@ -960,18 +1040,18 @@
             let results = await Promise.allSettled(promises);//.map((v)=>v.value);
             results = results.map((v) => v.value);
             RESULTS = {
-                DAY_TABLE: results[0],
-                // OIL: results[1],
-                // NASDAQ: results[2],
-                // VIX: results[3],
-                POSITIONS_RAW: results[1],
-                ACCOUNT: results[2],
-                ACTIVITIES: results[3],
-                ORDERS: results[6],
-                HISTORY_1W_DAY: results[4],
-                HISTORY_1D_MIN: results[5],
+                // DAY_TABLE: results[0],
+                // // OIL: results[1],
+                // // NASDAQ: results[2],
+                // // VIX: results[3],
+                POSITIONS_RAW: results[0],
+                ACCOUNT: results[1],
+                ACTIVITIES: results[2],
+                ORDERS: results[5],
+                HISTORY_1W_DAY: results[3],
+                HISTORY_1D_MIN: results[4],
             }
-            RESULTS.POSITIONS = results[1].map((v) => {
+            RESULTS.POSITIONS = results[0].map((v) => {
                 const description = get_description(v.symbol);
                 const buys = RESULTS.ORDERS
                     .filter((v2) => v2.side === 'buy')
@@ -1000,10 +1080,12 @@
             RESULTS.CALCS.TARGET = RESULTS.CALCS.INVESTED * 0.0075;
             RESULTS.CALCS.DELTA = RESULTS.CALCS.TODAY - round2(RESULTS.CALCS.TARGET);
             RESULTS.DEPOSITS = analyze_account_2();
+            RESULTS.TREND = await get_trend();
 
             console.log(RESULTS.CALCS.GAIN, '|', RESULTS.CALCS.TODAY);
             // console.log(RESULTS.CALCS);
             // console.log(RESULTS);
+            results = null;
 
             const add_letters = () => {
                 const template = `<div class="w3-button" style="width:50px;" onclick=(click_letter("{0}"))>{0}</div>`;
@@ -1025,41 +1107,100 @@
                 // watch_list += ',BLDP,BAER,CIFR,COIN,CRWD,CRWV,CORZ,CECO,DHC,POWL,ALNT,CAT,GEV,WDC,GE';
                 // watch_list += ',CNC,DIOD,DRAM,VRT,VSAT,TER,GNRC,KOD,SMTC,GOOGL,HOOD,HUT,SITM,ORKA,INTC,MCHP,AEIS,MPWR,ON,AVGO';
                 // watch_list += ',BE';
-                let watch_list = 'AMD,AMZN,AVT,CAT,DHC,DIOD,DRAM,GEV,GOOGL,HOVR,INTC,KOPN,MCHP,MPWR,MU,ON,PENG,POWL,QCOM,SITM,SNDK,SOXL,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC';
-                // watch_list += ',GOOGL,HOOD,HUT';
-                watch_list = watch_list.split(',').filter((v, i, a) => a.indexOf(v) === i).sort();
+                // const highlight_grey = 'BE,CAT,CIFR,CLSK,DHC,GOOGL,HOVR,IREN,MSTR,OKLO,PLTR,QCOM,TEAM,VCX'.split(',').sort();
+                const highlight_grey = 'BTSG,CAT,COHR,GOOGL,IREN,PLUG,VCX'.split(',').sort();
+                const highlight_orange = 'AAOI,ALAB,AMZN,AVT,CIFR,CRDO,DELL,GEV,HOOD,LITE,RKLB,ROKU,TSM'.split(',').sort();
+                const highlight_blue = 'AMD,AXTI,CRWV,DIOD,DRAM,INTC,KOPN,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,POWL,SITM,SMCI,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC,WULF'.split(',').sort();
+                const highlight_green = '-'.split(',').sort();
+                const highlight_purple = 'UMC'.split(',').sort();
+                const highlight_pink = 'AIS,HGER,QQQ,WAR'.split(',').sort();
 
-                const highlight_orange = 'HOVR'.split(',').sort(); //'BE,CECO,CNC,KOPN,NEO,ON,POWL,SITM,SOXL,STX,UNH'.split(',').sort();
-                const highlight_green = 'KOPN,VSAT'.split(',').sort();
+                let watch_list = [...highlight_grey, ...highlight_green, ...highlight_blue, ...highlight_orange, ...highlight_purple, ...highlight_pink];
+                watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
 
                 const template = `<div class="w3-button w3-margin-right w3-margin-bottom" style="border-bottom:{1}px solid {2} !important;border:2px solid lightgrey" onclick=(click_symbol("{0}"))>{0}</div>`;
+                const template_pdt = `
+                    <tr style="cursor:pointer;" onclick="click_symbol(Array.from(this.children)[0].innerText)">
+                        <td><i class="fa fa-circle{5} w3-text-{1} w3-xlarge w3-margin-right"></i><span class="w3-text-{6}">{0}</span></td>
+                        <td class="w3-text-{7}">{2}</td>
+                        <td class="w3-text-{6}">{3}</td>
+                        <td class="w3-text-{6}">{4}</td>
+                    </tr>`;
+
                 let html = ''
                 watch_list.forEach((v) => {
                     html += template
                         .replace('{0}', v)
                         .replace('{0}', v)
-                        .replace('{1}', highlight_orange.indexOf(v) >= 0 ? 3 : '{1}')
+                        .replace('{1}', highlight_orange.indexOf(v) >= 0 ? 5 : '{1}')
                         .replace('{2}', highlight_orange.indexOf(v) >= 0 ? 'orange' : '{2}')
-                        .replace('{1}', highlight_green.indexOf(v) >= 0 ? 3 : 1)
-                        .replace('{2}', highlight_green.indexOf(v) >= 0 ? 'green' : 'lightgrey')
+                        .replace('{1}', highlight_green.indexOf(v) >= 0 ? 5 : '{1}')
+                        .replace('{2}', highlight_green.indexOf(v) >= 0 ? 'green' : '{2}')
+                        .replace('{1}', highlight_blue.indexOf(v) >= 0 ? 5 : '{1}')
+                        .replace('{2}', highlight_blue.indexOf(v) >= 0 ? 'blue' : '{2}')
+                        .replace('{1}', highlight_purple.indexOf(v) >= 0 ? 5 : '{1}')
+                        .replace('{2}', highlight_purple.indexOf(v) >= 0 ? 'purple' : '{2}')
+                        .replace('{1}', highlight_pink.indexOf(v) >= 0 ? 5 : '{1}')
+                        .replace('{2}', highlight_pink.indexOf(v) >= 0 ? 'deeppink' : '{2}')
                         .replace('{1}', 1)
                         .replace('{2}', 'lightgrey');
                 })
                 document.getElementById('watch-symbols').innerHTML = html;
+
+                let html_pdt_1 = '';
+                let html_pdt_2 = '';
+                let html_pdt_3 = '';
+                watch_list = [...highlight_green, ...highlight_blue, ...highlight_orange, ...highlight_purple, ...highlight_grey, ...highlight_pink];
+                watch_list.push(...INDICATORS);
+                watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-');
+                const divisor = Math.ceil(watch_list.length / 3);
+                watch_list.forEach((v, i) => {
+                    // const fields = 'name,description,seed,date,day_pct,day,gain,gain_pct,action'.split(',');
+                    const position = RESULTS.POSITIONS.find((v2) => v2.name === v);
+                    let color = 'grey';
+                    color = highlight_orange.indexOf(v) >= 0 ? 'orange' : color;
+                    color = highlight_green.indexOf(v) >= 0 ? 'green' : color;
+                    color = highlight_blue.indexOf(v) >= 0 ? 'blue' : color;
+                    color = highlight_purple.indexOf(v) >= 0 ? 'purple' : color;
+                    color = highlight_pink.indexOf(v) >= 0 ? 'pink' : color;
+                    const get_template = () => {
+                        return template_pdt
+                            .replace('{0}', v)
+                            .replace('{1}', color)
+                            .replace('{2}', position ? position.seed : 0)
+                            .replace('{3}', position ? position.day_pct : 0)
+                            .replace('{4}', position ? position.day : 0)
+                            .replace('{5}', '-o') //color !== 'grey' ? '' : '-o')
+                            .replace('{6}', position ? (position.day >= 0 ? 'green' : 'red') : 'grey')
+                            .replace('{6}', position ? (position.day >= 0 ? 'green' : 'red') : 'grey')
+                            .replace('{6}', position ? (position.day >= 0 ? 'green' : 'red') : 'grey')
+                            .replace('{7}', position ? 'black' : 'grey')
+                    }
+                    if (i < divisor) {
+                        html_pdt_1 += get_template();
+                    } else if (i < divisor * 2) {
+                        html_pdt_2 += get_template();
+                    } else {
+                        html_pdt_3 += get_template();
+                    }
+                })
+                document.getElementById('table-rows-pdt-1').innerHTML = html_pdt_1;
+                document.getElementById('table-rows-pdt-2').innerHTML = html_pdt_2;
+                document.getElementById('table-rows-pdt-3').innerHTML = html_pdt_3;
             }
             add_watch_list();
 
             const add_indicators = () => {
                 let watch_list = INDICATORS;
 
-                const template = `<div class="w3-button" style="width:150px;border-bottom:{1}px solid {2}" onclick=(click_symbol("{0}"))>{0}</div>`;
+                const template = `<div class="w3-button w3-margin-right" style="width:150px;border:{1}px solid {2}" onclick=(click_symbol("{0}"))>{0}</div>`;
                 let html = ''
                 watch_list.forEach((v) => {
                     html += template
                         .replace('{0}', v)
                         .replace('{0}', v)
-                        .replace('{1}', watch_list.indexOf(v) >= 0 ? 7 : 0)
-                    // .replace('{2}', 'orange');
+                        .replace('{1}', watch_list.indexOf(v) >= 0 ? 3 : 0)
+                        .replace('{2}', 'lightgrey');
                 })
                 document.getElementById('indicator-symbols').innerHTML = html;
             }
@@ -1096,12 +1237,17 @@
                     gain_pct: '%',
                     day: 'Day',
                     day_pct: '%',
+                    action: '',
                 };
-                const fields = 'name,description,seed,date,day_pct,day,gain,gain_pct'.split(',');
+                const fields = 'name,description,seed,date,day_pct,day,gain,gain_pct,action'.split(',');
                 let html = '';
-                fields.forEach((v) => {
+                fields.forEach((v, i) => {
                     // html += `<tr>`
-                    html += `<td style="border-bottom:1px solid;""><b>${map[v]}</b></td>`
+                    if (i < fields.length - 1) {
+                        html += `<td style="border-bottom:1px solid;""><b>${map[v]}</b></td>`
+                    } else {
+                        html += `<td style="border-bottom:1px solid;""><i class="fa fa-credit-card w3-xxlarge"></i></td>`
+                    }
                     // html += `</tr>`
                 })
                 document.getElementById('day-status-table-header').innerHTML = html;
@@ -1109,8 +1255,12 @@
                 html = '';
                 RESULTS.POSITIONS.forEach((v, i) => {
                     html += `<tr ${i === (RESULTS.POSITIONS.length - 1) ? 'style="border-bottom:1px solid;"' : ''}>`
-                    fields.forEach((f) => {
-                        html += `<td class="w3-wide">${v[f] || '-'}</td>`
+                    fields.forEach((f, i) => {
+                        if (i < fields.length - 1) {
+                            html += `<td class="w3-wide">${v[f] || '-'}</td>`
+                        } else {
+                            html += `<td class="w3-wide"><i class="fa fa-credit-card w3-xxlarge w3-text-red w3-margin-right pointer" onclick="sell_symbol()"></i></td>`
+                        }
                     });
                     html += `</tr>`
                 });
@@ -1124,10 +1274,11 @@
                     { name: 'Gain', type: 'area', data: [] },
                     { name: 'Invested', type: 'line', data: [] }
                 ];
+
                 series[0].data = RESULTS.HISTORY_1W_DAY.timestamp.map((v, i) => { return { x: v * 1000, y: RESULTS.HISTORY_1W_DAY.equity[i] } });
                 series[0].data.push({ x: Date.now(), y: RESULTS.ACCOUNT.equity });
 
-                const filtered = RESULTS.DEPOSITS.slice(-(series[0].data.length));
+                const filtered = RESULTS.DEPOSITS.slice(-(series[0].data.length + 3));
                 series[1].data = filtered.map((v, i) => { return { x: v.e, y: v.amount } });
                 series[1].data.push({ x: Date.now(), y: series[1].data[series[1].data.length - 1].y });
 
@@ -1136,7 +1287,7 @@
 
                 let last = series[0].data[0].y;
                 series[0].data.forEach((v, i) => {
-                    if (i === 1 || i === series[0].data.length - 2) {
+                    if (i === 1 || i === series[0].data.length - 3 || i === series[0].data.length - 2) {
                         // CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round(v.y - RESULTS.CALCS.INVESTED)))
 
                         // const value = v.y - last
@@ -1154,29 +1305,52 @@
                         const value = v.y;
                         CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round(value).toLocaleString()));
                     }
-                })
+                });
+                CHART_DAY_HISTORY.options.annotations.yaxis = [add_annotation_y(series[0].data[series[0].data.length - 1].y)];
                 CHART_DAY_HISTORY.options.chart.height = 250;
                 // CHART_DAY_HISTORY.options.dataLabels.enabled = true;
                 // CHART_DAY_HISTORY.options.yaxis.max = Math.max(...series[0].data.map((v)=>v.y) + 500);
                 CHART_DAY_HISTORY.options.series = series;
                 CHART_DAY_HISTORY.render();
 
+                // CHART_PDT_RECENT.options.dataLabels.enabled = true;
+                // CHART_PDT_RECENT.options.yaxis.max = Math.max(...series[0].data.map((v)=>v.y) + 500);
+                // CHART_PDT_RECENT.options.series = series;
+                // CHART_PDT_RECENT.render();
+
+                //* TODAY CHART */
                 series = [{ name: 'Gain', type: 'area', data: [] }];
                 series[0].data = RESULTS.HISTORY_1D_MIN.timestamp.map((v, i) => { return { x: v * 1000, y: RESULTS.HISTORY_1D_MIN.equity[i] } });
                 series[0].data.push({ x: Date.now(), y: RESULTS.ACCOUNT.equity });
+                series[0].data = series[0].data.filter((v) => v.x > new Date(series[0].data[0].x).setHours(4, 0));
+                series[0].data = series[0].data.filter((v) => v.x < new Date(series[0].data[0].x).setHours(23, 59));
                 const equity_0930 = series[0].data.find((v) => new Date(v.x).getHours() === 9 && new Date(v.x).getMinutes() === 30) || 0
                 CHART_24H_HISTORY.options.chart.height = 250;
                 CHART_24H_HISTORY.options.series = series;
                 CHART_24H_HISTORY.options.annotations.xaxis = [
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
-                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(9, 30), round(equity_0930.y).toLocaleString()),
-                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(11, 0)),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(9, 30)),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(10, 0), null, colors.darkcyan),
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(16, 0)),
-                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(14, 0)),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(15, 25), null, colors.lightgrey),
+                    // add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(15, 30), null, colors.darkcyan),
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 0)),
                 ];
                 CHART_24H_HISTORY.options.annotations.yaxis = [add_annotation_y(series[0].data[series[0].data.length - 1].y)];
                 CHART_24H_HISTORY.render();
+
+                clone = deepClone(CHART_24H_HISTORY.options);
+                clone.series[0].data = clone.series[0].data.filter((v) => v.x >= new Date(series[0].data[0].x).setHours(9, 0));
+                clone.series[0].data = clone.series[0].data.filter((v) => v.x <= new Date(series[0].data[0].x).setHours(16, 3));
+                clone.chart.height = 225;
+
+                // const d1 = new Date(clone.series[0].data[clone.series[0].data.length - 1].x);
+                // const sod = clone.series[0].data.find((v) => v.x >= new Date(clone.series[0].data[0].x).setHours(15, 25));
+                // const eod = clone.series[0].data.find((v) => v.x >= new Date(clone.series[0].data[0].x).setHours(15, 55));
+                // clone.annotations.xaxis[2] = add_annotation_x(d1.setHours(15, 30), `$ ${round((eod.y || 0) - (sod.y || 0)).toString()}`, colors.darkcyan);
+
+                CHART_PDT_ACCOUNT.options = clone;
+                CHART_PDT_ACCOUNT.render();
 
                 series = [{ name: 'Gain %', type: 'treemap', data: [] }];
                 series[0].data = RESULTS.POSITIONS.map((v, i) => { return { x: v.name, y: v.gain_pct } });
@@ -1204,6 +1378,11 @@
                 CHART_POSITIONS_TODAY.options.series = series;
                 CHART_POSITIONS_TODAY.render();
 
+                clone = deepClone(CHART_POSITIONS_TODAY.options);
+                clone.chart.height = 130;
+                CHART_PDT_TODAY_TREE.options = clone;
+                CHART_PDT_TODAY_TREE.render();
+
 
                 // let chart = new ApexCharts(document.querySelector('chart-days-history'), treemap_options);
                 // chart.render();
@@ -1211,6 +1390,57 @@
                 // chart.render();
             };
             update_charts();
+
+            const update_trend = () => {
+                // const analysis = analyze_orders().filter((v, i) => i >= 14);
+                const analysis = analyze_orders();//.filter((v, i) => v.d >= '2026-04-30');
+
+                let series = [
+                    { name: 'Equity', type: 'area', data: [] },
+                    { name: 'P / L', type: 'bar', data: [] },
+                    // { name: 'Target', type: 'area', data: [] },
+                ];
+
+                series[0].data = RESULTS.TREND.map((v, i) => { return { x: v.dmmm, y: v.total } });
+                series[1].data = RESULTS.TREND.map((v, i) => { return { x: v.dmmm, y: round(v.delta) } });
+
+                // series[0].data = analysis.map((v, i) => { return { x: v.dmmm, y: v.net } });
+                // series[1].data = analysis.map((v, i) => { return { x: v.dmmm, y: v.day_gain } });
+                // // series[2].data = analysis.map((v, i) => { return { x: v.dmmm, y: v.target } });
+
+                // // series[0].data.forEach((v) => {
+                // //     v.goals = [
+                // //         {
+                // //             name: 'Expected',
+                // //             value: 326.25,
+                // //             strokeHeight: 7.5,
+                // //             strokeColor: colors.orange, //'#775DD0'
+                // //         }
+                // //     ]
+                // // });
+
+                // // series[1].data.forEach((v) => {
+                // //     CHART_TREND.options.annotations.points.push(add_annotation_point(v.x, v.y, `$ ${round(v.y).toLocaleString()}`));
+                // // });
+                // // console.log(CHART_TREND.options.annotations.points);
+
+                CHART_TREND.options.annotations.yaxis = [add_annotation_y(326.25, colors.orange)];
+                CHART_TREND.options.annotations.yaxis[0].y2 = 326.25 * 1.04;
+
+                // CHART_TREND.options.dataLabels.enabled = true;
+                // CHART_TREND.options.chart.sparkline = false;
+                CHART_TREND.options.chart.type = 'area';
+                CHART_TREND.options.series = series;
+                CHART_TREND.options.plotOptions.bar.colors = {};
+                CHART_TREND.options.xaxis.type = 'category';
+                CHART_TREND.options.chart.height = 750;
+                CHART_TREND.render();
+
+                let t = series[0].data[series[0].data.length - 1].y || 0;
+                document.getElementById('trend-chart-title').innerHTML = `$ ${t.toLocaleString()}`;
+                // document.getElementById('trend-chart-title').innerHTML += ` | <span class="w3-xlarge w3-text-grey">$ ${round2(t / series[0].data.length).toLocaleString()}</span>`;
+            };
+            update_trend();
 
             const update_analysis = () => {
                 //* CARDS */
@@ -1234,205 +1464,205 @@
             update_analysis();
             click_symbol(SELECTED_SYMBOL);
 
-            const read_only_cols = [0, 1, 8, 9];
-            fetch('http://127.0.0.1:3000/csv/forecast', {})
-                .then((resp) => resp.json())
-                .then((data) => {
-                    // console.log(data.meta);
-                    // const table = data.table;
-                    // console.table(table);
+            // const read_only_cols = [0, 1, 8, 9];
+            // fetch('http://127.0.0.1:3000/csv/forecast', {})
+            //     .then((resp) => resp.json())
+            //     .then((data) => {
+            //         // console.log(data.meta);
+            //         // const table = data.table;
+            //         // console.table(table);
 
-                    update_table(data, {}, 'forecast', read_only_cols);
+            //         update_table(data, {}, 'forecast', read_only_cols);
 
-                    // fetch('http://127.0.0.1:3000/csv/schedule', {})
-                    fetch(`http://localhost:3000/wrm/v1/csv/ama/2026-04-17`, {})
-                        .then((resp) => resp.json())
-                        .then((data2) => {
-                            // console.log(data.meta);
-                            // const table = data.table;
-                            // console.table(table);
+            //         // fetch('http://127.0.0.1:3000/csv/schedule', {})
+            //         fetch(`http://localhost:3000/wrm/v1/csv/ama/2026-04-17`, {})
+            //             .then((resp) => resp.json())
+            //             .then((data2) => {
+            //                 // console.log(data.meta);
+            //                 // const table = data.table;
+            //                 // console.table(table);
 
-                            update_table(data2, {}, 'day', read_only_cols);
+            //                 update_table(data2, {}, 'day', read_only_cols);
 
-                            //* chart */
-                            let options = deepClone(chart_mixed_options);
-                            options.labels = data[0].filter((v, i) => i >= 5 && i <= 13);
-                            // chart_mixed_options.series[0].data = data2[data2.length - 1].filter((v, i) => i >= 3 && i <= 7);
-                            options.series[0].data = data[data.length - 1].filter((v, i) => i >= 5 && i <= 13).map((v, i, a) => 0);
-                            options.series[1].data = data[data.length - 1].filter((v, i) => i >= 5 && i <= 13);
-                            options.colors[1] = '#4caf50';
-                            var chart = new ApexCharts(document.querySelector("#chart-forecast"), options);
-                            chart.render();
+            //                 //* chart */
+            //                 let options = deepClone(chart_mixed_options);
+            //                 options.labels = data[0].filter((v, i) => i >= 5 && i <= 13);
+            //                 // chart_mixed_options.series[0].data = data2[data2.length - 1].filter((v, i) => i >= 3 && i <= 7);
+            //                 options.series[0].data = data[data.length - 1].filter((v, i) => i >= 5 && i <= 13).map((v, i, a) => 0);
+            //                 options.series[1].data = data[data.length - 1].filter((v, i) => i >= 5 && i <= 13);
+            //                 options.colors[1] = '#4caf50';
+            //                 var chart = new ApexCharts(document.querySelector("#chart-forecast"), options);
+            //                 chart.render();
 
-                            options = deepClone(chart_mixed_options);
-                            options.chart.height = 600;
-                            options.series[0].name = '&nbsp;PLAN',
-                                options.series[1].name = '&nbsp;COMPLETE',
-                                options.series.push({
-                                    name: '&nbsp;NC',
-                                    type: 'line',
-                                    data: [532, 480, 229, 478, 621, 720]
-                                });
-                            options.series.push({
-                                name: '&nbsp;SCORE',
-                                type: 'line',
-                                data: [1532, 1480, 1229, 1478, 1621, 1720].reverse()
-                            });
-                            chart = new ApexCharts(document.querySelector("#chart-overview"), options);
-                            chart.render();
+            //                 options = deepClone(chart_mixed_options);
+            //                 options.chart.height = 600;
+            //                 options.series[0].name = '&nbsp;PLAN',
+            //                     options.series[1].name = '&nbsp;COMPLETE',
+            //                     options.series.push({
+            //                         name: '&nbsp;NC',
+            //                         type: 'line',
+            //                         data: [532, 480, 229, 478, 621, 720]
+            //                     });
+            //                 options.series.push({
+            //                     name: '&nbsp;SCORE',
+            //                     type: 'line',
+            //                     data: [1532, 1480, 1229, 1478, 1621, 1720].reverse()
+            //                 });
+            //                 chart = new ApexCharts(document.querySelector("#chart-overview"), options);
+            //                 chart.render();
 
-                            options = deepClone(options);
-                            options.series.push({
-                                name: '&nbsp;CoQ',
-                                type: 'column',
-                                data: [837, 521, 954, 1120, 721, 841]
-                            });
-                            options.series.push({
-                                name: '&nbsp;Weighted',
-                                type: 'column',
-                                data: [1532, 1480, 1229, 1478, 1621, 1720].reverse()
-                            });
-                            options.series.push({
-                                name: '&nbsp;Custom 1',
-                                type: 'column',
-                                data: [1489, 1502, 1305, 1511, 1680, 1752]
-                            });
+            //                 options = deepClone(options);
+            //                 options.series.push({
+            //                     name: '&nbsp;CoQ',
+            //                     type: 'column',
+            //                     data: [837, 521, 954, 1120, 721, 841]
+            //                 });
+            //                 options.series.push({
+            //                     name: '&nbsp;Weighted',
+            //                     type: 'column',
+            //                     data: [1532, 1480, 1229, 1478, 1621, 1720].reverse()
+            //                 });
+            //                 options.series.push({
+            //                     name: '&nbsp;Custom 1',
+            //                     type: 'column',
+            //                     data: [1489, 1502, 1305, 1511, 1680, 1752]
+            //                 });
 
-                            // options.chart.stacked = true;
-                            options.series[0].name = '&nbsp;YIELD&nbsp;';
-                            options.series[0].type = 'area';
-                            options.series[1].name = '&nbsp;OEE&nbsp;'
-                            options.series[1].type = 'column'
-                            options.series[2].name = '&nbsp;TEEP&nbsp;'
-                            options.series[2].type = 'column'
-                            options.series[0].data.reverse();
-                            options.series[1].data.reverse();
-                            // options.series[2].data.reverse();
-                            options.chart.height = 900;
-                            chart = new ApexCharts(document.querySelector("#chart-dashboards"), options);
-                            chart.render();
+            //                 // options.chart.stacked = true;
+            //                 options.series[0].name = '&nbsp;YIELD&nbsp;';
+            //                 options.series[0].type = 'area';
+            //                 options.series[1].name = '&nbsp;OEE&nbsp;'
+            //                 options.series[1].type = 'column'
+            //                 options.series[2].name = '&nbsp;TEEP&nbsp;'
+            //                 options.series[2].type = 'column'
+            //                 options.series[0].data.reverse();
+            //                 options.series[1].data.reverse();
+            //                 // options.series[2].data.reverse();
+            //                 options.chart.height = 900;
+            //                 chart = new ApexCharts(document.querySelector("#chart-dashboards"), options);
+            //                 chart.render();
 
-                            //* SUMMARY */
-                            fetch('http://localhost:3000/smi_status/days_summary/2026-04-02', {})
-                                .then((resp) => resp.json())
-                                .then((data3) => {
-                                    // console.log(data.meta);
-                                    // const table = data.table;
-                                    // console.table(data3);
+            //                 //* SUMMARY */
+            //                 fetch('http://localhost:3000/smi_status/days_summary/2026-04-02', {})
+            //                     .then((resp) => resp.json())
+            //                     .then((data3) => {
+            //                         // console.log(data.meta);
+            //                         // const table = data.table;
+            //                         // console.table(data3);
 
-                                    update_table(data3, {}, 'summary');
+            //                         update_table(data3, {}, 'summary');
 
-                                    const planned_values = data3.slice(1).map((v) => v[1]);
-                                    const complete_values = data3.slice(1).map((v) => v[2]);
-                                    const nc_values = data3.slice(1).map((v) => v[3]);
-                                    const delta_values = data3.slice(1).map((v) => v[4]);
+            //                         const planned_values = data3.slice(1).map((v) => v[1]);
+            //                         const complete_values = data3.slice(1).map((v) => v[2]);
+            //                         const nc_values = data3.slice(1).map((v) => v[3]);
+            //                         const delta_values = data3.slice(1).map((v) => v[4]);
 
-                                    options = deepClone(options);
-                                    options.series = []
-                                    options.series.push({
-                                        name: '&nbsp;TARGET',
-                                        type: 'area',
-                                        data: planned_values //.map((v, i) => round1(complete_values[i] / v * 100))
-                                    });
-                                    options.series.push({
-                                        name: '&nbsp;GAIN',
-                                        type: 'column',
-                                        data: complete_values
-                                    });
-                                    options.series.push({
-                                        name: '&nbsp;DELTA',
-                                        type: 'column',
-                                        data: delta_values
-                                    });
+            //                         options = deepClone(options);
+            //                         options.series = []
+            //                         options.series.push({
+            //                             name: '&nbsp;TARGET',
+            //                             type: 'area',
+            //                             data: planned_values //.map((v, i) => round1(complete_values[i] / v * 100))
+            //                         });
+            //                         options.series.push({
+            //                             name: '&nbsp;GAIN',
+            //                             type: 'column',
+            //                             data: complete_values
+            //                         });
+            //                         options.series.push({
+            //                             name: '&nbsp;DELTA',
+            //                             type: 'column',
+            //                             data: delta_values
+            //                         });
 
-                                    // options.chart.stacked = true;
-                                    // options.series[0].name = '&nbsp;YIELD&nbsp;';
-                                    // options.series[0].type = 'area';
-                                    // options.series[1].name = '&nbsp;OEE&nbsp;'
-                                    // options.series[1].type = 'column'
-                                    // options.series[2].name = '&nbsp;TEEP&nbsp;'
-                                    // options.series[2].type = 'column'
-                                    // options.series[0].data.reverse();
-                                    // options.series[1].data.reverse();
-                                    // options.series[2].data.reverse();
-                                    options.labels = data3.slice(1).map((v) => v[0])
-                                    options.chart.height = 500;
-                                    chart = new ApexCharts(document.querySelector("#chart-summary"), options);
-                                    chart.render();
+            //                         // options.chart.stacked = true;
+            //                         // options.series[0].name = '&nbsp;YIELD&nbsp;';
+            //                         // options.series[0].type = 'area';
+            //                         // options.series[1].name = '&nbsp;OEE&nbsp;'
+            //                         // options.series[1].type = 'column'
+            //                         // options.series[2].name = '&nbsp;TEEP&nbsp;'
+            //                         // options.series[2].type = 'column'
+            //                         // options.series[0].data.reverse();
+            //                         // options.series[1].data.reverse();
+            //                         // options.series[2].data.reverse();
+            //                         options.labels = data3.slice(1).map((v) => v[0])
+            //                         options.chart.height = 500;
+            //                         chart = new ApexCharts(document.querySelector("#chart-summary"), options);
+            //                         chart.render();
 
-                                    //* UPDATE CARDS */
-                                    let qty = planned_values.reduce((p, c) => p + c);
-                                    let done = complete_values.reduce((p, c) => p + c);
-                                    let nc = nc_values.reduce((p, c) => p + c);
-                                    let delta = delta_values.reduce((p, c) => p + c);
+            //                         //* UPDATE CARDS */
+            //                         let qty = planned_values.reduce((p, c) => p + c);
+            //                         let done = complete_values.reduce((p, c) => p + c);
+            //                         let nc = nc_values.reduce((p, c) => p + c);
+            //                         let delta = delta_values.reduce((p, c) => p + c);
 
-                                    let complete_pct = round1(done / qty * 100);
-                                    let nc_pct = round1(nc / done * 100);
-                                    // const delta_pct = round1(100 - (complete_pct - nc_pct));
-                                    let delta_pct = round1(100 - complete_pct - nc_pct);
-                                    let score_pct = round1(complete_pct * ((100 - nc_pct) / 100));
+            //                         let complete_pct = round1(done / qty * 100);
+            //                         let nc_pct = round1(nc / done * 100);
+            //                         // const delta_pct = round1(100 - (complete_pct - nc_pct));
+            //                         let delta_pct = round1(100 - complete_pct - nc_pct);
+            //                         let score_pct = round1(complete_pct * ((100 - nc_pct) / 100));
 
-                                    document.getElementById('complete-summary').innerHTML = complete_pct;
-                                    document.getElementById('nc-summary').innerHTML = nc_pct;
-                                    document.getElementById('delta-summary').innerHTML = delta_pct;
-                                    document.getElementById('score-summary').innerHTML = score_pct;
+            //                         document.getElementById('complete-summary').innerHTML = complete_pct;
+            //                         document.getElementById('nc-summary').innerHTML = nc_pct;
+            //                         document.getElementById('delta-summary').innerHTML = delta_pct;
+            //                         document.getElementById('score-summary').innerHTML = score_pct;
 
 
-                                    // =========================================================
-                                    //@ SNOW PLOW */
-                                    // =========================================================
-                                    let v1 = 0;
-                                    let v2 = 0;
-                                    let v3 = 0;
-                                    let v4 = 0;
+            //                         // =========================================================
+            //                         //@ SNOW PLOW */
+            //                         // =========================================================
+            //                         let v1 = 0;
+            //                         let v2 = 0;
+            //                         let v3 = 0;
+            //                         let v4 = 0;
 
-                                    const planned_values_cumulative = [];
-                                    const complete_values_cumulative = [];
-                                    const nc_values_cumulative = [];
-                                    const delta_values_cumulative = [];
+            //                         const planned_values_cumulative = [];
+            //                         const complete_values_cumulative = [];
+            //                         const nc_values_cumulative = [];
+            //                         const delta_values_cumulative = [];
 
-                                    planned_values.forEach((v, i) => {
-                                        v1 += planned_values[i];
-                                        v2 += complete_values[i];
-                                        v3 += nc_values[i];
-                                        v4 += delta_values[i];
+            //                         planned_values.forEach((v, i) => {
+            //                             v1 += planned_values[i];
+            //                             v2 += complete_values[i];
+            //                             v3 += nc_values[i];
+            //                             v4 += delta_values[i];
 
-                                        planned_values_cumulative.push(v1);
-                                        complete_values_cumulative.push(v2);
-                                        nc_values_cumulative.push(v3);
-                                        delta_values_cumulative.push(v4);
-                                    })
+            //                             planned_values_cumulative.push(v1);
+            //                             complete_values_cumulative.push(v2);
+            //                             nc_values_cumulative.push(v3);
+            //                             delta_values_cumulative.push(v4);
+            //                         })
 
-                                    options = deepClone(options);
-                                    options.series = []
-                                    options.series.push({
-                                        name: '&nbsp;TARGET',
-                                        type: 'area',
-                                        data: planned_values_cumulative //.map((v, i) => round1(complete_values[i] / v * 100))
-                                    });
-                                    options.series.push({
-                                        name: '&nbsp;GAIN',
-                                        type: 'column',
-                                        data: complete_values_cumulative
-                                    });
-                                    options.series.push({
-                                        name: '&nbsp;DELTA',
-                                        type: 'line',
-                                        data: delta_values_cumulative.map((v) => v)
-                                    });
+            //                         options = deepClone(options);
+            //                         options.series = []
+            //                         options.series.push({
+            //                             name: '&nbsp;TARGET',
+            //                             type: 'area',
+            //                             data: planned_values_cumulative //.map((v, i) => round1(complete_values[i] / v * 100))
+            //                         });
+            //                         options.series.push({
+            //                             name: '&nbsp;GAIN',
+            //                             type: 'column',
+            //                             data: complete_values_cumulative
+            //                         });
+            //                         options.series.push({
+            //                             name: '&nbsp;DELTA',
+            //                             type: 'line',
+            //                             data: delta_values_cumulative.map((v) => v)
+            //                         });
 
-                                    options.labels = data3.slice(1).map((v) => v[0])
-                                    options.chart.height = 500;
-                                    chart = new ApexCharts(document.querySelector("#chart-snowplow"), options);
-                                    chart.render();
+            //                         options.labels = data3.slice(1).map((v) => v[0])
+            //                         options.chart.height = 500;
+            //                         chart = new ApexCharts(document.querySelector("#chart-snowplow"), options);
+            //                         chart.render();
 
-                                    document.getElementById('complete-snowplow').innerHTML = complete_pct;
-                                    document.getElementById('nc-snowplow').innerHTML = nc_pct;
-                                    document.getElementById('delta-snowplow').innerHTML = delta_pct;
-                                    document.getElementById('score-snowplow').innerHTML = score_pct;
-                                });
-                        });
-                });
+            //                         // document.getElementById('complete-snowplow').innerHTML = complete_pct;
+            //                         // document.getElementById('nc-snowplow').innerHTML = nc_pct;
+            //                         // document.getElementById('delta-snowplow').innerHTML = delta_pct;
+            //                         // document.getElementById('score-snowplow').innerHTML = score_pct;
+            //                     });
+            //             });
+            //     });
         }
         function load_schedule() {
             // fetch('http://localhost:3000/smi_status/days_summary/2026-04-01', {})
@@ -1446,15 +1676,15 @@
             //     });
         }
         function load_day(date_str = getYMD(new Date())) {
-            fetch(`http://127.0.0.1:3000/smi/demo/${date_str}`, {})
-                .then((resp) => resp.json())
-                .then((data) => {
-                    console.log(data.meta);
-                    const table = data.table;
-                    // console.table(table);
+            // fetch(`http://127.0.0.1:3000/smi/demo/${date_str}`, {})
+            //     .then((resp) => resp.json())
+            //     .then((data) => {
+            //         console.log(data.meta);
+            //         const table = data.table;
+            //         // console.table(table);
 
-                    update_schedule(table, data.meta, 'day');
-                });
+            //         update_schedule(table, data.meta, 'day');
+            //     });
         }
     </script>
 

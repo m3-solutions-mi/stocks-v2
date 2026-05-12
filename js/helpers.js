@@ -1,10 +1,17 @@
-// const round = (v) => { return Math.round(v * 1) / 1; }
-// const round1 = (v) => { return Math.round(v * 10) / 10; }
-// const round2 = (v) => { return Math.round(v * 100) / 100; }
-// const round3 = (v) => { return Math.round(v * 1000) / 1000; }
-// const round4 = (v) => { return Math.round(v * 10000) / 10000; }
-// const round5 = (v) => { return Math.round(v * 100000) / 100000; }
-// const round6 = (v) => { return Math.round(v * 1000000) / 1000000; }
+const round = (v) => { return Math.round(v * 1) / 1; }
+const round1 = (v) => { return Math.round(v * 10) / 10; }
+const round2 = (v) => { return Math.round(v * 100) / 100; }
+const round3 = (v) => { return Math.round(v * 1000) / 1000; }
+const round4 = (v) => { return Math.round(v * 10000) / 10000; }
+const round5 = (v) => { return Math.round(v * 100000) / 100000; }
+const round6 = (v) => { return Math.round(v * 1000000) / 1000000; }
+
+// =================================================
+// SLEEP
+// =================================================
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // =================================================
 // COMBINE VALUES
@@ -41,8 +48,8 @@ const add_annotation_x = (x, text = null, color = colors.black, offsetX = 0) => 
     }
     return obj;
 }
-const add_annotation_y = (y) => {
-    const obj = { y, borderColor: colors.black, fillColor: colors.black, opacity: 1 };
+const add_annotation_y = (y, color = colors.black) => {
+    const obj = { y, borderColor: color, fillColor: color, opacity: 1 };
     // if (text) {
     //     obj.label  = { text, offsetX, offsetY, style: { fontSize: '22px' } };
     // }
@@ -110,6 +117,24 @@ function calculateTrendline(data) {
             return (this.slope * x) + this.intercept;
         }
     };
+}
+
+// =================================================
+// GET YEAR-MONTH-DAY
+// =================================================
+function getHMM(date) {
+    const d = new Date(date);
+    let hour = '' + d.getHours();
+    let minute = '' + d.getMinutes();
+    const year = d.getFullYear();
+
+    if (hour.length < 2)
+        hour = '0' + hour;
+    if (minute.length < 2)
+        minute = '0' + minute;
+
+    // return '2025-06-04'
+    return ([hour, minute]).join(':');
 }
 // =================================================
 // GET YEAR-MONTH-DAY

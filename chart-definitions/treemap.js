@@ -105,14 +105,9 @@ class Treemap {
                 }
             },
             bar: {
-                columnWidth: '99%',
+                // columnWidth: '99%',
                 colors: {
-                    ranges: [
-                        // {
-                        //     from: -100,
-                        //     to: -46,
-                        //     color: '#F15B46'
-                        // },
+                    _ranges: [
                         {
                             from: -10000,
                             to: 0,
@@ -122,7 +117,6 @@ class Treemap {
                 dataLabels: {
                     position: 'top', // top, center, bottom
                 },
-                columnWidth: '80%',
             },
             _line: {
                 colors: {
@@ -135,6 +129,7 @@ class Treemap {
         tooltip: {
             // shared: false,
             // intersect: true,
+            // followCursor: false,
             style: {
                 fontSize: '24px',
             },
