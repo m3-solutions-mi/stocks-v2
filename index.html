@@ -165,6 +165,8 @@
                                     class="fa fa-line-chart"></i> Trend</a>
                             <a onclick="navigate('pdt')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-bolt"></i> Day Trader</a>
+                            <a onclick="navigate('top')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-fighter-jet"></i> Top Movers</a>
                             <!-- <a onclick="navigate('indicators')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-thermometer-quarter"></i> Indicators</a> -->
                             <!-- <a onclick="navigate('analysis')" class="w3-hide w3-padding w3-bar-item w3-button"><i
@@ -289,6 +291,7 @@
             <div id="content-configuration" class="w3-hide" w3-include-html="./views/content-configuration.html"></div>
             <!-- <div id="content-about" class="w3-hide" w3-include-html="./views/content-about.html"></div> -->
             <div id="content-pdt" class="w3-hide" w3-include-html="./views/content-pdt.html"></div>
+            <div id="content-top" class="w3-hide" w3-include-html="./views/content-top.html"></div>
 
         </div>
     </div>
@@ -490,6 +493,7 @@
             // configuration: 'CONFIGURATION',
             // about: 'ABOUT',
             pdt: 'Day Trading',
+            top: 'Top Movers',
             settings: '<i class="fa fa-cogs"></i> Settings',
             analysis: '<i class="fa fa-area-chart"></i> Analysis',
         }
@@ -777,6 +781,8 @@
         const CHART_PDT_ACCOUNT = new Treemap('chart-pdt-account-today');
         const CHART_PDT_SYMBOL_DAYS = new Treemap('chart-pdt-symbol-days');
         const CHART_PDT_SYMBOL_DAYS_RECENT = new Treemap('chart-pdt-symbol-days-recent');
+        const CHART_TOP_SYMBOLS = new Treemap('chart-top-symbols');
+        const CHART_TOP_SYMBOLS_LAST = new Treemap('chart-top-symbols-last');
 
         function key_up(symbol) {
             if (event.key === 'Enter') {
@@ -1081,6 +1087,7 @@
             RESULTS.CALCS.DELTA = RESULTS.CALCS.TODAY - round2(RESULTS.CALCS.TARGET);
             RESULTS.DEPOSITS = analyze_account_2();
             RESULTS.TREND = await get_trend();
+            RESULTS.TOP_MOVERS = await get_all_symbols();
 
             console.log(RESULTS.CALCS.GAIN, '|', RESULTS.CALCS.TODAY);
             // console.log(RESULTS.CALCS);
@@ -1441,6 +1448,58 @@
                 // document.getElementById('trend-chart-title').innerHTML += ` | <span class="w3-xlarge w3-text-grey">$ ${round2(t / series[0].data.length).toLocaleString()}</span>`;
             };
             update_trend();
+
+            const update_top_movers = () => {
+                let series = [
+                    { name: 'Symbol', _type: 'treemap', data: [] },
+                ];
+                series[0].data = RESULTS.TOP_MOVERS.map((v, i) => { return { x: v.name, y: v.gain } });
+                CHART_TOP_SYMBOLS.options.series = series;
+                CHART_TOP_SYMBOLS.options.chart.type = 'treemap';
+                CHART_TOP_SYMBOLS.options.xaxis.type = 'category';
+                CHART_TOP_SYMBOLS.options.dataLabels.enabled = true;
+                CHART_TOP_SYMBOLS.options.chart.height = 350;
+                CHART_TOP_SYMBOLS.render();
+
+                series = [
+                    { name: 'Symbol', _type: 'treemap', data: [] },
+                ];
+                series[0].data = RESULTS.TOP_MOVERS.map((v, i) => { return { x: v.name, y: v.last } });
+                CHART_TOP_SYMBOLS_LAST.options.series = series;
+                CHART_TOP_SYMBOLS_LAST.options.chart.type = 'treemap';
+                CHART_TOP_SYMBOLS_LAST.options.xaxis.type = 'category';
+                CHART_TOP_SYMBOLS_LAST.options.dataLabels.enabled = true;
+                CHART_TOP_SYMBOLS_LAST.options.chart.height = 350;
+                CHART_TOP_SYMBOLS_LAST.render();
+
+
+                let html = '';
+                const template = `<tr>
+                    <td>{0}</td>
+                    <td>{1}</td>
+                    <td>{2}</td>
+                    <td>{3}</td>
+                </tr>`;
+                RESULTS.TOP_MOVERS.slice(0,10).forEach((v) => {
+                    html += template
+                        .replace('{0}', v.name)
+                        .replace('{1}', v.gain)
+                        .replace('{2}', round2(v.last))
+                        .replace('{3}', round2(v.shares));
+                });
+                document.getElementById('table-rows-top-1').innerHTML = html;
+
+                html = '';
+                RESULTS.TOP_MOVERS.slice(10).forEach((v) => {
+                    html += template
+                        .replace('{0}', v.name)
+                        .replace('{1}', v.gain)
+                        .replace('{2}', round2(v.last))
+                        .replace('{3}', round2(v.shares));
+                });
+                document.getElementById('table-rows-top-2').innerHTML = html;
+            };
+            update_top_movers();
 
             const update_analysis = () => {
                 //* CARDS */

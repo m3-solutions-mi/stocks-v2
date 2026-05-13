@@ -1,0 +1,157 @@
+<div class="w3-container w3-panel w3-xlarge w3-margin">
+    <!-- <hr />
+    <div class="w3-center w3-wide" style="padding-bottom:45px;">
+        <div class="w3-col s4">
+            <div class="w3-row-padding w3-xxlarge">
+                <div class="w3-text-green"><span class="w3-text-grey w3-xlarge w3-margin-right">Gain</span><b>$ 1,097
+                    </b>&nbsp;2.5%</div>
+            </div>
+        </div>
+        <div class="w3-col s4">
+            <div class="w3-row-padding w3-xxlarge">
+                <div class="w3-text-green"><span class="w3-text-grey w3-xlarge w3-margin-right">Today</span><b>$ 224.50
+                    </b>&nbsp;0.57%</div>
+            </div>
+        </div>
+        <div class="w3-col s4">
+            <div class="w3-row-padding w3-xxlarge">
+                <div class="w3-text-teal"><span class="w3-text-grey w3-xlarge w3-margin-right">Target</span><b>-107.2
+                    </b></div>
+            </div>
+        </div>
+    </div>
+
+    <hr /> -->
+
+    <div class="w3-col s12">
+        <div class="w3-row-padding w3-xlarge w3-padding-top">
+            <div class="w3-text-grey w3-wide w3-xxlarge w3-margin-left" style=""><b
+                    id="pdt-today-title">7 Days</b>
+            </div>
+            <div id="chart-top-symbols" class="w3-col s8 w3-margin-bottom" style="min-height:150px;">
+            </div>
+            <div id="chart-top-symbols-last" class="w3-col s4 w3-margin-bottom w3-padding"
+                style="min-height:150px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="w3-col s8">
+        <div class="w3-row-padding w3-xxlarge">
+            <div class="w3-text-grey w3-wide" style="_height:500px;"><b id="pdt-today-title-day"></b>
+            </div>
+            <div id="chart-pdt-chart-symbol-recent" class="w3-hide w3-col s4 w3-margin-bottom w3-padding"
+                style="min-height:350px;"></div>
+            <div id="chart-pdt-chart-symbol-day" class="w3-col s12 w3-margin-bottom w3-padding"
+                style="min-height:350px;"></div>
+        </div>
+    </div> -->
+
+    <!-- <div class="w3-col s4">
+        <div class="w3-row-padding w3-xlarge w3-padding-top">
+            <div class="w3-text-grey w3-xxlarge w3-margin-left" style="_height:500px;"><b>Today</b>
+            </div>
+            <div id="chart-pdt-account-today" class="w3-col s12 w3-margin-bottom w3-padding" style="_min-height:350px;">
+            </div>
+            <div id="chart-pdt-day-tree" class="w3-col s12 w3-margin-bottom w3-padding" style="_min-height:350px;">
+            </div>
+        </div>
+    </div> -->
+
+
+    <!-- <div class="w3-col s12 w3-center">
+        <div class="w3-margin-left w3-row-padding w3-xxlarge">
+            <div class="w3-text-grey" style=""><b id="pdt-today-title"></b><span class="w3-center">
+                    <span class="w3-left" style="cursor:pointer;">
+                        <i class="fa fa-credit-card w3-text-grey w3-xxlarge" style="cursor:pointer;"
+                            onclick="buy_symbol(250)"></i>
+                        <i class="fa fa-credit-card w3-text-green w3-xxlarge w3-margin-left" style="cursor:pointer;"
+                            onclick="buy_symbol()"></i>
+                        <i class="fa fa-credit-card w3-text-teal w3-xxlarge w3-margin-left" style="cursor:pointer;"
+                            onclick="buy_symbol(2000)"></i>
+                        <i class="fa fa-credit-card w3-text-red w3-xxlarge w3-margin-left w3-margin-right"
+                            style="cursor:pointer;" onclick="sell_symbol()"></i>
+                        <i class="fa fa-ban w3-text-pink w3-xxlarge w3-margin-left" onclick="liquidate_symbols()"></i>
+                    </span>
+
+                    <span class="_w3-right" style="cursor:pointer;margin-left:30px;">
+                        <span id="pdt-buying-power"
+                            class="w3-right w3-hide-small w3-xxlarge w3-text-blue w3-margin-right w3-wide">
+                        </span>
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- <div class="w3-col s4">
+        <div class="w3-row-padding w3-xxlarge">
+            <div class="w3-text-grey" style=""><b id="pdt-today-title"></b><span class="w3-right">
+                    <span class="w3-right" style="cursor:pointer;margin-left:30px;">
+                        <span id="pdt-buying-power"
+                            class="w3-hide-small w3-xxlarge w3-text-blue w3-margin-right w3-wide">$
+                            44,118
+                        </span>
+                        <i class="fa fa-ban w3-text-pink w3-xxlarge" onclick="liquidate_symbols()"></i>
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div> -->
+
+    <div class="w3-col s12 w3-center">
+        <div class="w3-col s6 w3-padding">
+            <div class="w3-row-padding w3-xlarge w3-padding-top">
+                <table id="table-entries-top" class="w3-table w3-wide w3-striped">
+                    <thead>
+                        <tr id="table-header-top" class="w3-text-grey" style="border-bottom:1px solid grey;">
+                            <th>Name</th>
+                            <th>Gain</th>
+                            <th>Last</th>
+                            <th>Shares</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-rows-top-1">
+                    </tbody>
+                </table>
+                &nbsp;
+            </div>
+        </div>
+
+        <div class="w3-col s6 w3-padding">
+            <div class="w3-row-padding w3-xlarge w3-padding-top">
+                <table id="table-entries-top" class="w3-table w3-wide w3-striped">
+                    <thead>
+                        <tr id="table-header-top" class="w3-text-grey" style="border-bottom:1px solid grey;">
+                            <th>Name</th>
+                            <th>Gain</th>
+                            <th>Last</th>
+                            <th>Shares</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-rows-top-2">
+                    </tbody>
+                </table>
+                &nbsp;
+            </div>
+        </div>
+
+        <!-- <div class="w3-col s4 w3-padding">
+            <div class="w3-row-padding w3-xlarge w3-padding-top">
+                <table id="table-entries-top" class="w3-table w3-wide w3-striped">
+                    <thead>
+                        <tr id="table-header-top" class="w3-text-grey" style="border-bottom:1px solid grey;">
+                            <th>Name</th>
+                            <th>Gain</th>
+                            <th>Last</th>
+                            <th>Shares</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-rows-top-3">
+                    </tbody>
+                </table>
+                &nbsp;
+            </div>
+        </div> -->
+    </div>
+</div>

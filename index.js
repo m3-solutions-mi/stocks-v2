@@ -259,80 +259,82 @@ function analyze_orders() {
 
     return day_summary;
 }
-async function get_all_symbols(symbols = null, timeframe = '1D', start = '2026-05-03') {
-    const promises = [];
+async function get_all_symbols(symbols = null, timeframe = '1D', start = getYMD(Date.now() - (7 * 24 * 60 * 60 * 1000))) {
+    return new Promise(async (resolve) => {
+        const promises = [];
 
-    // VCX
-    const highlight_grey = 'BTSG,CAT,COHR,GOOGL,IREN,PLUG'.split(',').sort();
-    const highlight_orange = 'AAOI,ALAB,AMZN,AVT,CIFR,CRDO,DELL,GEV,HOOD,LITE,RKLB,ROKU,TSM'.split(',').sort();
-    const highlight_blue = 'AMD,AXTI,CRWV,DIOD,DRAM,INTC,KOPN,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,POWL,SITM,SMCI,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC,WULF'.split(',').sort();
-    const highlight_green = '-'.split(',').sort();
-    const highlight_purple = 'UMC'.split(',').sort();
-    const highlight_deeppink = 'QQQ'.split(',').sort();
+        // VCX
+        const highlight_grey = 'BTSG,CAT,COHR,GOOGL,IREN,PLUG'.split(',').sort();
+        const highlight_orange = 'AAOI,ALAB,AMZN,AVT,CIFR,CRDO,DELL,GEV,HOOD,LITE,RKLB,ROKU,TSM'.split(',').sort();
+        const highlight_blue = 'AMD,AXTI,CRWV,DIOD,DRAM,INTC,KOPN,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,POWL,SITM,SMCI,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC,WULF'.split(',').sort();
+        const highlight_green = '-'.split(',').sort();
+        const highlight_purple = 'UMC'.split(',').sort();
+        const highlight_deeppink = 'QQQ'.split(',').sort();
 
-    let watch_list = [...highlight_grey, ...highlight_green, ...highlight_blue, ...highlight_orange, ...highlight_purple, ...highlight_deeppink];
-    watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
+        let watch_list = [...highlight_grey, ...highlight_green, ...highlight_blue, ...highlight_orange, ...highlight_purple, ...highlight_deeppink];
+        watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
 
-    // // symbols = symbols ? symbols : 'AMD,AXTI,CRWV,DIOD,DRAM,INTC,KOPN,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,POWL,SITM,SMCI,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC,WULF';
-    // symbols = symbols ? symbols : 'AMD,AVT,AXTI,CAT,CIFR,COHR,CRWV,DIOD,DRAM,GEV,INTC,IREN,LITE,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,SITM,SMCI,SNDK,SOXX,STX,TER,TSEM,TSM,VIAV,VRT,WDC,WULF';
-    // // symbols.split(',').sort().forEach((s) => {
-    const dow = new Date().getDay();
-    // const start_at = new Date(Date.now() - ((dow === 0 ? 28.5 : (dow === 6 ? 1.35 : 0.5)) * 24 * 60 * 60 * 1000)).toISOString();
-    const start_at = start;
-    const end_at = '2030-01-01';
-    // const url = `https://m3-solutions-mi.com/${s}/1Day/${start_at}/${end_at}`;
-    // https://m3-solutions-mi.com/NDAQ/1D/2026-01-01T23:59:59/2027-01-01
-    // const url = `https://m3-solutions-mi.com/${symbols}/1D/${start}T23:59:59/2027-01-01`;
-    // url = DATA_SOURCE === 'm3' ?
-    //     `https://m3-solutions-mi.com/${s}/${timeframe}/${start_at}/${end_at}` :
-    //     `https://data.alpaca.markets/v2/stocks/bars?symbols=${s}&timeframe=${$timeframe}&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
+        // // symbols = symbols ? symbols : 'AMD,AXTI,CRWV,DIOD,DRAM,INTC,KOPN,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,POWL,SITM,SMCI,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC,WULF';
+        // symbols = symbols ? symbols : 'AMD,AVT,AXTI,CAT,CIFR,COHR,CRWV,DIOD,DRAM,GEV,INTC,IREN,LITE,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,SITM,SMCI,SNDK,SOXX,STX,TER,TSEM,TSM,VIAV,VRT,WDC,WULF';
+        // // symbols.split(',').sort().forEach((s) => {
+        const dow = new Date().getDay();
+        // const start_at = new Date(Date.now() - ((dow === 0 ? 28.5 : (dow === 6 ? 1.35 : 0.5)) * 24 * 60 * 60 * 1000)).toISOString();
+        const start_at = start;
+        const end_at = '2030-01-01';
+        // const url = `https://m3-solutions-mi.com/${s}/1Day/${start_at}/${end_at}`;
+        // https://m3-solutions-mi.com/NDAQ/1D/2026-01-01T23:59:59/2027-01-01
+        // const url = `https://m3-solutions-mi.com/${symbols}/1D/${start}T23:59:59/2027-01-01`;
+        // url = DATA_SOURCE === 'm3' ?
+        //     `https://m3-solutions-mi.com/${s}/${timeframe}/${start_at}/${end_at}` :
+        //     `https://data.alpaca.markets/v2/stocks/bars?symbols=${s}&timeframe=${$timeframe}&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
 
-    watch_list.forEach((s) => {
-        const url = `https://m3-solutions-mi.com/${s}/1D/${start}T23:59:59/2030-01-01`;
-        promises.push(fetch(url, {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                'APCA-API-KEY-ID': ALPACA_KEY,
-                'APCA-API-SECRET-KEY': ALPACA_SECRET,
+        watch_list.forEach((s) => {
+            const url = `https://m3-solutions-mi.com/${s}/1D/${start}T23:59:59/2030-01-01`;
+            promises.push(fetch(url, {
+                method: 'GET',
+                headers: {
+                    accept: 'application/json',
+                    'APCA-API-KEY-ID': ALPACA_KEY,
+                    'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                }
+            }).then((resp) => resp.json())
+            );
+        });
+        // });
+        const data = await Promise.allSettled(promises);
+
+
+        const result = data.map((v) => {
+            const values = Object.values(v.value.bars)[0];
+            const shares = 1000 / values[0].o;
+            const last = values[values.length - 1];
+            return {
+                name: Object.keys(v.value.bars)[0],
+                gain: round2((values[values.length - 1].c - values[0].o) * shares),
+                last: round2((last.c - last.o) * (1000 / last.o)),
+                shares: round1(shares),
+                values
             }
-        }).then((resp) => resp.json())
-        );
+        });
+        console.log(result.sort((a, b) => b.gain - a.gain));
+        console.log(round2(result.map((v) => v.gain).reduce((p, c) => p + c)));
+        console.log(round2(result.map((v) => v.last).reduce((p, c) => p + c)));
+
+        let filtered = result.filter((v) => v.gain >= 100).sort((a, b) => b.gain - a.gain).slice(0, 30);
+        console.table(filtered);
+        console.log(round2(filtered.map((v) => v.gain).reduce((p, c) => p + c)));
+        console.log(round2(filtered.map((v) => v.last).reduce((p, c) => p + c)));
+        console.log(filtered.map((v) => v.name).join(','));
+        console.log(filtered.map((v) => v.name).sort().join(','));
+
+        // filtered = result.filter((v) => v.gain >= 100).sort((a, b) => b.last - a.last).slice(0, 30);
+        // console.table(filtered);
+        // console.log(round2(filtered.map((v) => v.gain).reduce((p, c) => p + c)));
+        // console.log(round2(filtered.map((v) => v.last).reduce((p, c) => p + c)));
+        // console.log(filtered.map((v) => v.name).join(','));
+        // console.log(filtered.map((v) => v.name).sort().join(','));
+        resolve(filtered);
     });
-    // });
-    const data = await Promise.allSettled(promises);
-
-
-    const result = data.map((v) => {
-        const values = Object.values(v.value.bars)[0];
-        const shares = 1000 / values[0].o;
-        const last = values[values.length - 1];
-        return {
-            name: Object.keys(v.value.bars)[0],
-            gain: round2((values[values.length - 1].c - values[0].o) * shares),
-            last: round2((last.c - last.o) * (1000 / last.o)),
-            shares: round1(shares),
-            values
-        }
-    });
-    console.log(result.sort((a, b) => b.gain - a.gain));
-    console.log(round2(result.map((v) => v.gain).reduce((p, c) => p + c)));
-    console.log(round2(result.map((v) => v.last).reduce((p, c) => p + c)));
-    
-    let filtered = result.filter((v) => v.gain >= 100).sort((a, b) => b.gain - a.gain).slice(0, 30);
-    console.table(filtered);
-    console.log(round2(filtered.map((v) => v.gain).reduce((p, c) => p + c)));
-    console.log(round2(filtered.map((v) => v.last).reduce((p, c) => p + c)));
-    console.log(filtered.map((v) => v.name).join(','));
-    console.log(filtered.map((v) => v.name).sort().join(','));
-
-    // filtered = result.filter((v) => v.gain >= 100).sort((a, b) => b.last - a.last).slice(0, 30);
-    // console.table(filtered);
-    // console.log(round2(filtered.map((v) => v.gain).reduce((p, c) => p + c)));
-    // console.log(round2(filtered.map((v) => v.last).reduce((p, c) => p + c)));
-    // console.log(filtered.map((v) => v.name).join(','));
-    // console.log(filtered.map((v) => v.name).sort().join(','));
-    return result;
 }
 async function combine_symbols(symbols = 'PENG') {
     // symbols = null;
