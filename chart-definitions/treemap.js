@@ -150,28 +150,28 @@ class Treemap {
             }
         },
         yaxis: {},
-        // dataLabels: {
-        //     enabled: false,
-        //     textAnchor: 'middle',
-        //     _offsetY: -5,
-        //     style: {
-        //         fontSize: '20px',
-        //     },
-        //     formatter: function (value, { seriesIndex, dataPointIndex, w }) {
-        //         // return w.config.series[seriesIndex].name + ":  " + round(value / 1000);
-        //         return round(value / 1000);
-        //     }
-        // },
         dataLabels: {
             enabled: false,
             textAnchor: 'middle',
+            _offsetY: -5,
             style: {
-                fontSize: '24px',
+                fontSize: '20px',
             },
-            formatter: function (text, op) {
-                // return [text, op.value];
-                return op.value;
-            },
+            formatter: function (value, { seriesIndex, dataPointIndex, w }) {
+                // return w.config.series[seriesIndex].name + ":  " + round(value / 1000);
+                return round(value / 1000);
+            }
+        },
+        dataLabels: {
+            enabled: false,
+            // textAnchor: 'middle',
+            // style: {
+            //     fontSize: '24px',
+            // },
+            // formatter: function (text, op) {
+            //     // return [text, op.value];
+            //     return op.value;
+            // },
             offsetY: -4
         },
         noData: { text: 'No Data Available', style: {color: '#000'}},

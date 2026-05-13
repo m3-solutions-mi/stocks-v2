@@ -316,16 +316,16 @@ async function get_all_symbols(symbols = null, timeframe = '1D', start = getYMD(
                 values
             }
         });
-        console.log(result.sort((a, b) => b.gain - a.gain));
-        console.log(round2(result.map((v) => v.gain).reduce((p, c) => p + c)));
-        console.log(round2(result.map((v) => v.last).reduce((p, c) => p + c)));
+        // console.log(result.sort((a, b) => b.gain - a.gain));
+        // console.log(round2(result.map((v) => v.gain).reduce((p, c) => p + c)));
+        // console.log(round2(result.map((v) => v.last).reduce((p, c) => p + c)));
 
         let filtered = result.filter((v) => v.gain >= 100).sort((a, b) => b.gain - a.gain).slice(0, 30);
-        console.table(filtered);
-        console.log(round2(filtered.map((v) => v.gain).reduce((p, c) => p + c)));
-        console.log(round2(filtered.map((v) => v.last).reduce((p, c) => p + c)));
-        console.log(filtered.map((v) => v.name).join(','));
-        console.log(filtered.map((v) => v.name).sort().join(','));
+        // console.table(filtered);
+        // console.log(round2(filtered.map((v) => v.gain).reduce((p, c) => p + c)));
+        // console.log(round2(filtered.map((v) => v.last).reduce((p, c) => p + c)));
+        // console.log(filtered.map((v) => v.name).join(','));
+        // console.log(filtered.map((v) => v.name).sort().join(','));
 
         // filtered = result.filter((v) => v.gain >= 100).sort((a, b) => b.last - a.last).slice(0, 30);
         // console.table(filtered);
