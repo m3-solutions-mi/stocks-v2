@@ -533,7 +533,15 @@
                 buy(s, spend);
                 await sleep(500);
             };
-            console.log('done');
+            console.log('buy_symbols | done');
+        }
+        async function buy_top_symbols(spend = 2000) {
+            const symbols = RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).slice(0, 22).map((v) => v.name);
+            for await (const s of symbols) {
+                buy(s, spend);
+                await sleep(500);
+            };
+            console.log('buy_top_20_symbols | done');
         }
 
         function sell_symbol() {
@@ -840,7 +848,7 @@
 
             const dow = new Date().getDay();
             // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.35 : 1)) * 24 * 60 * 60 * 1000)).toISOString();
-            const start_at = new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString();
+            const start_at = new Date(Date.now() - (0.5 * 24 * 60 * 60 * 1000)).toISOString();
             const end_at = new Date().toISOString();
             // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
             url = DATA_SOURCE === 'm3' ?
@@ -1453,7 +1461,7 @@
                 let series = [
                     { name: 'Symbol', _type: 'treemap', data: [] },
                 ];
-                series[0].data = RESULTS.TOP_MOVERS.map((v, i) => { return { x: v.name, y: v.gain } });
+                series[0].data = RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).map((v, i) => { return { x: v.name, y: v.gain } }).slice(0,20);
                 CHART_TOP_SYMBOLS.options.series = series;
                 CHART_TOP_SYMBOLS.options.chart.type = 'treemap';
                 CHART_TOP_SYMBOLS.options.xaxis.type = 'category';
@@ -1464,7 +1472,7 @@
                 series = [
                     { name: 'Symbol', _type: 'treemap', data: [] },
                 ];
-                series[0].data = RESULTS.TOP_MOVERS.map((v, i) => { return { x: v.name, y: v.last } });
+                series[0].data = RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).slice(0,20).map((v, i) => { return { x: v.name, y: v.last } }).slice(0,20);
                 CHART_TOP_SYMBOLS_LAST.options.series = series;
                 CHART_TOP_SYMBOLS_LAST.options.chart.type = 'treemap';
                 CHART_TOP_SYMBOLS_LAST.options.xaxis.type = 'category';
@@ -1482,7 +1490,7 @@
                     <td>{3}</td>
                 </tr>`;
                 // RESULTS.TOP_MOVERS.slice(0,10).forEach((v) => {
-                RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).forEach((v) => {
+                RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).slice(0,20).forEach((v) => {
                     html += template
                         .replace('{0}', v.name)
                         .replace('{1}', v.gain)
@@ -1493,7 +1501,7 @@
 
                 html = '';
                 // RESULTS.TOP_MOVERS.slice(10).forEach((v) => {
-                RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).forEach((v) => {
+                RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).slice(0,20).forEach((v) => {
                     html += template
                         .replace('{0}', v.name)
                         .replace('{1}', v.gain)
