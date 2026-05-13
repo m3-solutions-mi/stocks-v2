@@ -333,7 +333,9 @@ async function get_all_symbols(symbols = null, timeframe = '1D', start = getYMD(
         // console.log(round2(filtered.map((v) => v.last).reduce((p, c) => p + c)));
         // console.log(filtered.map((v) => v.name).join(','));
         // console.log(filtered.map((v) => v.name).sort().join(','));
-        resolve(filtered);
+        // resolve(filtered);
+
+        resolve(result);
     });
 }
 async function combine_symbols(symbols = 'PENG') {

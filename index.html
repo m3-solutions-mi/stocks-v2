@@ -1481,7 +1481,8 @@
                     <td>{2}</td>
                     <td>{3}</td>
                 </tr>`;
-                RESULTS.TOP_MOVERS.slice(0,10).forEach((v) => {
+                // RESULTS.TOP_MOVERS.slice(0,10).forEach((v) => {
+                RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).forEach((v) => {
                     html += template
                         .replace('{0}', v.name)
                         .replace('{1}', v.gain)
@@ -1491,7 +1492,8 @@
                 document.getElementById('table-rows-top-1').innerHTML = html;
 
                 html = '';
-                RESULTS.TOP_MOVERS.slice(10).forEach((v) => {
+                // RESULTS.TOP_MOVERS.slice(10).forEach((v) => {
+                RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).forEach((v) => {
                     html += template
                         .replace('{0}', v.name)
                         .replace('{1}', v.gain)
