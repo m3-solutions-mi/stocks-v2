@@ -31,13 +31,18 @@
     <script src="./js/helpers.js"></script>
     <script src="./js/HackTimer.js"></script>
     <script src="./chart-definitions/mixed.js"></script>
+    <script src="./chart-definitions/candlestick.js"></script>
     <script src="./chart-definitions/combo.js"></script>
     <script src="./chart-definitions/treemap.js"></script>
+    <script src="./chart-definitions/advanced-stock-chart.js"></script>
     <script src="./js/colors.js"></script>
+    <script src="./js/heikin-ashi.js"></script>
     <script src="./js/stock_symbols_detail.js"></script>
     <script src="./js/nasdaq-symbols.js"></script>
     <script src="./js/bollinger-bands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/apexstock"></script>
 
     <!--@ PAGE CONTENT -->
     <div class="w3-content w3-margin-top" style="max-width:1800px;"> <!-- 1450 -->
@@ -190,6 +195,8 @@
                                 Usage</a> -->
                             <!-- <a onclick="navigate('pricing')" class="w3-hide w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-usd"></i> Pricing</a> -->
+                            <a onclick="navigate('bars-analysis')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-line-chart"></i>&nbsp;Bars&nbsp;Analysis</a>
                         </div>
                     </div>
 
@@ -292,6 +299,7 @@
             <!-- <div id="content-about" class="w3-hide" w3-include-html="./views/content-about.html"></div> -->
             <div id="content-pdt" class="w3-hide" w3-include-html="./views/content-pdt.html"></div>
             <div id="content-top" class="w3-hide" w3-include-html="./views/content-top.html"></div>
+            <div id="content-bars-analysis" class="w3-hide" w3-include-html="./views/content-bars-analysis.html"></div>
 
         </div>
     </div>
@@ -405,8 +413,9 @@
             load_day();
             load_data();
             load_schedule();
+            // load_advanced_chart();
 
-            click_symbol('QQQ');
+            click_symbol(SELECTED_SYMBOL);
 
             const form = document.getElementById('settings-form');
             form.addEventListener('submit', function (event) {
@@ -496,6 +505,7 @@
             top: 'Top Movers',
             settings: '<i class="fa fa-cogs"></i> Settings',
             analysis: '<i class="fa fa-area-chart"></i> Analysis',
+            'bars-analysis': '<i class="fa fa-line-chart"></i> Bars Analysis',
         }
         function navigate(value) {
             Object.keys(menu_item_map).forEach((v) => {
@@ -791,12 +801,15 @@
         const CHART_PDT_SYMBOL_DAYS_RECENT = new Treemap('chart-pdt-symbol-days-recent');
         const CHART_TOP_SYMBOLS = new Treemap('chart-top-symbols');
         const CHART_TOP_SYMBOLS_LAST = new Treemap('chart-top-symbols-last');
+        const CHART_BARS_ANALYSIS_OHLC = new Candlestick('chart-bars-analysis-ohlc');
+        const CHART_BARS_ANALYSIS_OHLC_M = new Candlestick('chart-bars-analysis-ohlc-m');
 
         function key_up(symbol) {
             if (event.key === 'Enter') {
                 console.log(symbol);
                 click_symbol(symbol.toUpperCase());
                 document.getElementById('symbol-input').value = '';
+                document.getElementById('bars-analysis-symbol-input').value = '';
             }
         }
         function click_letter(letter) {
@@ -822,18 +835,19 @@
             console.log(value, Array.from(document.getElementsByName('analysis-view')).map((v) => v.value));
         }
 
-        let SELECTED_SYMBOL = 'QQQ';
-        let INDICATORS = 'NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
+        let SELECTED_SYMBOL = 'NDAQ';
+        let INDICATORS = 'QQQ,NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
         async function click_symbol(name) {
+
             SELECTED_SYMBOL = name;
-            const raw = false; //INDICATORS.indexOf(name) >= 0;
+            const raw = 'QQQ,NDAQ,CL=F,^VIX,^IXIC'.split(',').indexOf(name) >= 0; //false; //INDICATORS.indexOf(name) >= 0;
 
             const position = RESULTS?.POSITIONS ? RESULTS.POSITIONS.find((v) => v.name === name) : null;
             // console.log(position);
 
             let url = DATA_SOURCE === 'm3' ?
-                `https://m3-solutions-mi.com/${name}/1D/2026-01-01T23:59:59/2027-01-01` :
-                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
+                `https://m3-solutions-mi.com/${name}/1D/2026-03-01T23:59:59/2027-01-01` :
+                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2026-03-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
 
             // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
             const resp = await fetch(url, {
@@ -847,8 +861,8 @@
             const data = resp.bars[name];
 
             const dow = new Date().getDay();
-            // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.35 : 1)) * 24 * 60 * 60 * 1000)).toISOString();
-            const start_at = new Date(Date.now() - (0.5 * 24 * 60 * 60 * 1000)).toISOString();
+            const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.5 : 1)) * 24 * 60 * 60 * 1000)).toISOString();
+            // const start_at = new Date(Date.now() - (2.1 * 24 * 60 * 60 * 1000)).toISOString();
             const end_at = new Date().toISOString();
             // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
             url = DATA_SOURCE === 'm3' ?
@@ -871,6 +885,55 @@
             // console.log(name + ' selected');
             // console.log(name, elem, data);
 
+            const update_data_bars_advanced = () => {
+                //* BARS ANALYSIS CHARTS */
+                let data_bars_advanced = data.map((v) => { return { x: getYMD(new Date(v.t)), y: [v.o, v.h, v.l, v.c] } });
+                // console.log(data_bars_advanced);
+                // update_advanced_chart(data_bars_advanced);
+                let ha = calculateHeikinAshi(data_bars_advanced.map((v) => { return { o: v.y[0], h: v.y[1], l: v.y[2], c: v.y[3] }; }));
+                let bb = calculateBollingerBands(data_bars_advanced.map((v) => v.y[3]), period = 7, multiplier = 0.5);
+                CHART_BARS_ANALYSIS_OHLC.options.series = [
+                    { name: name, data: ha.map((v, i) => { return { x: data_bars_advanced[i].x, y: [v.o, v.h, v.l, v.c] } }) },
+                    { name: 'Bollinger', type: 'line', data: bb.lowerBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: v === 0 ? ha[i].c : round2(v) } }) },
+                    { name: 'Upper', type: 'line', data: bb.upperBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: v === 0 ? ha[i].c : round2(v) } }) },
+                ];
+                // CHART_BARS_ANALYSIS_OHLC.options.chart.height = 350;
+                CHART_BARS_ANALYSIS_OHLC.render();
+                //  (${round2((data_bars_advanced[data_bars_advanced.length-1][3].y-data_bars_advanced[0][3].y)/data_bars_advanced[0][3].y*100)}%)
+                const qty = 1000 / data_bars_advanced[0].y[3]
+                document.getElementById('chart-bars-analysis-title').innerHTML = `<b>${name}</b>&nbsp;&nbsp;|&nbsp;&nbsp;${get_description(name)}&nbsp;&nbsp;|&nbsp;&nbsp;<b>$ ${round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[0].y[3]) * qty).toLocaleString()}</b>`;
+
+                data_bars_advanced = data_m.map((v) => { return { x: new Date(v.t).getTime(), y: [v.o, v.h, v.l, v.c] } });
+                // console.log(data_bars_advanced);
+                // update_advanced_chart(data_bars_advanced);
+                ha = calculateHeikinAshi(data_bars_advanced.map((v) => { return { o: v.y[0], h: v.y[1], l: v.y[2], c: v.y[3] }; }));
+                bb = calculateBollingerBands(data_bars_advanced.map((v) => v.y[3]), period = 7, multiplier = 0.5);
+                CHART_BARS_ANALYSIS_OHLC_M.options.series = [
+                    { name: name, data: ha.map((v, i) => { return { x: data_bars_advanced[i].x, y: [v.o, v.h, v.l, v.c] } }) },
+                    // { name: 'Close', type: 'area', color: '#4CAF5030', data: bb.lowerBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: data_bars_advanced[i].y } }) },
+                    // { name: 'Upper', type: 'line', data: bb.upperBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: v === 0 ? ha[i].c : round2(v) } }) },
+                ];
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations = { xaxis: [], yaxis: [], points: [] };
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations.yaxis.push(add_annotation_y(data_bars_advanced[0].y[3], 'blue', `Start: $${data_bars_advanced[0].y[3]}`));
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations.yaxis.push(add_annotation_y(data_bars_advanced[data_bars_advanced.length - 1].y[3], 'deeppink', `Start: $${data_bars_advanced[data_bars_advanced.length - 1].y[3]}`));
+
+                const d = new Date(data_bars_advanced[data_bars_advanced.length - 1].x);
+                // console.log(d2);
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations.xaxis = [
+                    add_annotation_x(d.setHours(16, 0) - (24*60*60*1000), null, colors.teal),
+                    add_annotation_x(d.setHours(20, 0) - (24*60*60*1000), null, colors.teal),
+                    add_annotation_x(d.setHours(9, 30), null, colors.teal),
+                    add_annotation_x(d.setHours(10, 0), null, colors.deeppink),
+                    add_annotation_x(d.setHours(16, 0), null, colors.teal),
+                ];
+                // CHART_BARS_ANALYSIS_OHLC_M.options.annotations.xaxis.push(add_annotation_x(data_bars_advanced.find((v)=>v.x >= data_bars_advanced[0]).x.setHours(9,25), 'blue'));
+                // CHART_BARS_ANALYSIS_OHLC_M.options.chart.sparkline = { enabled: true };
+                CHART_BARS_ANALYSIS_OHLC_M.options.yaxis = { show: false };
+                CHART_BARS_ANALYSIS_OHLC_M.render();
+            }
+            update_data_bars_advanced();
+
+
             let series = [
                 { name: 'Gain', type: 'area', data: [] },
                 { name: '0.5% / d', type: 'line', data: [] },
@@ -882,8 +945,12 @@
             let shares = raw ? 1 : 1000 / start;
             const increment = (start * shares * 0.005);
             series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
-            series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
-            series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            if (!raw) {
+                series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+                series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            }
+            // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+            // series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
             const bollinger = calculateBollingerBands(series[0].data.map((v) => v.y), 7, 1);
             series[0].data.forEach((v, i) => {
                 series[3].data.push({ x: v.x, y: bollinger.lowerBand[i] });
@@ -937,7 +1004,7 @@
             series_3[0].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
             // series[1].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
             // series[2].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
-            const d1 = new Date(series[0].data[series[0].data.length - 1].x);
+            let d1 = new Date(series[0].data[series[0].data.length - 1].x);
             const d2 = new Date(series[0].data[series[0].data.length - 1].x - (24 * 60 * 60 * 1000));
             // console.log(d2);
             CHART_SYMBOL_MINUTES.options.annotations.xaxis = [
@@ -1016,6 +1083,7 @@
             document.getElementById('symbol-score-baseline').innerHTML = round1(increment);
             document.getElementById('symbol-invested').innerHTML = position ? '$ ' + position.seed : '-';
             document.getElementById('analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
+            document.getElementById('bars-analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
             document.getElementById('pdt-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
 
             // document.getElementById('chart-symbol-recent').scrollIntoView();
@@ -1095,7 +1163,7 @@
             RESULTS.CALCS.DELTA = RESULTS.CALCS.TODAY - round2(RESULTS.CALCS.TARGET);
             RESULTS.DEPOSITS = analyze_account_2();
             RESULTS.TREND = await get_trend();
-            RESULTS.TOP_MOVERS = await get_all_symbols();
+            // RESULTS.TOP_MOVERS = await get_all_symbols();
 
             console.log(RESULTS.CALCS.GAIN, '|', RESULTS.CALCS.TODAY);
             // console.log(RESULTS.CALCS);
@@ -1123,20 +1191,20 @@
                 // watch_list += ',CNC,DIOD,DRAM,VRT,VSAT,TER,GNRC,KOD,SMTC,GOOGL,HOOD,HUT,SITM,ORKA,INTC,MCHP,AEIS,MPWR,ON,AVGO';
                 // watch_list += ',BE';
                 // const highlight_grey = 'BE,CAT,CIFR,CLSK,DHC,GOOGL,HOVR,IREN,MSTR,OKLO,PLTR,QCOM,TEAM,VCX'.split(',').sort();
-                const highlight_grey = 'BTSG,CAT,COHR,GOOGL,IREN,PLUG,VCX'.split(',').sort();
-                const highlight_orange = 'AAOI,ALAB,AMZN,AVT,CIFR,CRDO,DELL,GEV,HOOD,LITE,RKLB,ROKU,TSM'.split(',').sort();
-                const highlight_blue = 'AMD,AXTI,CRWV,DIOD,DRAM,INTC,KOPN,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,POWL,SITM,SMCI,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,VIAV,VRT,VSAT,WDC,WULF'.split(',').sort();
-                const highlight_green = '-'.split(',').sort();
-                const highlight_purple = 'UMC'.split(',').sort();
-                const highlight_pink = 'AIS,HGER,QQQ,WAR'.split(',').sort();
+                const highlight_green = 'CRM,INTU,UMC'.split(','); //.sort();
+                const highlight_grey = 'DELL,GOOGL,MTSI,NBIS,ON,PLUG,RKLB,TSEM,VRT,WOLF,ALAB,BTSG,AAOI,AMZN,AVT,CIFR,CRDO,DELL,GEV,HOOD,LITE,RKLB,ROKU,TSM,AMD,AXTI,CRWV,DIOD,INTC,KOPN,MCHP,MPWR,ON,PENG,POWL,SITM,SMCI,SOXX,TER,TSEM,VIAV,VSAT,WOLF,WULF,NBIS,BTSG,ASML,DRAM,FIX,MTSI,MU,SNDK,SOXL,STRL,STX,VRT,WDC,UMC,LITE,KNSA,AIS,HGER,ALAB,BTSG,CAT,COHR,GOOGL,IREN,PLUG,VCX'.split(',').sort();
+                const highlight_orange = 'NVDA,PENG,ZM'.split(',').sort();
+                const highlight_blue = '-'.split(',').sort();
+                const highlight_purple = '-'.split(',').sort();
+                const highlight_pink = 'QQQ,NDAQ'.split(',').sort();
 
-                let watch_list = [...highlight_grey, ...highlight_green, ...highlight_blue, ...highlight_orange, ...highlight_purple, ...highlight_pink];
+                let watch_list = [...highlight_pink, ...highlight_green, ...highlight_grey, ...highlight_blue, ...highlight_orange, ...highlight_purple];
                 watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
 
                 const template = `<div class="w3-button w3-margin-right w3-margin-bottom" style="border-bottom:{1}px solid {2} !important;border:2px solid lightgrey" onclick=(click_symbol("{0}"))>{0}</div>`;
                 const template_pdt = `
                     <tr style="cursor:pointer;" onclick="click_symbol(Array.from(this.children)[0].innerText)">
-                        <td><i class="fa fa-circle{5} w3-text-{1} w3-xlarge w3-margin-right"></i><span class="w3-text-{6}">{0}</span></td>
+                        <td><i class="fa fa-circle{5} w3-text-{1} w3-xlarge w3-margin-right"></i><span class="w3-text-{6}"><b>{0}</b></span></td>
                         <td class="w3-text-{7}">{2}</td>
                         <td class="w3-text-{6}">{3}</td>
                         <td class="w3-text-{6}">{4}</td>
@@ -1149,23 +1217,24 @@
                         .replace('{0}', v)
                         .replace('{1}', highlight_orange.indexOf(v) >= 0 ? 5 : '{1}')
                         .replace('{2}', highlight_orange.indexOf(v) >= 0 ? 'orange' : '{2}')
-                        .replace('{1}', highlight_green.indexOf(v) >= 0 ? 5 : '{1}')
-                        .replace('{2}', highlight_green.indexOf(v) >= 0 ? 'green' : '{2}')
                         .replace('{1}', highlight_blue.indexOf(v) >= 0 ? 5 : '{1}')
                         .replace('{2}', highlight_blue.indexOf(v) >= 0 ? 'blue' : '{2}')
                         .replace('{1}', highlight_purple.indexOf(v) >= 0 ? 5 : '{1}')
                         .replace('{2}', highlight_purple.indexOf(v) >= 0 ? 'purple' : '{2}')
                         .replace('{1}', highlight_pink.indexOf(v) >= 0 ? 5 : '{1}')
                         .replace('{2}', highlight_pink.indexOf(v) >= 0 ? 'deeppink' : '{2}')
+                        .replace('{1}', highlight_green.indexOf(v) >= 0 ? 5 : '{1}')
+                        .replace('{2}', highlight_green.indexOf(v) >= 0 ? 'green' : '{2}')
                         .replace('{1}', 1)
                         .replace('{2}', 'lightgrey');
                 })
                 document.getElementById('watch-symbols').innerHTML = html;
+                document.getElementById('bars-analysis-symbols').innerHTML = html;
 
                 let html_pdt_1 = '';
                 let html_pdt_2 = '';
                 let html_pdt_3 = '';
-                watch_list = [...highlight_green, ...highlight_blue, ...highlight_orange, ...highlight_purple, ...highlight_grey, ...highlight_pink];
+                watch_list = [...highlight_pink, ...highlight_green, ...highlight_blue, ...highlight_orange, ...highlight_purple, ...highlight_grey];
                 watch_list.push(...INDICATORS);
                 watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-');
                 const divisor = Math.ceil(watch_list.length / 3);
@@ -1355,8 +1424,10 @@
                 CHART_24H_HISTORY.render();
 
                 clone = deepClone(CHART_24H_HISTORY.options);
-                clone.series[0].data = clone.series[0].data.filter((v) => v.x >= new Date(series[0].data[0].x).setHours(9, 0));
-                clone.series[0].data = clone.series[0].data.filter((v) => v.x <= new Date(series[0].data[0].x).setHours(16, 3));
+                if (getHMM(new Date()) >= 930 && getHMM(new Date()) <= 1630) {
+                    clone.series[0].data = clone.series[0].data.filter((v) => v.x >= new Date(series[0].data[0].x).setHours(9, 0));
+                    clone.series[0].data = clone.series[0].data.filter((v) => v.x <= new Date(series[0].data[0].x).setHours(16, 3));
+                }
                 clone.chart.height = 225;
 
                 // const d1 = new Date(clone.series[0].data[clone.series[0].data.length - 1].x);
@@ -1457,60 +1528,60 @@
             };
             update_trend();
 
-            const update_top_movers = () => {
-                let series = [
-                    { name: 'Symbol', _type: 'treemap', data: [] },
-                ];
-                series[0].data = RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).map((v, i) => { return { x: v.name, y: v.gain } }).slice(0,20);
-                CHART_TOP_SYMBOLS.options.series = series;
-                CHART_TOP_SYMBOLS.options.chart.type = 'treemap';
-                CHART_TOP_SYMBOLS.options.xaxis.type = 'category';
-                CHART_TOP_SYMBOLS.options.dataLabels.enabled = true;
-                CHART_TOP_SYMBOLS.options.chart.height = 350;
-                CHART_TOP_SYMBOLS.render();
+            // const update_top_movers = () => {
+            //     let series = [
+            //         { name: 'Symbol', _type: 'treemap', data: [] },
+            //     ];
+            //     series[0].data = RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).map((v, i) => { return { x: v.name, y: v.gain } }).slice(0, 20);
+            //     CHART_TOP_SYMBOLS.options.series = series;
+            //     CHART_TOP_SYMBOLS.options.chart.type = 'treemap';
+            //     CHART_TOP_SYMBOLS.options.xaxis.type = 'category';
+            //     CHART_TOP_SYMBOLS.options.dataLabels.enabled = true;
+            //     CHART_TOP_SYMBOLS.options.chart.height = 350;
+            //     CHART_TOP_SYMBOLS.render();
 
-                series = [
-                    { name: 'Symbol', _type: 'treemap', data: [] },
-                ];
-                series[0].data = RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).slice(0,20).map((v, i) => { return { x: v.name, y: v.last } }).slice(0,20);
-                CHART_TOP_SYMBOLS_LAST.options.series = series;
-                CHART_TOP_SYMBOLS_LAST.options.chart.type = 'treemap';
-                CHART_TOP_SYMBOLS_LAST.options.xaxis.type = 'category';
-                CHART_TOP_SYMBOLS_LAST.options.dataLabels.enabled = true;
-                // CHART_TOP_SYMBOLS_LAST.options.chart.sparkline.enabled = false;
-                CHART_TOP_SYMBOLS_LAST.options.chart.height = 350;
-                CHART_TOP_SYMBOLS_LAST.render();
+            //     series = [
+            //         { name: 'Symbol', _type: 'treemap', data: [] },
+            //     ];
+            //     series[0].data = RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).slice(0, 20).map((v, i) => { return { x: v.name, y: v.last } }).slice(0, 20);
+            //     CHART_TOP_SYMBOLS_LAST.options.series = series;
+            //     CHART_TOP_SYMBOLS_LAST.options.chart.type = 'treemap';
+            //     CHART_TOP_SYMBOLS_LAST.options.xaxis.type = 'category';
+            //     CHART_TOP_SYMBOLS_LAST.options.dataLabels.enabled = true;
+            //     // CHART_TOP_SYMBOLS_LAST.options.chart.sparkline.enabled = false;
+            //     CHART_TOP_SYMBOLS_LAST.options.chart.height = 350;
+            //     CHART_TOP_SYMBOLS_LAST.render();
 
 
-                let html = '';
-                const template = `<tr>
-                    <td>{0}</td>
-                    <td>{1}</td>
-                    <td>{2}</td>
-                    <td>{3}</td>
-                </tr>`;
-                // RESULTS.TOP_MOVERS.slice(0,10).forEach((v) => {
-                RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).slice(0,20).forEach((v) => {
-                    html += template
-                        .replace('{0}', v.name)
-                        .replace('{1}', v.gain)
-                        .replace('{2}', round2(v.last))
-                        .replace('{3}', round2(v.shares));
-                });
-                document.getElementById('table-rows-top-1').innerHTML = html;
+            //     let html = '';
+            //     const template = `<tr>
+            //         <td>{0}</td>
+            //         <td>{1}</td>
+            //         <td>{2}</td>
+            //         <td>{3}</td>
+            //     </tr>`;
+            //     // RESULTS.TOP_MOVERS.slice(0,10).forEach((v) => {
+            //     RESULTS.TOP_MOVERS.sort((a, b) => b.gain - a.gain).slice(0, 20).forEach((v) => {
+            //         html += template
+            //             .replace('{0}', v.name)
+            //             .replace('{1}', v.gain)
+            //             .replace('{2}', round2(v.last))
+            //             .replace('{3}', round2(v.shares));
+            //     });
+            //     document.getElementById('table-rows-top-1').innerHTML = html;
 
-                html = '';
-                // RESULTS.TOP_MOVERS.slice(10).forEach((v) => {
-                RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).slice(0,20).forEach((v) => {
-                    html += template
-                        .replace('{0}', v.name)
-                        .replace('{1}', v.gain)
-                        .replace('{2}', round2(v.last))
-                        .replace('{3}', round2(v.shares));
-                });
-                document.getElementById('table-rows-top-2').innerHTML = html;
-            };
-            update_top_movers();
+            //     html = '';
+            //     // RESULTS.TOP_MOVERS.slice(10).forEach((v) => {
+            //     RESULTS.TOP_MOVERS.sort((a, b) => b.last - a.last).slice(0, 20).forEach((v) => {
+            //         html += template
+            //             .replace('{0}', v.name)
+            //             .replace('{1}', v.gain)
+            //             .replace('{2}', round2(v.last))
+            //             .replace('{3}', round2(v.shares));
+            //     });
+            //     document.getElementById('table-rows-top-2').innerHTML = html;
+            // };
+            // update_top_movers();
 
             const update_analysis = () => {
                 //* CARDS */

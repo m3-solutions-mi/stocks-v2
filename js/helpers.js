@@ -120,9 +120,18 @@ function calculateTrendline(data) {
 }
 
 // =================================================
-// GET YEAR-MONTH-DAY
+// GET HOUR MINUTE AS NUMBER (8:32 -> 832)
 // =================================================
 function getHMM(date) {
+    const d = new Date(date);
+    let v = d.getHours() * 100;
+    v += d.getMinutes();
+    return v;
+}
+// =================================================
+// GET YEAR-MONTH-DAY
+// =================================================
+function getHMM_string(date) {
     const d = new Date(date);
     let hour = '' + d.getHours();
     let minute = '' + d.getMinutes();

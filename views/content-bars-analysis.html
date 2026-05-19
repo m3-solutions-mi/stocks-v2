@@ -1,0 +1,69 @@
+<div class="w3-container w3-panel w3-xlarge w3-margin">
+    <div class="w3-col s12 w3-padding">
+        <div class="w3-row-padding w3-xxlarge">
+            <div class="w3-text-green w3-wide"><b id="chart-bars-analysis-title">-</b>
+
+                <span class="w3-hide-small w3-right">
+                    <span id="bars-analysis-buying-power"
+                        class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$
+                        -</span>
+                    <i class="fa fa-credit-card w3-xxlarge w3-text-green w3-margin-right pointer"
+                        onclick="buy_symbol(1000)"></i>
+                    <i class="fa fa-credit-card w3-xxlarge w3-text-teal w3-margin-right pointer"
+                        onclick="buy_symbol(2000)"></i>
+                    <i class="fa fa-credit-card w3-xxlarge w3-text-red w3-margin-right pointer"
+                        onclick="sell_symbol()"></i>
+                    <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer"
+                        onclick="liquidate_symbols()"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="w3-hide w3-col s12 w3-margin-bottom">
+        <div id="chart-bars-analysis" style="min-height:750px;border:1px solid lightgray;"></div>
+    </div>
+    <div class="w3-col s12 m7 w3-margin-bottom">
+        <div id="chart-bars-analysis-ohlc" class="w3-margin" style="min-height:750px;border:1px solid lightgray;"></div>
+    </div>
+    <div class="w3-col s12 m5 w3-margin-bottom">
+        <div id="chart-bars-analysis-ohlc-m" class="w3-margin" style="min-height:750px;border:1px solid lightgray;">
+        </div>
+    </div>
+
+    <div class="w3-col s12 w3-padding">
+        <div class="w3-row-padding w3-xlarge w3-center">
+            <div id="bars-analysis-symbols" class="w3-wide"></div>
+        </div>
+    </div>
+</div>
+
+<!--@ SYMBOL SEARCH -->
+<div class="w3-hide-small w3-container w3-center w3-wide" style="_display:inline-block;">
+    <label>SYMBOL:&nbsp;</label>
+    <input id="bars-analysis-symbol-input" class="_w3-input" type="text"
+        onkeyup="key_up(document.getElementById('bars-analysis-symbol-input').value.toUpperCase())">
+    <i class="fa fa-search w3-text-grey" style="cursor:pointer;"
+        onclick="click_symbol(document.getElementById('bars-analysis-symbol-input').value.toUpperCase())"></i>
+
+    <br />
+
+    <div class="w3-xlarge">
+        <!-- <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="grey" checked>
+        <label class="w3-margin-right">Grey</label>
+        <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="orange">
+        <label class="w3-margin-right">Orange</label>
+        <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="blue">
+        <label class="w3-margin-right">Blue</label>
+        <input id="radio-100" class="w3-radio" type="radio" name="analysis-watch-list" value="purple">
+        <label class="w3-margin-right">Purple</label> -->
+
+        <!-- <div class="w3-margin-top">
+            <i class="fa fa-plus-square-o w3-text-grey w3-xxlarge" style="cursor:pointer;"
+                onclick="click_symbol(document.getElementById('bars-analysis-symbol-input').value.toUpperCase())"></i>
+            <i class="fa fa-minus-square-o w3-text-grey w3-xxlarge" style="cursor:pointer;"
+                onclick="click_symbol(document.getElementById('bars-analysis-symbol-input').value.toUpperCase())"></i>
+        </div> -->
+    </div>
+</div>
+&nbsp;
+<br />

@@ -5281,4 +5281,7 @@ VRT|Vertiv Holdings Co||||||
 VCX|Fundrise Innovation Fund, LLC||||||
 COHR|Coherent Corp||||||
 DELL|Dell Technologies Inc||||||
+UMC|United Microelectronics Corp||||||
+WOLF|Wolfspeed Inc||||||
+CRM|Sales Force||||||
 `;

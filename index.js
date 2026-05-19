@@ -189,7 +189,7 @@ function analyze_orders() {
             .map((v) => {
                 return {
                     d: getYMD(new Date(v.filled_at)),
-                    t: getHMM(new Date(v.filled_at)),
+                    t: getHMM_string(new Date(v.filled_at)),
                     side: v.side,
                     g: round2(v.filled_avg_price * v.filled_qty),
                     notional: v.notional,
@@ -225,7 +225,7 @@ function analyze_orders() {
             })
         })
         const index = RESULTS.HISTORY_1W_DAY.timestamp.findIndex((v) => v === new Date(d + 'T20:00:00').getTime() / 1000);
-        const invested = RESULTS.DEPOSITS.filter((v) => v.date === d);
+        const invested = RESULTS.DEPOSITS.filter((v) => v.date >= d);
         summary.push({
             d: d,
             g: round2(total),
@@ -278,8 +278,8 @@ async function get_all_symbols(symbols = null, timeframe = '1D', start = getYMD(
         // symbols = symbols ? symbols : 'AMD,AVT,AXTI,CAT,CIFR,COHR,CRWV,DIOD,DRAM,GEV,INTC,IREN,LITE,MCHP,MPWR,MTSI,MU,NBIS,ON,PENG,SITM,SMCI,SNDK,SOXX,STX,TER,TSEM,TSM,VIAV,VRT,WDC,WULF';
         // // symbols.split(',').sort().forEach((s) => {
         const dow = new Date().getDay();
-        // const start_at = new Date(Date.now() - ((dow === 0 ? 28.5 : (dow === 6 ? 1.35 : 0.5)) * 24 * 60 * 60 * 1000)).toISOString();
-        const start_at = start;
+        const start_at = getYMD(new Date(Date.now() - ((dow === 0 ? 28.5 : (dow === 6 ? 1.35 : 0.5)) * 24 * 60 * 60 * 1000)));
+        // const start_at = start;
         const end_at = '2030-01-01';
         // const url = `https://m3-solutions-mi.com/${s}/1Day/${start_at}/${end_at}`;
         // https://m3-solutions-mi.com/NDAQ/1D/2026-01-01T23:59:59/2027-01-01
@@ -289,7 +289,10 @@ async function get_all_symbols(symbols = null, timeframe = '1D', start = getYMD(
         //     `https://data.alpaca.markets/v2/stocks/bars?symbols=${s}&timeframe=${$timeframe}&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
 
         watch_list.forEach((s) => {
-            const url = `https://m3-solutions-mi.com/${s}/1D/${start}T23:59:59/2030-01-01`;
+            const url = DATA_SOURCE === 'm3' ?
+                `https://m3-solutions-mi.com/${s}/1D/2026-01-01T23:59:59/2027-01-01` :
+                `https://data.alpaca.markets/v2/stocks/bars?symbols=${s}&timeframe=1D&start=2026-03-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
+            // const url = `https://m3-solutions-mi.com/${s}/1D/${start}T23:59:59/2030-01-01`;
             promises.push(fetch(url, {
                 method: 'GET',
                 headers: {
