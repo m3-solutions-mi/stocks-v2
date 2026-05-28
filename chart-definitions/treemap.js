@@ -174,6 +174,11 @@ class Treemap {
             // },
             offsetY: -4
         },
+        annotations: {
+            xaxis: [],
+            yaxis: [],
+            points: [],
+        },
         noData: { text: 'No Data Available', style: {color: '#000'}},
         colors: ['#4CAF50', '#007bf7', '#E91E63', '#445c68', '#FF9800'],
         _colors: [

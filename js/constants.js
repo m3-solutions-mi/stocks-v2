@@ -1,0 +1,1 @@
+const INVEST_AMOUNT = 1000;

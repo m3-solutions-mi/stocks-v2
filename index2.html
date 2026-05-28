@@ -29,7 +29,6 @@
     <script src="./configuration.js"></script>
     <script src="./csv.js"></script>
     <script src="./js/helpers.js"></script>
-    <script src="./js/constants.js"></script>
     <script src="./js/HackTimer.js"></script>
     <script src="./chart-definitions/mixed.js"></script>
     <script src="./chart-definitions/candlestick.js"></script>
@@ -47,7 +46,7 @@
     <script src="https://cdn.jsdelivr.net/npm/apexstock"></script>
 
     <!--@ PAGE CONTENT -->
-    <div class="w3-content w3-margin-top" style="max-width:2055px;"> <!-- 1450 -->
+    <div class="w3-content w3-margin-top" style="max-width:1800px;"> <!-- 1450 -->
 
         <div class="w3-row-padding">
             <span class="">
@@ -56,7 +55,7 @@
                     <div class="w3-large w3-container w3-card _w3-green w3-padding" style="background-color:#6dc573;">
                         <div class="w3-hide-small w3-col s2 w3-center">
                             <img class="_w3-hide-small w3-padding"
-                                src="https://offsite-ryan.github.io/m3-trader/favicon-black.png" style="width:40%"
+                                src="https://offsite-ryan.github.io/m3-trader/favicon-black.png" style="width:70%"
                                 alt="M3 Solutions">
                         </div>
 
@@ -75,9 +74,9 @@
                             </h1>
                         </div>
 
-                        <div class="w3-hide w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
+                        <div class="w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
                             style="margin-top:8px;display:inline-grid;justify-content: center;">
-                            <!-- <b><span id="clock" style="letter-spacing:4px;"></span></b> -->
+                            <b><span id="clock" style="letter-spacing:4px;"></span></b>
                             <span id="date" class="w3-xxlarge"></span>
                         </div>
                     </div>
@@ -94,7 +93,7 @@
         <!--@ End | OUTPUT -->
 
         <!--@ PANEL -->
-        <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white _w3-margin-bottom w3-padding">
+        <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
 
             <!-- <div class="w3-hide w3-container w3-card-2 w3-xlarge w3-margin">
                 <h2 class="w3-margin-top" style="letter-spacing:4px;"><b>TODAY SUMMARY</b></h2>
@@ -120,7 +119,7 @@
             <!--@ NAVIGATION -->
             <div class="_w3-hide w3-container w3-panel w3-xlarge w3-margin">
 
-                <div class="w3-hide w3-right" style="margin-top:10px !important;">
+                <div class="w3-hide-small w3-right" style="margin-top:10px !important;">
                     <input id="selected-date" class="flatpickr flatpickr-input w3-input w3-border"
                         style="font-size:28px;" type="text" value="2026-04-17" onchange="load_day(this.value)">
                 </div>
@@ -146,8 +145,6 @@
                     </div>
                 </h2> -->
 
-                <b><span id="clock" class="w3-right w3-wide w3-padding-top w3-xxxlarge w3-text-green" style=""></span></b>
-
                 <!-- <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;"><b>SCHEDULE ● PLAN ● STATUS ▼</b> -->
                 <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;">
                     <b></b>
@@ -161,7 +158,7 @@
                             <a onclick="navigate('overview')" class="w3-hide w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-pie-chart"></i> Overview</a>
                             <a onclick="navigate('day')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-table"></i> Status</a>
+                                    class="fa fa-table"></i> Day&nbsp;Detail</a>
                             <a onclick="navigate('analysis')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-area-chart"></i> Analysis</a>
                             <!-- <a onclick="navigate('forecast')" class="_w3-hide w3-padding w3-bar-item w3-button"><i
@@ -221,19 +218,17 @@
             </div>
 
             <!-- <hr /> -->
-            <!-- <div class="w3-hide w3-center w3-wide" style="padding-bottom:60px;margin-bottom:30px;">
+            <div class="w3-center w3-wide" style="padding-bottom:60px;margin-bottom:30px;">
                 <div class="w3-col s4">
-                    <div class="w3-row-padding w3-xxlarge">
-                        <div class="w3-text-red"><span class="w3-text-grey w3-xlarge w3-margin-right">Gain</span><b>$
-                                1,097
-                            </b>&nbsp;2.5%</div>
+                    <div class="w3-row-padding w3-xlarge">
+                        <div class=""><span class="w3-text-grey w3-margin-right">Gain</span><b><span id="day-status-gain" class="w3-xxxlarge w3-wide w3-text-red">$&nbsp;224.6</span>
+                            </b>&nbsp;<span id="day-status-today-pct">0.57%</span></div>
                     </div>
                 </div>
                 <div class="w3-col s4">
                     <div class="w3-row-padding w3-xlarge">
-                        <div class=""><span class="w3-text-grey w3-margin-right">Today</span><b><span id=""
-                                    class="w3-xxxlarge w3-wide w3-text-green">$&nbsp;224.6</span>
-                            </b>&nbsp;<span id="">0.57%</span></div>
+                        <div class=""><span class="w3-text-grey w3-margin-right">Today</span><b><span id="day-status-today" class="w3-xxxlarge w3-wide w3-text-green">$&nbsp;224.6</span>
+                            </b>&nbsp;<span id="day-status-today-pct">0.57%</span></div>
                     </div>
                 </div>
                 <div class="w3-col s4">
@@ -243,69 +238,41 @@
                             </b>&nbsp;0.27%</div>
                     </div>
                 </div>
-            </div> -->
-            <!-- <hr /> -->
+            </div>
+            <hr />
 
-            <div class="w3-col s12 w3-padding _w3-margin-top">
+            <div class="w3-hide w3-col s12 w3-padding w3-margin-top">
                 <div _id="output" class="w3-row-padding w3-center">
 
                     <div class="w3-third">
-                        <div class="w3-hide-small w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:170px;">
+                        <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:210px;">
                             <div class="w3-col s12 {3} w3-center">
-                                <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
+                                <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
                                     <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>GAIN</b></div>
-                                    <div class="w3-text-grey" style="font-size:48px;"><b
-                                            id="day-status-gain"></b>&nbsp;<b id="day-status-gain-pct"
-                                            style="font-size:24px;"></b><span class="w3-xlarge w3-text-grey"> %</span>
-                                    </div>
+                                    <div class="w3-text-green" style="font-size:48px;"><span
+                                            class="w3-xxlarge w3-text-grey">$ </span><b id="day-status-gain"></b></div>
+                                    <div class="w3-text-grey" style="font-size:24px;">&nbsp;&nbsp;<b
+                                            id="day-status-gain-pct"></b><span class="w3-xlarge"> %</span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="w3-third">
-                        <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:170px;">
-                            <div class="w3-col s12 {3} w3-center">
-                                <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
-                                    <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>TODAY</b></div>
-                                    <div class="w3-text-grey" style="font-size:48px;"><b
-                                            id="day-status-today"></b>&nbsp;<b id="day-status-today-pct"
-                                            style="font-size:24px;"></b><span class="w3-xlarge w3-text-grey"> %</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="w3-third">
-                        <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:170px;">
-                            <div class="w3-col s12 {3} w3-center">
-                                <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
-                                    <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>+/- TARGET</b></div>
-                                    <div class="w3-text-grey" style="font-size:48px;"><b id="day-status-target-delta"
-                                            style="color:#5392c5;"></b>&nbsp;<b id="day-status-target" class="w3-hide"
-                                            style="font-size:24px;"></b>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="w3-hide w3-third">
                         <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:210px;">
                             <div class="w3-col s12 {3} w3-center">
                                 <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
                                     <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>TODAY</b></div>
                                     <div class="" style="font-size:48px;color:#e98b00;"><span
-                                            class="w3-xxlarge w3-text-grey">$ </span><b id="day-status-today"></b></div>
+                                            class="w3-xxlarge w3-text-grey">$ </span><b id=""></b></div>
                                     <div class="w3-text-grey" style="font-size:24px;">&nbsp;&nbsp;<b
-                                            id="day-status-today-pct"></b><span class="w3-xlarge"> %</span></div>
+                                            id=""></b><span class="w3-xlarge"> %</span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="w3-hide w3-third">
+                    <div class="w3-third">
                         <div class="w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:210px;">
                             <div class="w3-col s12 {3}">
                                 <div class="w3-xxlarge" style="padding-top:25px;letter-spacing:4px;">
@@ -357,7 +324,7 @@
             <!-- <div id="content-about" class="w3-hide" w3-include-html="./views/content-about.html"></div> -->
             <div id="content-pdt" class="w3-hide" w3-include-html="./views/content-pdt.html"></div>
             <div id="content-top" class="w3-hide" w3-include-html="./views/content-top.html"></div>
-            <div id="content-bars-analysis" class="w3-hide" w3-include-html="./views/content-bars-analysis.html"></div>
+            <div id="content-bars-analysis" class="_w3-hide" w3-include-html="./views/content-bars-analysis.html"></div>
 
         </div>
     </div>
@@ -460,7 +427,7 @@
             const urlParams = new URLSearchParams(queryString);
             const param = urlParams.get('id'); // "123"
             console.log(Array.from(urlParams.entries())[0][0]);
-            navigate(Array.from(urlParams.entries())[0][0]);
+            // navigate(Array.from(urlParams.entries())[0][0]);
 
             flatpickr("#selected-date", {
                 // Optional configuration
@@ -550,7 +517,7 @@
             snowplow: '<i class="fa fa-line-chart"></i> TREND',
             forecast: '<i class="fa fa-calendar-o"></i> SCHEDULE',
             schedule: 'SCHEDULE',
-            day: '<i class="fa fa-calendar"></i> STATUS',
+            day: '<i class="fa fa-calendar"></i> DAY STATUS',
             '7day': '7 DAY PLAN | STATUS',
             input: 'Input',
             dashboards: '<i class="fa fa-th"></i> DASHBOARDS',
@@ -572,7 +539,7 @@
                     document.getElementById(`content-${v}`).classList.remove('w3-hide');
                 }
             })
-            // document.getElementById('selected-date').style.display = value === 'day' ? 'block' : 'none';
+            document.getElementById('selected-date').style.display = value === 'day' ? 'block' : 'none';
             // document.getElementById('selected-timeframe').style.display = value !== 'day' ? 'block' : 'none';
             document.getElementById('selected-view').innerHTML = menu_item_map[value];
             // elem.parentElement.parentElement.children[0].children[0].innerText = menu_item_map[value];
@@ -587,8 +554,8 @@
 
 
     <script>
-        function buy_symbol(spend = INVEST_AMOUNT) {
-            const amount = +(prompt(`BUY | ${SELECTED_SYMBOL}`, spend));
+        function buy_symbol(spend = 1000) {
+            const amount = +(prompt(`BUY | ${SELECTED_SYMBOL}`, spend || 1000));
             console.log(SELECTED_SYMBOL, amount);
             if (amount > 10) {
                 buy(SELECTED_SYMBOL, amount);
@@ -755,7 +722,7 @@
     <script>
 
         /** BUY SYMBOL SHARES */
-        function buy(symbol, spend = INVEST_AMOUNT) {
+        function buy(symbol, spend = 1000) {
             return new Promise((resolve, reject) => {
                 const payload = {
                     side: 'buy',
@@ -860,10 +827,9 @@
         const CHART_TOP_SYMBOLS = new Treemap('chart-top-symbols');
         const CHART_TOP_SYMBOLS_LAST = new Treemap('chart-top-symbols-last');
         const CHART_BARS_ANALYSIS_OHLC = new Candlestick('chart-bars-analysis-ohlc');
-        const CHART_BARS_ANALYSIS_OHLC_M = new Treemap('chart-bars-analysis-ohlc-m');
+        const CHART_BARS_ANALYSIS_OHLC_M = new Candlestick('chart-bars-analysis-ohlc-m');
         const CHART_BARS_ANALYSIS_TODAY = new Treemap('chart-bars-analysis-today');
         const CHART_BARS_ANALYSIS_ACCOUNT = new Treemap('chart-bars-analysis-account');
-        const CHART_BARS_ANALYSIS_POSITIONS = new Treemap('chart-bars-analysis-positions');
 
         function key_up(symbol) {
             if (event.key === 'Enter') {
@@ -901,7 +867,7 @@
         async function click_symbol(name) {
 
             SELECTED_SYMBOL = name;
-            const raw = INDICATORS.indexOf(name) >= 0; //false; //INDICATORS.indexOf(name) >= 0;
+            const raw = 'QQQ,NDAQ,CL=F,^VIX,^IXIC'.split(',').indexOf(name) >= 0; //false; //INDICATORS.indexOf(name) >= 0;
 
             const position = RESULTS?.POSITIONS ? RESULTS.POSITIONS.find((v) => v.name === name) : null;
             // console.log(position);
@@ -922,8 +888,8 @@
             const data = resp.bars[name];
 
             const dow = new Date().getDay();
-            // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
-            const start_at = new Date(Date.now() - (4 * 24 * 60 * 60 * 1000)).toISOString();
+            const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.5 : 1)) * 24 * 60 * 60 * 1000)).toISOString();
+            // const start_at = new Date(Date.now() - (2.1 * 24 * 60 * 60 * 1000)).toISOString();
             const end_at = new Date().toISOString();
             // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
             url = DATA_SOURCE === 'm3' ?
@@ -948,16 +914,7 @@
 
             const update_data_bars_advanced = () => {
                 //* BARS ANALYSIS CHARTS */
-                const num = INVEST_AMOUNT / data[0].o;
-                const increment = (data[0].o * num * 0.0075);
-                const increment_2 = (data[0].o * num * 0.0125);
-                const increment_3 = (data[0].o * num * 0.02);
-                // series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
-                // if (!raw) {
-                //     series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
-                //     series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
-                // }
-                let data_bars_advanced = data.map((v) => { return { x: getYMD(new Date(v.t)), y: [v.o * num, v.h * num, v.l * num, v.c * num] } });
+                let data_bars_advanced = data.map((v) => { return { x: getYMD(new Date(v.t)), y: [v.o, v.h, v.l, v.c] } });
                 // console.log(data_bars_advanced);
                 // update_advanced_chart(data_bars_advanced);
                 let ha = calculateHeikinAshi(data_bars_advanced.map((v) => { return { o: v.y[0], h: v.y[1], l: v.y[2], c: v.y[3] }; }));
@@ -966,45 +923,42 @@
                     { name: name, data: ha.map((v, i) => { return { x: data_bars_advanced[i].x, y: [v.o, v.h, v.l, v.c] } }) },
                     { name: 'Bollinger', type: 'line', data: bb.lowerBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: v === 0 ? ha[i].c : round2(v) } }) },
                     { name: 'Upper', type: 'line', data: bb.upperBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: v === 0 ? ha[i].c : round2(v) } }) },
-                    { name: '0.75%', type: 'line', color: colors.lightgrey, data: data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) + INVEST_AMOUNT } }) },
-                    { name: '1.25%', type: 'line', color: colors.teal, data: data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment_2) + INVEST_AMOUNT } }) },
-                    // { name: '2.0%', type: 'line', color: colors.teal, data: data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment_3) + INVEST_AMOUNT } }) },
                 ];
-                CHART_BARS_ANALYSIS_OHLC.options.chart.height = 500;
+                // CHART_BARS_ANALYSIS_OHLC.options.chart.height = 350;
                 CHART_BARS_ANALYSIS_OHLC.render();
                 //  (${round2((data_bars_advanced[data_bars_advanced.length-1][3].y-data_bars_advanced[0][3].y)/data_bars_advanced[0][3].y*100)}%)
-                const qty = INVEST_AMOUNT / data_bars_advanced[0].y[3]
+                const qty = 1000 / data_bars_advanced[0].y[3]
                 document.getElementById('chart-bars-analysis-title').innerHTML = `<b>${name}</b>&nbsp;&nbsp;|&nbsp;&nbsp;${get_description(name)}&nbsp;&nbsp;|&nbsp;&nbsp;<b>$ ${round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[0].y[3]) * qty).toLocaleString()}</b>`;
 
-                // data_bars_advanced = data_m.map((v) => { return { x: new Date(v.t).getTime(), y: [v.o, v.h, v.l, v.c] } });
-                // // console.log(data_bars_advanced);
-                // // update_advanced_chart(data_bars_advanced);
-                // ha = calculateHeikinAshi(data_bars_advanced.map((v) => { return { o: v.y[0], h: v.y[1], l: v.y[2], c: v.y[3] }; }));
-                // bb = calculateBollingerBands(data_bars_advanced.map((v) => v.y[3]), period = 7, multiplier = 0.5);
-                // CHART_BARS_ANALYSIS_OHLC_M.options.series = [
-                //     { name: name, data: ha.map((v, i) => { return { x: data_bars_advanced[i].x, y: [v.o, v.h, v.l, v.c] } }) },
-                //     // { name: 'Close', type: 'area', color: '#4CAF5030', data: bb.lowerBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: data_bars_advanced[i].y } }) },
-                //     // { name: 'Upper', type: 'line', data: bb.upperBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: v === 0 ? ha[i].c : round2(v) } }) },
-                // ];
-                // CHART_BARS_ANALYSIS_OHLC_M.options.annotations = { xaxis: [], yaxis: [], points: [] };
-                // CHART_BARS_ANALYSIS_OHLC_M.options.annotations.yaxis.push(add_annotation_y(data_bars_advanced[0].y[3], 'blue', `Start: $${data_bars_advanced[0].y[3]}`));
-                // CHART_BARS_ANALYSIS_OHLC_M.options.annotations.yaxis.push(add_annotation_y(data_bars_advanced[data_bars_advanced.length - 1].y[3], 'deeppink', `Start: $${data_bars_advanced[data_bars_advanced.length - 1].y[3]}`));
+                data_bars_advanced = data_m.map((v) => { return { x: new Date(v.t).getTime(), y: [v.o, v.h, v.l, v.c] } });
+                // console.log(data_bars_advanced);
+                // update_advanced_chart(data_bars_advanced);
+                ha = calculateHeikinAshi(data_bars_advanced.map((v) => { return { o: v.y[0], h: v.y[1], l: v.y[2], c: v.y[3] }; }));
+                bb = calculateBollingerBands(data_bars_advanced.map((v) => v.y[3]), period = 7, multiplier = 0.5);
+                CHART_BARS_ANALYSIS_OHLC_M.options.series = [
+                    { name: name, data: ha.map((v, i) => { return { x: data_bars_advanced[i].x, y: [v.o, v.h, v.l, v.c] } }) },
+                    // { name: 'Close', type: 'area', color: '#4CAF5030', data: bb.lowerBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: data_bars_advanced[i].y } }) },
+                    // { name: 'Upper', type: 'line', data: bb.upperBand.map((v, i) => { return { x: data_bars_advanced[i].x, y: v === 0 ? ha[i].c : round2(v) } }) },
+                ];
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations = { xaxis: [], yaxis: [], points: [] };
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations.yaxis.push(add_annotation_y(data_bars_advanced[0].y[3], 'blue', `Start: $${data_bars_advanced[0].y[3]}`));
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations.yaxis.push(add_annotation_y(data_bars_advanced[data_bars_advanced.length - 1].y[3], 'deeppink', `Start: $${data_bars_advanced[data_bars_advanced.length - 1].y[3]}`));
 
-                // const d = new Date(data_bars_advanced[data_bars_advanced.length - 1].x);
-                // // console.log(d2);
-                // CHART_BARS_ANALYSIS_OHLC_M.options.annotations.xaxis = [
-                //     add_annotation_x(d.setHours(16, 0) - (24 * 60 * 60 * 1000), null, colors.teal),
-                //     add_annotation_x(d.setHours(20, 0) - (24 * 60 * 60 * 1000), null, colors.teal),
-                //     add_annotation_x(d.setHours(9, 30), null, colors.teal),
-                //     add_annotation_x(d.setHours(10, 30), null, colors.lightgrey),
-                //     add_annotation_x(d.setHours(10, 0), null, colors.deeppink),
-                //     add_annotation_x(d.setHours(10, 30), null, colors.lightgrey),
-                //     add_annotation_x(d.setHours(16, 0), null, colors.teal),
-                // ];
-                // // CHART_BARS_ANALYSIS_OHLC_M.options.annotations.xaxis.push(add_annotation_x(data_bars_advanced.find((v)=>v.x >= data_bars_advanced[0]).x.setHours(9,25), 'blue'));
-                // // CHART_BARS_ANALYSIS_OHLC_M.options.chart.sparkline = { enabled: true };
-                // CHART_BARS_ANALYSIS_OHLC_M.options.yaxis = { show: false };
-                // CHART_BARS_ANALYSIS_OHLC_M.render();
+                const d = new Date(data_bars_advanced[data_bars_advanced.length - 1].x);
+                // console.log(d2);
+                CHART_BARS_ANALYSIS_OHLC_M.options.annotations.xaxis = [
+                    add_annotation_x(d.setHours(16, 0) - (24 * 60 * 60 * 1000), null, colors.teal),
+                    add_annotation_x(d.setHours(20, 0) - (24 * 60 * 60 * 1000), null, colors.teal),
+                    add_annotation_x(d.setHours(9, 30), null, colors.teal),
+                    add_annotation_x(d.setHours(10, 30), null, colors.lightgrey),
+                    add_annotation_x(d.setHours(10, 0), null, colors.deeppink),
+                    add_annotation_x(d.setHours(10, 30), null, colors.lightgrey),
+                    add_annotation_x(d.setHours(16, 0), null, colors.teal),
+                ];
+                // CHART_BARS_ANALYSIS_OHLC_M.options.annotations.xaxis.push(add_annotation_x(data_bars_advanced.find((v)=>v.x >= data_bars_advanced[0]).x.setHours(9,25), 'blue'));
+                // CHART_BARS_ANALYSIS_OHLC_M.options.chart.sparkline = { enabled: true };
+                CHART_BARS_ANALYSIS_OHLC_M.options.yaxis = { show: false };
+                CHART_BARS_ANALYSIS_OHLC_M.render();
             }
             update_data_bars_advanced();
 
@@ -1017,7 +971,7 @@
                 { name: 'Trendline', type: 'line', data: [] },
             ];
             let start = data[0].c;
-            let shares = raw ? 1 : INVEST_AMOUNT / start;
+            let shares = raw ? 1 : 1000 / start;
             const increment = (start * shares * 0.005);
             series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
             if (!raw) {
@@ -1072,14 +1026,9 @@
             CHART_PDT_SYMBOL_DAYS_RECENT.options = clone;
             CHART_PDT_SYMBOL_DAYS_RECENT.render();
 
-            clone.chart.height = 510;
-            clone.annotations.yaxis.push(add_annotation_y(series_2[0].data[series_2[0].data.length - 1].y));
-            CHART_BARS_ANALYSIS_OHLC_M.options = clone;
-            CHART_BARS_ANALYSIS_OHLC_M.render();
-
             let series_3 = deepClone(series);
             start = data_m[0].c;
-            shares = raw ? 1 : INVEST_AMOUNT / start;
+            shares = raw ? 1 : 1000 / start;
             series_3 = [{ name: 'Gain', type: 'area', data: [] },]
             series_3[0].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
             // series[1].data = data_m.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
@@ -1207,7 +1156,6 @@
             });
             // promises.push(fetch(`https://m3-solutions-mi.com/CL=F/1Min/2026-04-18T23:59:59/2027-01-01`, {}).then((resp) => resp.json()))
 
-            const d = new Date();
             let results = await Promise.allSettled(promises);//.map((v)=>v.value);
             results = results.map((v) => v.value);
             RESULTS = {
@@ -1254,7 +1202,7 @@
             RESULTS.TREND = await get_trend();
             // RESULTS.TOP_MOVERS = await get_all_symbols();
 
-            console.log(d.toLocaleTimeString(), '|', RESULTS.CALCS.GAIN, '|', RESULTS.CALCS.TODAY);
+            console.log(RESULTS.CALCS.GAIN, '|', RESULTS.CALCS.TODAY);
             // console.log(RESULTS.CALCS);
             // console.log(RESULTS);
             results = null;
@@ -1280,26 +1228,17 @@
                 // watch_list += ',CNC,DIOD,DRAM,VRT,VSAT,TER,GNRC,KOD,SMTC,GOOGL,HOOD,HUT,SITM,ORKA,INTC,MCHP,AEIS,MPWR,ON,AVGO';
                 // watch_list += ',BE';
                 // const highlight_grey = 'BE,CAT,CIFR,CLSK,DHC,GOOGL,HOVR,IREN,MSTR,OKLO,PLTR,QCOM,TEAM,VCX'.split(',').sort();
+                const highlight_green = 'CRM,INTU,UMC'.split(','); //.sort();
+                const highlight_grey = 'DELL,GOOGL,MTSI,NBIS,ON,PLUG,RKLB,TSEM,VRT,WOLF,ALAB,BTSG,AAOI,AMZN,AVT,CIFR,CRDO,DELL,GEV,HOOD,LITE,RKLB,ROKU,TSM,AMD,AXTI,CRWV,DIOD,INTC,KOPN,MCHP,MPWR,ON,PENG,POWL,SITM,SMCI,SOXX,TER,TSEM,VIAV,VSAT,WOLF,WULF,NBIS,BTSG,ASML,DRAM,FIX,MTSI,MU,SNDK,SOXL,STRL,STX,VRT,WDC,UMC,LITE,KNSA,AIS,HGER,ALAB,BTSG,CAT,COHR,GOOGL,IREN,PLUG,VCX'.split(',').sort();
+                const highlight_orange = 'NVDA,PENG,ZM'.split(',').sort();
+                const highlight_blue = 'SMH,IGV,CRWD,DDOG,HTLD,QQQI'.split(',').sort();
+                const highlight_purple = '-'.split(',').sort();
+                const highlight_pink = 'QQQ,NDAQ'.split(',').sort();
 
-                // const removed = 'CCX,CRWV,FIX,GEV,HGER,HOOD,IGV,INTU,KNSA,LITE,LITE,SMCI';
-                let symbol_list = 'AAOI,AIS,ALAB,ALAB,AMD,ARM,AMZN,AVGO,AVT,AXTI,BE,BTSG,BTSG,BTSG,CAT,CIFR,COHR,CRDO,CRWD,DDOG,DELL,DELL,DIOD,DRAM,GOOGL,GOOGL,HTLD';
-                symbol_list += ',INTC,IREN,KOPN,MCHP,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
-                symbol_list += ',SITM,SMH,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WULF,ZM,ZS';
-
-                let watch_list = [...symbol_list.split(',').sort()];
+                let watch_list = [...highlight_pink, ...highlight_green, ...highlight_grey, ...highlight_blue, ...highlight_orange, ...highlight_purple];
                 watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
-                watch_list.push(...INDICATORS);
-                
-                const highlight_grey = '-'.split(',').sort();
-                const highlight_green = '-'.split(','); //.sort();
-                const highlight_orange = 'CRWD,MRVL,SNDK,SOXL,STX,VSAT,WOLF'.split(',').sort();
-                // const highlight_blue = 'BTSG,CRWD,DDOG,MU,UMC,WOLF'.split(',').sort();
-                const highlight_blue = 'ALAB,AMD,DELL,DDOG,DRAM,MU,PENG,UMC,WDC'.split(',').sort();
-                const highlight_purple = 'ALAB,BE,NBIS'.split(',').sort();
-                const highlight_pink = '-'.split(',').sort();
-                const highlight_black = 'QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
 
-                const template = `<div class="w3-button w3-center w3-margin-right" style="margin-bottom:10px;border-bottom:{1}px solid {2} !important;border:2px solid lightgrey;width:120px;" onclick=(click_symbol("{0}"))>{0}</div>`;
+                const template = `<div class="w3-button w3-margin-right w3-margin-bottom" style="border-bottom:{1}px solid {2} !important;border:2px solid lightgrey" onclick=(click_symbol("{0}"))>{0}</div>`;
                 const template_pdt = `
                     <tr style="cursor:pointer;" onclick="click_symbol(Array.from(this.children)[0].innerText)">
                         <td><i class="fa fa-circle{5} w3-text-{1} w3-xlarge w3-margin-right"></i><span class="w3-text-{6}"><b>{0}</b></span></td>
@@ -1323,8 +1262,6 @@
                         .replace('{2}', highlight_pink.indexOf(v) >= 0 ? 'deeppink' : '{2}')
                         .replace('{1}', highlight_green.indexOf(v) >= 0 ? 5 : '{1}')
                         .replace('{2}', highlight_green.indexOf(v) >= 0 ? 'green' : '{2}')
-                        .replace('{1}', highlight_black.indexOf(v) >= 0 ? 5 : '{1}')
-                        .replace('{2}', highlight_black.indexOf(v) >= 0 ? 'grey' : '{2}')
                         .replace('{1}', 1)
                         .replace('{2}', 'lightgrey');
                 })
@@ -1579,11 +1516,6 @@
                 CHART_PDT_TODAY_TREE.options = clone;
                 CHART_PDT_TODAY_TREE.render();
 
-                clone = deepClone(CHART_POSITIONS_TODAY.options);
-                clone.chart.height = 250;
-                CHART_BARS_ANALYSIS_POSITIONS.options = clone;
-                CHART_BARS_ANALYSIS_POSITIONS.render();
-
 
                 // let chart = new ApexCharts(document.querySelector('chart-days-history'), treemap_options);
                 // chart.render();
@@ -1626,7 +1558,6 @@
                 // // console.log(CHART_TREND.options.annotations.points);
 
                 CHART_TREND.options.annotations.yaxis = [add_annotation_y(326.25, colors.orange)];
-                CHART_TREND.options.annotations.xaxis = [add_annotation_x('22-May', colors.grey)];
                 CHART_TREND.options.annotations.yaxis[0].y2 = 326.25 * 1.04;
 
                 // CHART_TREND.options.dataLabels.enabled = true;

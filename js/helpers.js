@@ -70,6 +70,20 @@ const add_annotation_point_2 = (x, y, text = null, offsetX = 0, offsetY = 0) => 
     return obj;
 }
 
+function get_indicator(v, outline = false, color = '') {
+    const char = v > 0 ? (outline ? '△' : '▲') : (v < 0 ? (outline ? '▽' : '▼') : '');
+    return `<span style="color:${color}">${char}</span>`;
+};
+
+// =================================================
+// REPLACE ALL
+// =================================================
+const replaceAll = (text, search, replace) => {
+    while (text.indexOf(search) >= 0) {
+        text = text.replace(search, replace);
+    }
+    return text;
+}
 // =================================================
 // DEEP CLONE
 // =================================================

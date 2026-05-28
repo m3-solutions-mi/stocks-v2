@@ -16,7 +16,7 @@ class Candlestick {
         }],
         chart: {
             type: 'candlestick',
-            height: 750,
+            height: 550,
 
             animations: {
                 enabled: false,
@@ -29,8 +29,8 @@ class Candlestick {
             },
         },
         stroke: {
-            width: [null, 3, 3],
-            colors: [null, colors.blue, colors.orange],
+            width: [null, 3, 3, 2],
+            colors: [null, colors.blue, colors.orange, colors.lightgrey],
             // fill: { opacity: [1,0.3,1] },
         },
         _title: {
