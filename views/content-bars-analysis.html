@@ -1,20 +1,20 @@
 <div class="w3-container w3-panel w3-xlarge w3-margin">
     <div class="w3-col s12 w3-padding">
         <div class="w3-row-padding w3-xxlarge">
-            <div class="w3-text-green w3-wide"><b id="chart-bars-analysis-title">-</b>
+            <div class="w3-text-green w3-wide"><b id="chart-bars-analysis-title">-</b><b id="chart-bars-analysis-title-description" class="w3-hide-small">-</b>
 
                 <span class="w3-hide-small w3-right">
                     <span id="bars-analysis-buying-power"
                         class="w3-hide-small w3-xlarge w3-text-blue w3-margin-right w3-wide">$
                         -</span>
                     <i class="fa fa-credit-card w3-xxlarge w3-text-grey w3-margin-right pointer"
-                        onclick="buy_symbol(1000)"></i>
-                    <i class="fa fa-credit-card w3-xxlarge w3-text-green w3-margin-right pointer"
                         onclick="buy_symbol(2500)"></i>
-                    <i class="fa fa-credit-card w3-xxlarge w3-text-teal w3-margin-right pointer"
+                    <i class="fa fa-credit-card w3-xxlarge w3-text-green w3-margin-right pointer"
                         onclick="buy_symbol(5000)"></i>
-                    <i class="fa fa-credit-card w3-xxlarge w3-text-purple w3-margin-right pointer"
+                    <i class="fa fa-credit-card w3-xxlarge w3-text-teal w3-margin-right pointer"
                         onclick="buy_symbol(7500)"></i>
+                    <i class="fa fa-credit-card w3-xxlarge w3-text-purple w3-margin-right pointer"
+                        onclick="buy_symbol(10000)"></i>
                     <i class="fa fa-credit-card w3-xxlarge w3-text-red w3-margin-right pointer"
                         onclick="sell_symbol()"></i>
                     <i class="fa fa-ban w3-xxlarge w3-text-pink w3-margin-left w3-margin-right pointer"
@@ -27,23 +27,23 @@
         <div id="chart-bars-analysis" style="min-height:750px;border:1px solid lightgray;"></div>
     </div> -->
 
-    <div class="w3-col s12 m8 w3-margin-bottom">
+    <div class="w3-hide-small w3-col s12 m8 w3-margin-bottom">
         <div id="chart-bars-analysis-ohlc" class="w3-margin" style="min-height:750px;border:1px solid lightgray;"></div>
     </div>
-    <div class="w3-col s12 m4 w3-margin-bottom">
+    <div class="w3-hide-small w3-col s12 m4 w3-margin-bottom">
         <div id="chart-bars-analysis-ohlc-m" class="w3-margin" style="min-height:750px;border:1px solid lightgray;">
         </div>
     </div>
 
-    <div class="w3-col s8 w3-margin-bottom">
+    <div class="w3-col s12 m8 w3-margin-bottom">
         <div id="chart-bars-analysis-today" class="w3-margin" style="min-height:750px;border:1px solid lightgray;">
         </div>
     </div>
-    <div class="w3-col s2 w3-margin-bottom">
+    <div class="w3-col s12 m2 w3-margin-bottom">
         <div id="chart-bars-analysis-account" class="w3-margin" style="_min-height:750px;border:1px solid lightgray;">
         </div>
     </div>
-    <div class="w3-col s2 w3-margin-bottom">
+    <div class="w3-hide-small w3-col s12 m2 w3-margin-bottom">
         <div id="chart-bars-analysis-positions" class="w3-margin" style="_min-height:750px;border:1px solid lightgray;">
         </div>
     </div>

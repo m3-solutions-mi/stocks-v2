@@ -896,7 +896,7 @@
             console.log(value, Array.from(document.getElementsByName('analysis-view')).map((v) => v.value));
         }
 
-        let SELECTED_SYMBOL = 'NDAQ';
+        let SELECTED_SYMBOL = 'QQQ';
         let INDICATORS = 'QQQ,NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
         async function click_symbol(name) {
 
@@ -907,8 +907,9 @@
             // console.log(position);
 
             let url = DATA_SOURCE === 'm3' ?
-                `https://m3-solutions-mi.com/${name}/1D/2026-03-01T23:59:59/2027-01-01` :
-                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2026-03-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
+                //https://m3-solutions-mi.com
+                `http://localhost:3000/${name}/1D/2026-05-01T23:59:59/2027-01-01` :
+                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2026-03-21&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
 
             // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
             const resp = await fetch(url, {
@@ -922,12 +923,13 @@
             const data = resp.bars[name];
 
             const dow = new Date().getDay();
-            // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
-            const start_at = new Date(Date.now() - (4 * 24 * 60 * 60 * 1000)).toISOString();
+            // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
+            const start_at = new Date(Date.now() - (2.5 * 24 * 60 * 60 * 1000)).toISOString();
             const end_at = new Date().toISOString();
             // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
             url = DATA_SOURCE === 'm3' ?
-                `https://m3-solutions-mi.com/${name}/1Min/${start_at}/${end_at}` :
+                //https://m3-solutions-mi.com
+                `http://localhost:3000/${name}/1Min/${start_at}/${end_at}` :
                 `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
             // `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}V&start=2025-04-01T04:00:00.000Z&end=2026-05-11T13:24:50.305Z&timeframe=1D&limit=5000&adjustment=raw&feed=iex&sort=asc`;
 
@@ -974,7 +976,10 @@
                 CHART_BARS_ANALYSIS_OHLC.render();
                 //  (${round2((data_bars_advanced[data_bars_advanced.length-1][3].y-data_bars_advanced[0][3].y)/data_bars_advanced[0][3].y*100)}%)
                 const qty = INVEST_AMOUNT / data_bars_advanced[0].y[3]
-                document.getElementById('chart-bars-analysis-title').innerHTML = `<b>${name}</b>&nbsp;&nbsp;|&nbsp;&nbsp;${get_description(name)}&nbsp;&nbsp;|&nbsp;&nbsp;<b>$ ${round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[0].y[3]) * qty).toLocaleString()}</b>`;
+                document.getElementById('chart-bars-analysis-title').innerHTML = `<b>${name}</b>`;
+                document.getElementById('chart-bars-analysis-title-description').innerHTML = `&nbsp;&nbsp;|&nbsp;&nbsp;<span class="w3-xlarge">${get_description(name)}</span>`;
+                document.getElementById('chart-bars-analysis-title-description').innerHTML += `&nbsp;&nbsp;|&nbsp;&nbsp;<b><span class="w3-xlarge">$ ${round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[0].y[3]) * qty).toLocaleString()}</span></b>`;
+                document.getElementById('chart-bars-analysis-title-description').innerHTML += `&nbsp;&nbsp;|&nbsp;&nbsp;<b><span class="w3-xlarge">$ ${round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[data_bars_advanced.length - 4].y[0]) * qty).toLocaleString()}</span></b>`;
 
                 // data_bars_advanced = data_m.map((v) => { return { x: new Date(v.t).getTime(), y: [v.o, v.h, v.l, v.c] } });
                 // // console.log(data_bars_advanced);
@@ -1010,7 +1015,8 @@
 
 
             let series = [
-                { name: 'Gain', type: 'area', data: [] },
+                { name: 'Close', type: 'area', data: [] },
+                { name: 'Open', type: 'line', color: colors.teal, data: [] },
                 { name: '0.5% / d', type: 'line', data: [] },
                 { name: '1.0% / d', type: 'line', data: [] },
                 { name: 'Bollinger', type: 'line', data: [] },
@@ -1020,19 +1026,20 @@
             let shares = raw ? 1 : INVEST_AMOUNT / start;
             const increment = (start * shares * 0.005);
             series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
+            series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.o - start) * shares } });
             if (!raw) {
-                series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
-                series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+                series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+                series[3].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
             }
             // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
             // series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
             const bollinger = calculateBollingerBands(series[0].data.map((v) => v.y), 7, 1);
             series[0].data.forEach((v, i) => {
-                series[3].data.push({ x: v.x, y: bollinger.lowerBand[i] });
+                series[4].data.push({ x: v.x, y: bollinger.lowerBand[i] });
             });
             const tl = calculateTrendline(series[0].data.map((v) => v.y));
             series[0].data.forEach((v, i) => {
-                series[4].data.push({ x: v.x, y: tl.calculateY(i) });
+                series[5].data.push({ x: v.x, y: tl.calculateY(i) });
             });
             // console.log('score','|', round1(tl.slope - increment));
             CHART_SYMBOL.options.tooltip.enabledOnSeries = [0];
@@ -1062,7 +1069,8 @@
             series_2[2].data = series[2].data.slice(num);
             series_2[3].data = series[3].data.slice(num);
             series_2[4].data = series[4].data.slice(num);
-            CHART_SYMBOL_RECENT.options.tooltip.enabledOnSeries = [0];
+            series_2[5].data = series[5].data.slice(num);
+            CHART_SYMBOL_RECENT.options.tooltip.enabledOnSeries = [0,1];
             CHART_SYMBOL_RECENT.options.chart.height = 325;
             CHART_SYMBOL_RECENT.options.series = series_2;
             CHART_SYMBOL_RECENT.render();
@@ -1089,6 +1097,7 @@
             // console.log(d2);
             CHART_SYMBOL_MINUTES.options.annotations.xaxis = [
                 add_annotation_x(d1.setHours(9, 30), null, colors.darkcyan),
+                add_annotation_x(d1.setHours(9, 30), '9:30', colors.deeppink,),
                 add_annotation_x(d1.setHours(10, 0), null, colors.grey),
                 add_annotation_x(d1.setHours(10, 30), null, colors.teal),
                 add_annotation_x(d1.setHours(15, 30), null, colors.darkcyan),
@@ -1103,8 +1112,8 @@
             ];
             CHART_SYMBOL_MINUTES.options.annotations.xaxis[0].x2 = d1.setHours(10, 0);
             CHART_SYMBOL_MINUTES.options.annotations.xaxis[0].opacity = 0.1;
-            CHART_SYMBOL_MINUTES.options.annotations.xaxis[3].x2 = d1.setHours(16, 0);
-            CHART_SYMBOL_MINUTES.options.annotations.xaxis[3].opacity = 0.1;
+            CHART_SYMBOL_MINUTES.options.annotations.xaxis[4].x2 = d1.setHours(16, 0);
+            CHART_SYMBOL_MINUTES.options.annotations.xaxis[4].opacity = 0.1;
             CHART_SYMBOL_MINUTES.options.annotations.yaxis = [add_annotation_y(series_3[0].data[series_3[0].data.length - 1].y)];
             CHART_SYMBOL_MINUTES.options.chart.height = 150;
             CHART_SYMBOL_MINUTES.options.series = series_3;
@@ -1284,7 +1293,7 @@
                 // const removed = 'CCX,CRWV,FIX,GEV,HGER,HOOD,IGV,INTU,KNSA,LITE,LITE,SMCI';
                 let symbol_list = 'AAOI,AIS,ALAB,ALAB,AMD,ARM,AMZN,AVGO,AVT,AXTI,BE,BTSG,BTSG,BTSG,CAT,CIFR,COHR,CRDO,CRWD,DDOG,DELL,DELL,DIOD,DRAM,GOOGL,GOOGL,HTLD';
                 symbol_list += ',INTC,IREN,KOPN,MCHP,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
-                symbol_list += ',SITM,SMH,SNDK,SOXL,SOXX,STRL,STX,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WULF,ZM,ZS';
+                symbol_list += ',SITM,SMCI,SMH,SNDK,SOXL,SOXX,STRL,STX,SYM,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WULF,ZM,ZS';
 
                 let watch_list = [...symbol_list.split(',').sort()];
                 watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
@@ -1296,8 +1305,8 @@
                 // const highlight_blue = 'BTSG,CRWD,DDOG,MU,UMC,WOLF'.split(',').sort();
                 const highlight_blue = 'ALAB,AMD,DELL,DDOG,DRAM,MU,PENG,UMC,WDC'.split(',').sort();
                 const highlight_purple = 'ALAB,BE,NBIS'.split(',').sort();
-                const highlight_pink = '-'.split(',').sort();
-                const highlight_black = 'QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
+                const highlight_pink = 'QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
+                const highlight_black = '-'.split(',').sort();
 
                 const template = `<div class="w3-button w3-center w3-margin-right" style="margin-bottom:10px;border-bottom:{1}px solid {2} !important;border:2px solid lightgrey;width:120px;" onclick=(click_symbol("{0}"))>{0}</div>`;
                 const template_pdt = `

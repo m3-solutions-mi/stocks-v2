@@ -58,7 +58,7 @@ class Treemap {
         //     }
         // },
         stroke: {
-            width: [0.5, 5, 5, 5, 5],
+            width: [0.5, 5, 5, 5, 5, 5],
         },
         plotOptions: {
             // treemap: {
@@ -127,7 +127,7 @@ class Treemap {
             },
         },
         tooltip: {
-            // shared: false,
+            shared: true,
             // intersect: true,
             // followCursor: false,
             style: {

@@ -862,7 +862,7 @@
             console.log(value, Array.from(document.getElementsByName('analysis-view')).map((v) => v.value));
         }
 
-        let SELECTED_SYMBOL = 'NDAQ';
+        let SELECTED_SYMBOL = 'QQQ';
         let INDICATORS = 'QQQ,NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
         async function click_symbol(name) {
 
@@ -873,7 +873,8 @@
             // console.log(position);
 
             let url = DATA_SOURCE === 'm3' ?
-                `https://m3-solutions-mi.com/${name}/1D/2026-03-01T23:59:59/2027-01-01` :
+                //https://m3-solutions-mi.com
+                `http://localhost:3000/${name}/1D/2026-03-01T23:59:59/2027-01-01` :
                 `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2026-03-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
 
             // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
@@ -888,12 +889,16 @@
             const data = resp.bars[name];
 
             const dow = new Date().getDay();
-            const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.5 : 1)) * 24 * 60 * 60 * 1000)).toISOString();
-            // const start_at = new Date(Date.now() - (2.1 * 24 * 60 * 60 * 1000)).toISOString();
-            const end_at = new Date().toISOString();
+            // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 1.5 : 1)) * 24 * 60 * 60 * 1000)).toISOString();
+            // const start_at = new Date(Date.now() - (3 * 24 * 60 * 60 * 1000)).toISOString();
+            // const start_at = '2026-05-29'; // getYMD(new Date(Date.now() - (3 * 24 * 60 * 60 * 1000)));
+            // const end_at = new Date().toISOString();
             // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
+            const start_at = getYMD(new Date(Date.now() - (3 * 24 * 60 * 60 * 1000))); // + 'T00:00:00';
+            const end_at = getYMD(new Date());// + 'T23:59:59';
             url = DATA_SOURCE === 'm3' ?
-                `https://m3-solutions-mi.com/${name}/1Min/${start_at}/${end_at}` :
+                //https://m3-solutions-mi.com
+                `http://localhost:3000/${name}/1Min/${start_at}/${end_at}` :
                 `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
             // `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}V&start=2025-04-01T04:00:00.000Z&end=2026-05-11T13:24:50.305Z&timeframe=1D&limit=5000&adjustment=raw&feed=iex&sort=asc`;
 
@@ -950,9 +955,9 @@
                     add_annotation_x(d.setHours(16, 0) - (24 * 60 * 60 * 1000), null, colors.teal),
                     add_annotation_x(d.setHours(20, 0) - (24 * 60 * 60 * 1000), null, colors.teal),
                     add_annotation_x(d.setHours(9, 30), null, colors.teal),
-                    add_annotation_x(d.setHours(10, 30), null, colors.lightgrey),
+                    add_annotation_x(d.setHours(10, 45), null, colors.lightgrey),
                     add_annotation_x(d.setHours(10, 0), null, colors.deeppink),
-                    add_annotation_x(d.setHours(10, 30), null, colors.lightgrey),
+                    add_annotation_x(d.setHours(10, 45), null, colors.lightgrey),
                     add_annotation_x(d.setHours(16, 0), null, colors.teal),
                 ];
                 // CHART_BARS_ANALYSIS_OHLC_M.options.annotations.xaxis.push(add_annotation_x(data_bars_advanced.find((v)=>v.x >= data_bars_advanced[0]).x.setHours(9,25), 'blue'));
@@ -964,7 +969,8 @@
 
 
             let series = [
-                { name: 'Gain', type: 'area', data: [] },
+                { name: 'Close', type: 'area', data: [] },
+                { name: 'Open', color: colors.red, type: 'area', data: [] },
                 { name: '0.5% / d', type: 'line', data: [] },
                 { name: '1.0% / d', type: 'line', data: [] },
                 { name: 'Bollinger', type: 'line', data: [] },
@@ -974,19 +980,20 @@
             let shares = raw ? 1 : 1000 / start;
             const increment = (start * shares * 0.005);
             series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
+            series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.o - start) * shares } });
             if (!raw) {
-                series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
-                series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+                series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+                series[3].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
             }
             // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
             // series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
             const bollinger = calculateBollingerBands(series[0].data.map((v) => v.y), 7, 1);
             series[0].data.forEach((v, i) => {
-                series[3].data.push({ x: v.x, y: bollinger.lowerBand[i] });
+                series[4].data.push({ x: v.x, y: bollinger.lowerBand[i] });
             });
             const tl = calculateTrendline(series[0].data.map((v) => v.y));
             series[0].data.forEach((v, i) => {
-                series[4].data.push({ x: v.x, y: tl.calculateY(i) });
+                series[5].data.push({ x: v.x, y: tl.calculateY(i) });
             });
             // console.log('score','|', round1(tl.slope - increment));
             CHART_SYMBOL.options.tooltip.enabledOnSeries = [0];
@@ -1016,6 +1023,7 @@
             series_2[2].data = series[2].data.slice(num);
             series_2[3].data = series[3].data.slice(num);
             series_2[4].data = series[4].data.slice(num);
+            series_2[5].data = series[5].data.slice(num);
             CHART_SYMBOL_RECENT.options.tooltip.enabledOnSeries = [0];
             CHART_SYMBOL_RECENT.options.chart.height = 325;
             CHART_SYMBOL_RECENT.options.series = series_2;
@@ -1039,14 +1047,14 @@
             CHART_SYMBOL_MINUTES.options.annotations.xaxis = [
                 add_annotation_x(d1.setHours(9, 30), null, colors.darkcyan),
                 add_annotation_x(d1.setHours(10, 0), null, colors.grey),
-                add_annotation_x(d1.setHours(10, 30), null, colors.teal),
+                add_annotation_x(d1.setHours(10, 45), null, colors.teal),
                 add_annotation_x(d1.setHours(15, 30), null, colors.darkcyan),
                 add_annotation_x(d1.setHours(16, 0), null, colors.grey),
                 add_annotation_x(d1.setHours(20, 0), null, colors.grey),
 
                 add_annotation_x(d2.setHours(9, 30), null, colors.darkcyan),
                 add_annotation_x(d2.setHours(10, 0), null, colors.darkcyan),
-                add_annotation_x(d2.setHours(10, 30), null, colors.lightgrey),
+                add_annotation_x(d2.setHours(10, 45), null, colors.lightgrey),
                 add_annotation_x(d2.setHours(15, 30), null, colors.darkcyan),
                 add_annotation_x(d2.setHours(16, 0), null, colors.grey),
             ];
@@ -1452,7 +1460,7 @@
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(9, 30)),
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(10, 0), null, colors.darkcyan),
-                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(10, 30), null, colors.lightgrey),
+                    add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(10, 45), null, colors.lightgrey),
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(16, 0)),
                     add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(15, 25), null, colors.lightgrey),
                     // add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(15, 30), null, colors.darkcyan),
