@@ -146,15 +146,20 @@
                     </div>
                 </h2> -->
 
-                <b><span id="clock" class="w3-right w3-wide w3-padding-top w3-xxxlarge w3-text-green" style=""></span></b>
+
+                <i class="fa fa-ban w3-right w3-margin-top w3-xxxlarge w3-text-pink w3-margin-left w3-margin-right pointer"
+                    onclick="liquidate_symbols()"></i>
+                <b><span id="clock" class="w3-right w3-wide w3-padding-top w3-xxxlarge w3-text-green w3-margin-right"></span></b>
+                <span id="compare-buying-power"
+                    class="w3-hide-small w3-right w3-xxlarge w3-text-blue w3-wide" style="margin-top:15px;margin-right: 75px;">$ -</span>
 
                 <!-- <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;"><b>SCHEDULE ● PLAN ● STATUS ▼</b> -->
                 <h2 class="w3-margin-top w3-text-green" style="letter-spacing:4px;">
                     <b></b>
 
                     <div class="w3-dropdown-hover">
-                        <div class="w3-maargin-right w3-xxlarge" style="min-width:350px;"><b
-                                id="selected-view" class="w3-hide-small">-</b>&nbsp;&nbsp;▼
+                        <div class="w3-maargin-right w3-xxlarge" style="min-width:350px;"><b id="selected-view"
+                                class="w3-hide-small">-</b>&nbsp;&nbsp;▼
                         </div>
                         <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-xxlarge"
                             style="width:100%;min-width:450px;">
@@ -201,6 +206,8 @@
                                     class="fa fa-usd"></i> Pricing</a> -->
                             <a onclick="navigate('bars-analysis')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-line-chart"></i>&nbsp;Bars&nbsp;Analysis</a>
+                            <a onclick="navigate('compare')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-table"></i>&nbsp;Comparison</a>
                         </div>
                     </div>
 
@@ -250,7 +257,8 @@
                 <div _id="output" class="w3-row-padding w3-center">
 
                     <div class="w3-third">
-                        <div class="w3-hide-small w3-panel {5} w3-border _w3-light-grey w3-padding" style="height:170px;">
+                        <div class="w3-hide-small w3-panel {5} w3-border _w3-light-grey w3-padding"
+                            style="height:170px;">
                             <div class="w3-col s12 {3} w3-center">
                                 <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
                                     <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>GAIN</b></div>
@@ -358,6 +366,7 @@
             <div id="content-pdt" class="w3-hide" w3-include-html="./views/content-pdt.html"></div>
             <div id="content-top" class="w3-hide" w3-include-html="./views/content-top.html"></div>
             <div id="content-bars-analysis" class="w3-hide" w3-include-html="./views/content-bars-analysis.html"></div>
+            <div id="content-compare" class="w3-hide" w3-include-html="./views/content-compare.html"></div>
 
         </div>
     </div>
@@ -448,7 +457,7 @@
         console.log(`${BUY_AMOUNT} | ${DATA_SOURCE} | ${CHART_START_DATE}`);
 
         <!--@ HTML INCLUDES -->
-        w3.includeHTML(() => {
+        w3.includeHTML(async () => {
             console.log(' content loaded');
 
             load_settings();
@@ -469,9 +478,11 @@
             });
 
             load_day();
-            load_data();
+            await load_data();
             load_schedule();
             // load_advanced_chart();
+            load_compare_cards();
+            load_compare();
 
             click_symbol(SELECTED_SYMBOL);
 
@@ -544,6 +555,7 @@
     </script>
 
     <script>
+        let active_page = null;
         const menu_item_map = {
             overview: 'OVERVIEW',
             summary: '<i class="fa fa-bar-chart"></i> SUMMARY',
@@ -564,8 +576,10 @@
             settings: '<i class="fa fa-cogs"></i> Settings',
             analysis: '<i class="fa fa-area-chart"></i> Analysis',
             'bars-analysis': '<i class="fa fa-line-chart"></i> Bars Analysis',
+            compare: '<i class="fa fa-table"></i> Comparison',
         }
         function navigate(value) {
+            active_page = value;
             Object.keys(menu_item_map).forEach((v) => {
                 document.getElementById(`content-${v}`).classList.add('w3-hide');
                 if (v === value) {
@@ -587,11 +601,11 @@
 
 
     <script>
-        function buy_symbol(spend = INVEST_AMOUNT) {
-            const amount = +(prompt(`BUY | ${SELECTED_SYMBOL}`, spend));
-            console.log(SELECTED_SYMBOL, amount);
+        function buy_symbol(spend = INVEST_AMOUNT, symbol = SELECTED_SYMBOL) {
+            const amount = +(prompt(`BUY | ${symbol}`, spend));
+            console.log(symbol, amount);
             if (amount > 10) {
-                buy(SELECTED_SYMBOL, amount);
+                buy(symbol, amount);
             } else {
                 console.log('cancelled');
             }
@@ -612,15 +626,15 @@
             console.log('buy_top_20_symbols | done');
         }
 
-        function sell_symbol() {
+        function sell_symbol(symbol = SELECTED_SYMBOL) {
             // const amount = +(prompt('Enter dollar amount', 250));
             // console.log(SELECTED_SYMBOL, amount);
             // if (amount > 10) {
             //     sell(SELECTED_SYMBOL);
             // }
-            if (confirm(`SELL SHARES | ${SELECTED_SYMBOL}`)) {
+            if (confirm(`SELL SHARES | ${symbol}`)) {
                 console.log('confirmed');
-                sell(SELECTED_SYMBOL);
+                sell(symbol);
             } else {
                 console.log('cancelled');
             }
@@ -865,6 +879,41 @@
         const CHART_BARS_ANALYSIS_ACCOUNT = new Treemap('chart-bars-analysis-account');
         const CHART_BARS_ANALYSIS_POSITIONS = new Treemap('chart-bars-analysis-positions');
 
+        compare_charts_map = {
+            'chart-compare-1': new Treemap('chart-compare-1'),
+            'chart-compare-2': new Treemap('chart-compare-2'),
+            'chart-compare-3': new Treemap('chart-compare-3'),
+            'chart-compare-4': new Treemap('chart-compare-4'),
+            'chart-compare-5': new Treemap('chart-compare-5'),
+            'chart-compare-6': new Treemap('chart-compare-6'),
+            'chart-compare-7': new Treemap('chart-compare-7'),
+            'chart-compare-8': new Treemap('chart-compare-8'),
+            'chart-compare-9': new Treemap('chart-compare-9'),
+            'chart-compare-10': new Treemap('chart-compare-10'),
+            'chart-compare-11': new Treemap('chart-compare-11'),
+            'chart-compare-12': new Treemap('chart-compare-12'),
+            'chart-compare-13': new Treemap('chart-compare-13'),
+            'chart-compare-14': new Treemap('chart-compare-14'),
+            'chart-compare-15': new Treemap('chart-compare-15'),
+            'chart-compare-16': new Treemap('chart-compare-16'),
+            'chart-compare-17': new Treemap('chart-compare-17'),
+            'chart-compare-18': new Treemap('chart-compare-18'),
+            'chart-compare-19': new Treemap('chart-compare-19'),
+            'chart-compare-20': new Treemap('chart-compare-20'),
+            'chart-compare-21': new Treemap('chart-compare-21'),
+            'chart-compare-22': new Treemap('chart-compare-22'),
+            'chart-compare-23': new Treemap('chart-compare-23'),
+            'chart-compare-24': new Treemap('chart-compare-24'),
+            'chart-compare-25': new Treemap('chart-compare-25'),
+            'chart-compare-26': new Treemap('chart-compare-26'),
+            'chart-compare-27': new Treemap('chart-compare-27'),
+            'chart-compare-28': new Treemap('chart-compare-28'),
+            'chart-compare-29': new Treemap('chart-compare-29'),
+        }
+        // const CHART_COMPARE_1 = new Treemap('chart-compare-1');
+        const CHART_COMPARE_2 = new Treemap('chart-compare-2');
+        const CHART_COMPARE_3 = new Treemap('chart-compare-3');
+
         function key_up(symbol) {
             if (event.key === 'Enter') {
                 console.log(symbol);
@@ -896,6 +945,129 @@
             console.log(value, Array.from(document.getElementsByName('analysis-view')).map((v) => v.value));
         }
 
+        // const m3_url = 'http://localhost:3000';
+        const m3_url = 'https://m3-solutions-mi.com'
+        async function get_symbol_data_days(name) {
+            return new Promise(async (resolve, reject) => {
+                // const m3_url = 'http://localhost:3000'
+
+                let url = DATA_SOURCE === 'm3' ?
+                    //https://m3-solutions-mi.com
+                    `${m3_url}/${name}/1D/2026-05-01T23:59:59/2027-01-01` :
+                    `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2026-03-21&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
+
+                // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
+                const resp = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        'APCA-API-KEY-ID': ALPACA_KEY,
+                        'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                    }
+                }).then((resp) => resp.json());
+                // const data = resp.bars[name];
+                resolve(resp.bars[name]);
+            });
+        }
+        async function get_symbol_data_24h(name) {
+            return new Promise(async (resolve, reject) => {
+                const dow = new Date().getDay();
+                // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
+                const start_at = new Date(Date.now() - (1.25 * 24 * 60 * 60 * 1000)).toISOString();
+                const end_at = new Date().toISOString();
+                // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
+                url = DATA_SOURCE === 'm3' ?
+                    //https://m3-solutions-mi.com
+                    `${m3_url}/${name}/1Min/${start_at}/${end_at}` :
+                    `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
+                // `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}V&start=2025-04-01T04:00:00.000Z&end=2026-05-11T13:24:50.305Z&timeframe=1D&limit=5000&adjustment=raw&feed=iex&sort=asc`;
+
+                // `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`
+                // const resp_2 = await fetch(, {
+                const resp = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        'APCA-API-KEY-ID': ALPACA_KEY,
+                        'APCA-API-SECRET-KEY': ALPACA_SECRET,
+                    }
+                }).then((resp) => resp.json());
+                resolve(resp.bars[name]);
+            });
+        }
+        function update_symbol_chart(chart, data) {
+            const raw = INDICATORS.indexOf(name) >= 0;
+            let series = [
+                { name: 'Close', type: 'area', data: [] },
+                { name: 'Open', type: 'line', color: colors.teal, data: [] },
+                { name: '0.5% / d', type: 'line', data: [] },
+                { name: '1.0% / d', type: 'line', data: [] },
+                { name: 'Bollinger', type: 'line', data: [] },
+                { name: 'Trendline', type: 'line', data: [] },
+            ];
+            let start = data[0].c;
+            let shares = raw ? 1 : INVEST_AMOUNT / start;
+            const increment = (start * shares * 0.005);
+            series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
+            series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.o - start) * shares } });
+            if (!raw) {
+                series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+                series[3].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            }
+            // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+            // series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            const bollinger = calculateBollingerBands(series[0].data.map((v) => v.y), 7, 1);
+            series[0].data.forEach((v, i) => {
+                series[4].data.push({ x: v.x, y: bollinger.lowerBand[i] });
+            });
+            const tl = calculateTrendline(series[0].data.map((v) => v.y));
+            series[0].data.forEach((v, i) => {
+                series[5].data.push({ x: v.x, y: tl.calculateY(i) });
+            });
+            // console.log('score','|', round1(tl.slope - increment));
+            chart.options.tooltip.enabledOnSeries = [0];
+            chart.options.annotations.xaxis = [];
+            let n = new Date(series[0].data[0].x).getFullYear();
+            series[0].data.forEach((v) => {
+                const n2 = new Date(v.x).getFullYear();
+                if (n !== n2) {
+                    CHART_SYMBOL.options.annotations.xaxis.push(add_annotation_x(v.x));
+                }
+                n = n2;
+            })
+            // CHART_SYMBOL.options.yaxis.min = Math.min(...series[0].data.map((v)=>v.y));
+            chart.options.chart.height = 380;
+            chart.options.series = series;
+            chart.render();
+        }
+        function update_symbol_chart_24h(chart, data, height = 225) {
+            if (active_page === 'compare') {
+                const raw = false; //INDICATORS.indexOf(name) >= 0;
+                let series = [
+                    { name: 'Close', type: 'area', data: [] },
+                ];
+                let start = data[0].c;
+                let shares = raw ? 1 : INVEST_AMOUNT / start;
+                series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
+                chart.options.tooltip.enabledOnSeries = [0];
+                chart.options.annotations.xaxis = [];
+                chart.options.annotations.yaxis = [];
+                const d2 = series[0].data[series[0].data.length - 1].x;
+                const d1 = series[0].data[0].x;
+                chart.options.annotations.xaxis.push(add_annotation_x(new Date(d2).setHours(9, 30), null, colors.deeppink));
+                chart.options.annotations.xaxis.push(add_annotation_x(new Date(d2).setHours(10, 0), null, colors.teal));
+                chart.options.annotations.xaxis.push(add_annotation_x(new Date(d2).setHours(10, 30), null, colors.orange));
+                chart.options.annotations.xaxis.push(add_annotation_x(new Date(d2).setHours(15, 30), null, colors.orange));
+                chart.options.annotations.xaxis.push(add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
+                chart.options.annotations.xaxis.push(add_annotation_x(new Date(d1).setHours(15, 30), null, colors.orange));
+                chart.options.annotations.xaxis.push(add_annotation_x(new Date(d1).setHours(16, 0), null, colors.teal));
+                chart.options.annotations.yaxis.push(add_annotation_y(series[0].data[series[0].data.length - 1].y, colors.grey));
+                chart.options.chart.height = height;
+                chart.options.series = series;
+                chart.render();
+            }
+        }
+
         let SELECTED_SYMBOL = 'QQQ';
         let INDICATORS = 'QQQ,NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
         async function click_symbol(name) {
@@ -906,44 +1078,49 @@
             const position = RESULTS?.POSITIONS ? RESULTS.POSITIONS.find((v) => v.name === name) : null;
             // console.log(position);
 
-            let url = DATA_SOURCE === 'm3' ?
-                //https://m3-solutions-mi.com
-                `http://localhost:3000/${name}/1D/2026-05-01T23:59:59/2027-01-01` :
-                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2026-03-21&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
+            // const m3_url = 'http://localhost:3000'
+            // // const m3_url = 'https://m3-solutions-mi.com'
 
-            // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
-            const resp = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    accept: 'application/json',
-                    'APCA-API-KEY-ID': ALPACA_KEY,
-                    'APCA-API-SECRET-KEY': ALPACA_SECRET,
-                }
-            }).then((resp) => resp.json());
-            const data = resp.bars[name];
+            // let url = DATA_SOURCE === 'm3' ?
+            //     //https://m3-solutions-mi.com
+            //     `${m3_url}/${name}/1D/2026-05-01T23:59:59/2027-01-01` :
+            //     `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2026-03-21&end=2027-01-01&feed=iex&limit=5000&sort=asc`;
 
-            const dow = new Date().getDay();
-            // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
-            const start_at = new Date(Date.now() - (2.5 * 24 * 60 * 60 * 1000)).toISOString();
-            const end_at = new Date().toISOString();
-            // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
-            url = DATA_SOURCE === 'm3' ?
-                //https://m3-solutions-mi.com
-                `http://localhost:3000/${name}/1Min/${start_at}/${end_at}` :
-                `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
-            // `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}V&start=2025-04-01T04:00:00.000Z&end=2026-05-11T13:24:50.305Z&timeframe=1D&limit=5000&adjustment=raw&feed=iex&sort=asc`;
+            // // const resp = await fetch(`https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1D&start=2025-04-01&end=2027-01-01&feed=iex&limit=5000&sort=asc`, {
+            // const resp = await fetch(url, {
+            //     method: 'GET',
+            //     headers: {
+            //         accept: 'application/json',
+            //         'APCA-API-KEY-ID': ALPACA_KEY,
+            //         'APCA-API-SECRET-KEY': ALPACA_SECRET,
+            //     }
+            // }).then((resp) => resp.json());
+            // const data = resp.bars[name];
+            const data = await get_symbol_data_days(name);
 
-            // `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`
-            // const resp_2 = await fetch(, {
-            const resp_2 = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    accept: 'application/json',
-                    'APCA-API-KEY-ID': ALPACA_KEY,
-                    'APCA-API-SECRET-KEY': ALPACA_SECRET,
-                }
-            }).then((resp) => resp.json());
-            const data_m = resp_2.bars[name];
+            // const dow = new Date().getDay();
+            // // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
+            // const start_at = new Date(Date.now() - (2.75 * 24 * 60 * 60 * 1000)).toISOString();
+            // const end_at = new Date().toISOString();
+            // // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
+            // url = DATA_SOURCE === 'm3' ?
+            //     //https://m3-solutions-mi.com
+            //     `${m3_url}/${name}/1Min/${start_at}/${end_at}` :
+            //     `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
+            // // `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}V&start=2025-04-01T04:00:00.000Z&end=2026-05-11T13:24:50.305Z&timeframe=1D&limit=5000&adjustment=raw&feed=iex&sort=asc`;
+
+            // // `https://api.alpaca.markets/v2/account/portfolio/history?period=1D&timeframe=1Min&intraday_reporting=extended_hours&pnl_reset=per_day`
+            // // const resp_2 = await fetch(, {
+            // const resp_2 = await fetch(url, {
+            //     method: 'GET',
+            //     headers: {
+            //         accept: 'application/json',
+            //         'APCA-API-KEY-ID': ALPACA_KEY,
+            //         'APCA-API-SECRET-KEY': ALPACA_SECRET,
+            //     }
+            // }).then((resp) => resp.json());
+            // const data_m = resp_2.bars[name];
+            const data_m = await get_symbol_data_24h(name);
 
             // console.log(name + ' selected');
             // console.log(name, elem, data);
@@ -975,11 +1152,13 @@
                 CHART_BARS_ANALYSIS_OHLC.options.chart.height = 500;
                 CHART_BARS_ANALYSIS_OHLC.render();
                 //  (${round2((data_bars_advanced[data_bars_advanced.length-1][3].y-data_bars_advanced[0][3].y)/data_bars_advanced[0][3].y*100)}%)
-                const qty = INVEST_AMOUNT / data_bars_advanced[0].y[3]
-                document.getElementById('chart-bars-analysis-title').innerHTML = `<b>${name}</b>`;
-                document.getElementById('chart-bars-analysis-title-description').innerHTML = `&nbsp;&nbsp;|&nbsp;&nbsp;<span class="w3-xlarge">${get_description(name)}</span>`;
-                document.getElementById('chart-bars-analysis-title-description').innerHTML += `&nbsp;&nbsp;|&nbsp;&nbsp;<b><span class="w3-xlarge">$ ${round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[0].y[3]) * qty).toLocaleString()}</span></b>`;
-                document.getElementById('chart-bars-analysis-title-description').innerHTML += `&nbsp;&nbsp;|&nbsp;&nbsp;<b><span class="w3-xlarge">$ ${round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[data_bars_advanced.length - 4].y[0]) * qty).toLocaleString()}</span></b>`;
+                const qty = INVEST_AMOUNT / data_bars_advanced[0].y[3];
+                const gain_window = round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[0].y[3]) * qty);
+                const gain_week = round2((data_bars_advanced[data_bars_advanced.length - 1].y[3] - data_bars_advanced[data_bars_advanced.length - 4].y[0]) * qty);
+                document.getElementById('chart-bars-analysis-title').innerHTML = `<b class="w3-text-grey">${name}</b>`;
+                document.getElementById('chart-bars-analysis-title-description').innerHTML = `&nbsp;&nbsp;|&nbsp;&nbsp;<span class="w3-xlarge w3-text-grey">${get_description(name)}</span>`;
+                document.getElementById('chart-bars-analysis-title-description').innerHTML += `&nbsp;&nbsp;|&nbsp;&nbsp;<b><span class="w3-xlarge w3-text-${gain_window >= 0 ? 'green' : 'red'}">$ ${gain_window.toLocaleString()}</span></b>`;
+                document.getElementById('chart-bars-analysis-title-description').innerHTML += `&nbsp;&nbsp;|&nbsp;&nbsp;<b><span class="w3-xlarge w3-text-${gain_week >= 0 ? 'green' : 'red'}">$ ${gain_week.toLocaleString()}</span></b>`;
 
                 // data_bars_advanced = data_m.map((v) => { return { x: new Date(v.t).getTime(), y: [v.o, v.h, v.l, v.c] } });
                 // // console.log(data_bars_advanced);
@@ -1014,48 +1193,50 @@
             update_data_bars_advanced();
 
 
-            let series = [
-                { name: 'Close', type: 'area', data: [] },
-                { name: 'Open', type: 'line', color: colors.teal, data: [] },
-                { name: '0.5% / d', type: 'line', data: [] },
-                { name: '1.0% / d', type: 'line', data: [] },
-                { name: 'Bollinger', type: 'line', data: [] },
-                { name: 'Trendline', type: 'line', data: [] },
-            ];
-            let start = data[0].c;
-            let shares = raw ? 1 : INVEST_AMOUNT / start;
-            const increment = (start * shares * 0.005);
-            series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
-            series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.o - start) * shares } });
-            if (!raw) {
-                series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
-                series[3].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
-            }
-            // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
-            // series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
-            const bollinger = calculateBollingerBands(series[0].data.map((v) => v.y), 7, 1);
-            series[0].data.forEach((v, i) => {
-                series[4].data.push({ x: v.x, y: bollinger.lowerBand[i] });
-            });
-            const tl = calculateTrendline(series[0].data.map((v) => v.y));
-            series[0].data.forEach((v, i) => {
-                series[5].data.push({ x: v.x, y: tl.calculateY(i) });
-            });
-            // console.log('score','|', round1(tl.slope - increment));
-            CHART_SYMBOL.options.tooltip.enabledOnSeries = [0];
-            CHART_SYMBOL.options.annotations.xaxis = [];
-            let n = new Date(series[0].data[0].x).getFullYear();
-            series[0].data.forEach((v) => {
-                const n2 = new Date(v.x).getFullYear();
-                if (n !== n2) {
-                    CHART_SYMBOL.options.annotations.xaxis.push(add_annotation_x(v.x));
-                }
-                n = n2;
-            })
-            // CHART_SYMBOL.options.yaxis.min = Math.min(...series[0].data.map((v)=>v.y));
-            CHART_SYMBOL.options.chart.height = 380;
-            CHART_SYMBOL.options.series = series;
-            CHART_SYMBOL.render();
+            // let series = [
+            //     { name: 'Close', type: 'area', data: [] },
+            //     { name: 'Open', type: 'line', color: colors.teal, data: [] },
+            //     { name: '0.5% / d', type: 'line', data: [] },
+            //     { name: '1.0% / d', type: 'line', data: [] },
+            //     { name: 'Bollinger', type: 'line', data: [] },
+            //     { name: 'Trendline', type: 'line', data: [] },
+            // ];
+            // let start = data[0].c;
+            // let shares = raw ? 1 : INVEST_AMOUNT / start;
+            // const increment = (start * shares * 0.005);
+            // series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c - start) * shares } });
+            // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.o - start) * shares } });
+            // if (!raw) {
+            //     series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+            //     series[3].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            // }
+            // // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment) } });
+            // // series[2].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (i * increment * 2) } });
+            // const bollinger = calculateBollingerBands(series[0].data.map((v) => v.y), 7, 1);
+            // series[0].data.forEach((v, i) => {
+            //     series[4].data.push({ x: v.x, y: bollinger.lowerBand[i] });
+            // });
+            // const tl = calculateTrendline(series[0].data.map((v) => v.y));
+            // series[0].data.forEach((v, i) => {
+            //     series[5].data.push({ x: v.x, y: tl.calculateY(i) });
+            // });
+            // // console.log('score','|', round1(tl.slope - increment));
+            // CHART_SYMBOL.options.tooltip.enabledOnSeries = [0];
+            // CHART_SYMBOL.options.annotations.xaxis = [];
+            // let n = new Date(series[0].data[0].x).getFullYear();
+            // series[0].data.forEach((v) => {
+            //     const n2 = new Date(v.x).getFullYear();
+            //     if (n !== n2) {
+            //         CHART_SYMBOL.options.annotations.xaxis.push(add_annotation_x(v.x));
+            //     }
+            //     n = n2;
+            // })
+            // // CHART_SYMBOL.options.yaxis.min = Math.min(...series[0].data.map((v)=>v.y));
+            // CHART_SYMBOL.options.chart.height = 380;
+            // CHART_SYMBOL.options.series = series;
+            // CHART_SYMBOL.render();
+            update_symbol_chart(CHART_SYMBOL, data);
+            const series = CHART_SYMBOL.options.series
 
             let clone = deepClone(CHART_SYMBOL.options);
             clone.chart.height = 275;
@@ -1070,7 +1251,7 @@
             series_2[3].data = series[3].data.slice(num);
             series_2[4].data = series[4].data.slice(num);
             series_2[5].data = series[5].data.slice(num);
-            CHART_SYMBOL_RECENT.options.tooltip.enabledOnSeries = [0,1];
+            CHART_SYMBOL_RECENT.options.tooltip.enabledOnSeries = [0, 1];
             CHART_SYMBOL_RECENT.options.chart.height = 325;
             CHART_SYMBOL_RECENT.options.series = series_2;
             CHART_SYMBOL_RECENT.render();
@@ -1176,14 +1357,69 @@
             document.getElementById('symbol-gain-pct').innerHTML = position ? position.gain_pct + ' %' : '-';
             document.getElementById('symbol-today').innerHTML = position ? '$ ' + position.day : '-';
             document.getElementById('symbol-today-pct').innerHTML = position ? position.day_pct + ' %' : '-';
-            document.getElementById('symbol-score').innerHTML = round1(tl.slope);
-            document.getElementById('symbol-score-baseline').innerHTML = round1(increment);
+            // document.getElementById('symbol-score').innerHTML = round1(tl.slope);
+            // document.getElementById('symbol-score-baseline').innerHTML = round1(increment);
             document.getElementById('symbol-invested').innerHTML = position ? '$ ' + position.seed : '-';
             document.getElementById('analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
             document.getElementById('bars-analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
             document.getElementById('pdt-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
+            document.getElementById('compare-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
 
             // document.getElementById('chart-symbol-recent').scrollIntoView();
+        }
+        const default_compare_symbols = [...'QQQ,CL=F,^VIX'.split(','), ...'AMD,ARM,AVGO,CRWD,DDOG,DRAM,MRVL,MU,UMC,SMCI,SNDK,SOXL,STX,WDC,WOLF,WULF'.split(',').sort()];
+        async function load_compare_cards() {
+            let i = 0;
+            let symbols_list = RESULTS.POSITIONS.map((v) => v.name);
+            if (symbols_list.length === 0) {
+                symbols_list = default_compare_symbols;
+            }
+            for (let s of symbols_list) {
+                const color = RESULTS.POSITIONS.map((v) => v.name).indexOf(s) >= 0 ? 'w3-text-blue' : '';
+                const html = `<div class="w3-col s12 m${i === 0 ? 8 : (i < 3 ? 2 : 3)}">
+                            <div class="w3-panel w3-border _w3-light-grey w3-padding" style="_height:350px;">
+                                <div class="w3-col s12 w3-center">
+                                    <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
+                                        <i class="${i < 3 ? 'w3-hide' : ''} fa fa-credit-card w3-right w3-xlarge w3-text-red w3-margin-right pointer"
+                                            onclick="sell_symbol('${s}')"></i>
+                                        <i class="${i < 3 ? 'w3-hide' : ''} fa fa-credit-card w3-right w3-xlarge w3-text-teal w3-margin-right pointer"
+                                            onclick="buy_symbol(7500,'${s}')"></i>
+                                        <div class="w3-text-grey w3-xlarge _w3-margin-top"><b id="chart-compare-title-${i + 1}" class="${color}">${s}</b> | 
+                                            </b>&nbsp;<b id="chart-compare-title-pct-${i + 1}" style="font-size:24px;"></b><span
+                                                class="w3-xlarge w3-text-grey"> %</span>
+                                        </div>
+                                    </div>
+                                    <div id="chart-compare-${i + 1}"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                document.getElementById('compare-output').innerHTML += html;
+                i++;
+            };
+        }
+
+        async function load_compare() {
+            // if (document.getElementById('compare-output').innerHTML = '') {
+            //     load_compare_cards();
+            // }
+            let i = 0;
+            // const symbols_list = default_compare_symbols;
+            let symbols_list = RESULTS.POSITIONS.map((v) => v.name);
+            if (symbols_list.length === 0) {
+                symbols_list = default_compare_symbols;
+            }
+            for await (const s of symbols_list) {
+                const data = await get_symbol_data_24h(s);
+                update_symbol_chart_24h(compare_charts_map[`chart-compare-${i + 1}`], data, i < 3 ? 190 : 190);
+                document.getElementById(`chart-compare-title-${i + 1}`).innerHTML = s;
+                if (i > 2) {
+                    const position = RESULTS.POSITIONS.find((v) => v.name === s);
+                    const value = position ? position.unrealized_plpc : 0
+                    document.getElementById(`chart-compare-title-pct-${i + 1}`).innerHTML = value;
+                    document.getElementById(`chart-compare-title-pct-${i + 1}`).style.color = value > 0 ? 'green' : (value < 0 ? 'red' : '');
+                }
+                i++;
+            }
         }
         async function load_data() {
 
@@ -1291,22 +1527,22 @@
                 // const highlight_grey = 'BE,CAT,CIFR,CLSK,DHC,GOOGL,HOVR,IREN,MSTR,OKLO,PLTR,QCOM,TEAM,VCX'.split(',').sort();
 
                 // const removed = 'CCX,CRWV,FIX,GEV,HGER,HOOD,IGV,INTU,KNSA,LITE,LITE,SMCI';
-                let symbol_list = 'AAOI,AIS,ALAB,ALAB,AMD,ARM,AMZN,AVGO,AVT,AXTI,BE,BTSG,BTSG,BTSG,CAT,CIFR,COHR,CRDO,CRWD,DDOG,DELL,DELL,DIOD,DRAM,GOOGL,GOOGL,HTLD';
-                symbol_list += ',INTC,IREN,KOPN,MCHP,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
+                let symbol_list = 'AAOI,AIS,ALAB,ALAB,AMD,ARM,AMZN,AVGO,AVT,AXTI,BE,BTSG,BTSG,BTSG,CAT,CIFR,COHR,CRDO,CRWD,CSCO,DDOG,DELL,DELL,DIOD,DRAM,GOOGL,GOOGL,HTLD';
+                symbol_list += ',INTC,IREN,KOPN,MCHP,MDB,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
                 symbol_list += ',SITM,SMCI,SMH,SNDK,SOXL,SOXX,STRL,STX,SYM,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WULF,ZM,ZS';
 
                 let watch_list = [...symbol_list.split(',').sort()];
                 watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
-                watch_list.push(...INDICATORS);
-                
+                watch_list.push(...INDICATORS, 'COMB');
+
                 const highlight_grey = '-'.split(',').sort();
                 const highlight_green = '-'.split(','); //.sort();
-                const highlight_orange = 'CRWD,MRVL,SNDK,SOXL,STX,VSAT,WOLF'.split(',').sort();
+                const highlight_orange = 'MRVL,STX,VSAT,WOLF'.split(',').sort();
                 // const highlight_blue = 'BTSG,CRWD,DDOG,MU,UMC,WOLF'.split(',').sort();
-                const highlight_blue = 'ALAB,AMD,DELL,DDOG,DRAM,MU,PENG,UMC,WDC'.split(',').sort();
+                const highlight_blue = 'ALAB,AMD,ARM,CRWD,DELL,DDOG,DRAM,MU,PENG,SMCI,SNDK,SOXL,UMC,WDC'.split(',').sort();
                 const highlight_purple = 'ALAB,BE,NBIS'.split(',').sort();
                 const highlight_pink = 'QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
-                const highlight_black = '-'.split(',').sort();
+                const highlight_black = 'COMB'.split(',').sort();
 
                 const template = `<div class="w3-button w3-center w3-margin-right" style="margin-bottom:10px;border-bottom:{1}px solid {2} !important;border:2px solid lightgrey;width:120px;" onclick=(click_symbol("{0}"))>{0}</div>`;
                 const template_pdt = `
@@ -1729,6 +1965,7 @@
             };
             update_analysis();
             click_symbol(SELECTED_SYMBOL);
+            load_compare();
 
             // const read_only_cols = [0, 1, 8, 9];
             // fetch('http://127.0.0.1:3000/csv/forecast', {})
