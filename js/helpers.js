@@ -42,14 +42,14 @@ function deepClone(obj) {
 }
 
 const add_annotation_x = (x, text = null, color = colors.black, offsetX = 0) => {
-    const obj = { x, borderWidth: 2, borderColor: color, fillColor: color, opacity: 1 };
+    const obj = { x, borderWidth: 2, borderColor: color, fillColor: color, opacity: 1, strokeDashArray: 0 };
     if (text) {
         obj.label = { text, offsetX, offsetY: 15, orientation: 'horizontal', style: { fontSize: '22px' } };
     }
     return obj;
 }
 const add_annotation_y = (y, color = colors.black) => {
-    const obj = { y, borderColor: color, fillColor: color, opacity: 1 };
+    const obj = { y, borderColor: color, fillColor: color, opacity: 1, strokeDashArray: 0 };
     // if (text) {
     //     obj.label  = { text, offsetX, offsetY, style: { fontSize: '22px' } };
     // }

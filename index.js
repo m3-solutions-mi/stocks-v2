@@ -440,8 +440,10 @@ async function get_trend() {
         };
 
         // fetch('https://api.alpaca.markets/v2/account/portfolio/history?period=12D&timeframe=1D&intraday_reporting=market_hours&pnl_reset=per_day', options)
-        fetch('https://api.alpaca.markets/v2/account/portfolio/history?start=2026-04-30T12:00:00Z&timeframe=1D&intraday_reporting=market_hours&pnl_reset=per_day', options)
-            .then(res => res.json())
+        // fetch('https://api.alpaca.markets/v2/account/portfolio/history?start=2026-04-30T12:00:00Z&timeframe=1D&intraday_reporting=market_hours&pnl_reset=per_day', options)
+        // fetch('https://api.alpaca.markets/v2/account/portfolio/history?period=15D&timeframe=1D&intraday_reporting=market_hours&pnl_reset=per_day', options)
+        fetch('https://api.alpaca.markets/v2/account/portfolio/history?timeframe=1D&intraday_reporting=market_hours&start=2026-05-22T12:00:00&pnl_reset=per_day', options)
+        .then(res => res.json())
             .then(res => {
                 // console.table(res)
                 const obj = [];
