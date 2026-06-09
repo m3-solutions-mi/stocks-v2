@@ -1,7 +1,6 @@
-
 let RESULTS = null;
-const CHART_DAY_HISTORY = new Treemap('chart-days-history');
-const CHART_24H_HISTORY = new Treemap('chart-24h-history');
+// const CHART_DAY_HISTORY = new Treemap('CHART_DAY_HISTORY');
+// const CHART_24H_HISTORY = new Treemap('CHART_24H_HISTORY');
 const CHART_POSITIONS = new Treemap('chart-positions');
 const CHART_POSITIONS_TODAY = new Treemap('chart-positions-today');
 const CHART_SYMBOL = new Treemap('chart-symbol');
@@ -22,41 +21,17 @@ const CHART_BARS_ANALYSIS_TODAY = new Treemap('chart-bars-analysis-today');
 const CHART_BARS_ANALYSIS_ACCOUNT = new Treemap('chart-bars-analysis-account');
 const CHART_BARS_ANALYSIS_POSITIONS = new Treemap('chart-bars-analysis-positions');
 
-compare_charts_map = {
-    'chart-compare-1': new Treemap('chart-compare-1'),
-    'chart-compare-2': new Treemap('chart-compare-2'),
-    'chart-compare-3': new Treemap('chart-compare-3'),
-    'chart-compare-4': new Treemap('chart-compare-4'),
-    'chart-compare-5': new Treemap('chart-compare-5'),
-    'chart-compare-6': new Treemap('chart-compare-6'),
-    'chart-compare-7': new Treemap('chart-compare-7'),
-    'chart-compare-8': new Treemap('chart-compare-8'),
-    'chart-compare-9': new Treemap('chart-compare-9'),
-    'chart-compare-10': new Treemap('chart-compare-10'),
-    'chart-compare-11': new Treemap('chart-compare-11'),
-    'chart-compare-12': new Treemap('chart-compare-12'),
-    'chart-compare-13': new Treemap('chart-compare-13'),
-    'chart-compare-14': new Treemap('chart-compare-14'),
-    'chart-compare-15': new Treemap('chart-compare-15'),
-    'chart-compare-16': new Treemap('chart-compare-16'),
-    'chart-compare-17': new Treemap('chart-compare-17'),
-    'chart-compare-18': new Treemap('chart-compare-18'),
-    'chart-compare-19': new Treemap('chart-compare-19'),
-    'chart-compare-20': new Treemap('chart-compare-20'),
-    'chart-compare-21': new Treemap('chart-compare-21'),
-    'chart-compare-22': new Treemap('chart-compare-22'),
-    'chart-compare-23': new Treemap('chart-compare-23'),
-    'chart-compare-24': new Treemap('chart-compare-24'),
-    'chart-compare-25': new Treemap('chart-compare-25'),
-    'chart-compare-26': new Treemap('chart-compare-26'),
-    'chart-compare-27': new Treemap('chart-compare-27'),
-    'chart-compare-28': new Treemap('chart-compare-28'),
-    'chart-compare-29': new Treemap('chart-compare-29'),
-    'chart-compare-30': new Treemap('chart-compare-30'),
+compare_charts_map = {};
+'CHART_DAY_HISTORY,CHART_24H_HISTORY'.split(',').forEach((v) => {
+    compare_charts_map[v] = new Treemap(v);
+})
+''.split(',').forEach((v) => {
+    compare_charts_map[v] = new Combo(v);
+})
+for (let x = 1; x <= 30; x++) {
+    const v = `chart-compare-${x}`;
+    compare_charts_map[v] = new Treemap(v);
 }
-// const CHART_COMPARE_1 = new Treemap('chart-compare-1');
-const CHART_COMPARE_2 = new Treemap('chart-compare-2');
-const CHART_COMPARE_3 = new Treemap('chart-compare-3');
 
 async function load_data() {
 
@@ -157,6 +132,22 @@ async function load_data() {
     }
     add_letters();
 
+    let symbol_list = 'AAOI,AIS,ALAB,ALAB,AMD,ARM,AMZN,AVGO,AVT,AXTI,BE,BTSG,BTSG,BTSG,CAT,CIFR,COHR,CRDO,CRWD,CSCO,DDOG,DELL,DELL,DIOD,DRAM,GOOGL,GOOGL,HTLD';
+    symbol_list += ',INTC,IREN,KOPN,MCHP,MDB,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
+    symbol_list += ',SITM,SMCI,SMH,SNDK,SOXL,SOXX,STRL,STX,SYM,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WLDN,WULF,ZM,ZS';
+
+    let watch_list = [...symbol_list.split(',').sort()];
+    watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
+    watch_list.push(...INDICATORS, 'COMB');
+
+    const highlight_grey = '-'.split(',').sort();
+    const highlight_green = 'AAOI,ALAB,BTSG,CAT,CRDO,HTLD,STRL,WOLF'.split(','); //.sort();
+    const highlight_orange = 'MRVL,STX,VSAT'.split(',').sort();
+    // const highlight_blue = 'BTSG,CRWD,DDOG,MU,UMC,WOLF'.split(',').sort();
+    const highlight_blue = 'AMD,ARM,CRWD,DELL,DDOG,DRAM,MU,PENG,SMCI,SNDK,SOXL,UMC,WDC'.split(',').sort();
+    const highlight_purple = 'BE,NBIS'.split(',').sort();
+    const highlight_pink = 'QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
+    const highlight_black = 'COMB'.split(',').sort();
     const add_watch_list = () => {
         // let watch_list = 'TNGX,TIGO,TIGR,TSEM,SWMR,SNDK,SMCI,SOXL,STRL,STX,MU,KOPN,UNH,NAUT,NEO,ATOM,MSTR,MDB'
         // watch_list += ',BLDP,BAER,CIFR,COIN,CRWD,CRWV,CORZ,CECO,DHC,POWL,ALNT,CAT,GEV,WDC,GE';
@@ -165,22 +156,7 @@ async function load_data() {
         // const highlight_grey = 'BE,CAT,CIFR,CLSK,DHC,GOOGL,HOVR,IREN,MSTR,OKLO,PLTR,QCOM,TEAM,VCX'.split(',').sort();
 
         // const removed = 'CCX,CRWV,FIX,GEV,HGER,HOOD,IGV,INTU,KNSA,LITE,LITE,SMCI';
-        let symbol_list = 'AAOI,AIS,ALAB,ALAB,AMD,ARM,AMZN,AVGO,AVT,AXTI,BE,BTSG,BTSG,BTSG,CAT,CIFR,COHR,CRDO,CRWD,CSCO,DDOG,DELL,DELL,DIOD,DRAM,GOOGL,GOOGL,HTLD';
-        symbol_list += ',INTC,IREN,KOPN,MCHP,MDB,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
-        symbol_list += ',SITM,SMCI,SMH,SNDK,SOXL,SOXX,STRL,STX,SYM,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WULF,ZM,ZS';
 
-        let watch_list = [...symbol_list.split(',').sort()];
-        watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
-        watch_list.push(...INDICATORS, 'COMB');
-
-        const highlight_grey = '-'.split(',').sort();
-        const highlight_green = '-'.split(','); //.sort();
-        const highlight_orange = 'MRVL,STX,VSAT,WOLF'.split(',').sort();
-        // const highlight_blue = 'BTSG,CRWD,DDOG,MU,UMC,WOLF'.split(',').sort();
-        const highlight_blue = 'ALAB,AMD,ARM,CRWD,DELL,DDOG,DRAM,MU,PENG,SMCI,SNDK,SOXL,UMC,WDC'.split(',').sort();
-        const highlight_purple = 'ALAB,BE,NBIS'.split(',').sort();
-        const highlight_pink = 'QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
-        const highlight_black = 'COMB'.split(',').sort();
 
         const template = `<div class="w3-button w3-center w3-margin-right" style="margin-bottom:10px;border-bottom:{1}px solid {2} !important;border:2px solid lightgrey;width:120px;" onclick=(click_symbol("{0}"))>{0}</div>`;
         const template_pdt = `
@@ -370,15 +346,15 @@ async function load_data() {
                 // const invested = filtered.length > 0 ? filtered[0].amount : RESULTS.DEPOSITS[RESULTS.DEPOSITS.length-1].amount;
                 // value = v.y - invested;
                 const value = v.y;
-                CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round(value).toLocaleString()));
+                compare_charts_map.CHART_DAY_HISTORY.options.annotations.points.push(add_annotation_point_2(v.x, v.y, round(value).toLocaleString()));
             }
         });
-        CHART_DAY_HISTORY.options.annotations.yaxis = [add_annotation_y(series[0].data[series[0].data.length - 1].y)];
-        CHART_DAY_HISTORY.options.chart.height = 250;
+        compare_charts_map.CHART_DAY_HISTORY.options.annotations.yaxis = [add_annotation_y(series[0].data[series[0].data.length - 1].y)];
+        compare_charts_map.CHART_DAY_HISTORY.options.chart.height = 250;
         // CHART_DAY_HISTORY.options.dataLabels.enabled = true;
         // CHART_DAY_HISTORY.options.yaxis.max = Math.max(...series[0].data.map((v)=>v.y) + 500);
-        CHART_DAY_HISTORY.options.series = series;
-        CHART_DAY_HISTORY.render();
+        compare_charts_map.CHART_DAY_HISTORY.options.series = series;
+        compare_charts_map.CHART_DAY_HISTORY.render();
 
         // CHART_PDT_RECENT.options.dataLabels.enabled = true;
         // CHART_PDT_RECENT.options.yaxis.max = Math.max(...series[0].data.map((v)=>v.y) + 500);
@@ -392,9 +368,9 @@ async function load_data() {
         series[0].data = series[0].data.filter((v) => v.x > new Date(series[0].data[0].x).setHours(4, 0));
         series[0].data = series[0].data.filter((v) => v.x < new Date(series[0].data[0].x).setHours(23, 59));
         const equity_0930 = series[0].data.find((v) => new Date(v.x).getHours() === 9 && new Date(v.x).getMinutes() === 30) || 0
-        CHART_24H_HISTORY.options.chart.height = 250;
-        CHART_24H_HISTORY.options.series = series;
-        CHART_24H_HISTORY.options.annotations.xaxis = [
+        compare_charts_map.CHART_24H_HISTORY.options.chart.height = 250;
+        compare_charts_map.CHART_24H_HISTORY.options.series = series;
+        compare_charts_map.CHART_24H_HISTORY.options.annotations.xaxis = [
             add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
             add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(9, 30)),
             add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(10, 0), null, colors.darkcyan),
@@ -404,10 +380,10 @@ async function load_data() {
             // add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(15, 30), null, colors.darkcyan),
             add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 0)),
         ];
-        CHART_24H_HISTORY.options.annotations.yaxis = [add_annotation_y(series[0].data[series[0].data.length - 1].y)];
-        CHART_24H_HISTORY.render();
+        compare_charts_map.CHART_24H_HISTORY.options.annotations.yaxis = [add_annotation_y(series[0].data[series[0].data.length - 1].y)];
+        compare_charts_map.CHART_24H_HISTORY.render();
 
-        clone = deepClone(CHART_24H_HISTORY.options);
+        clone = deepClone(compare_charts_map.CHART_24H_HISTORY.options);
         if (getHMM(new Date()) >= 930 && getHMM(new Date()) <= 1630) {
             clone.series[0].data = clone.series[0].data.filter((v) => v.x >= new Date(series[0].data[0].x).setHours(9, 0));
             clone.series[0].data = clone.series[0].data.filter((v) => v.x <= new Date(series[0].data[0].x).setHours(16, 3));
@@ -422,7 +398,7 @@ async function load_data() {
         CHART_PDT_ACCOUNT.options = clone;
         CHART_PDT_ACCOUNT.render();
 
-        clone = deepClone(CHART_24H_HISTORY.options);
+        clone = deepClone(compare_charts_map.CHART_24H_HISTORY.options);
         // if (getHMM(new Date()) >= 930 && getHMM(new Date()) <= 1630) {
         //     clone.series[0].data = clone.series[0].data.filter((v) => v.x >= new Date(series[0].data[0].x).setHours(9, 0));
         //     clone.series[0].data = clone.series[0].data.filter((v) => v.x <= new Date(series[0].data[0].x).setHours(16, 3));
@@ -483,11 +459,15 @@ async function load_data() {
             { name: 'Gain', type: 'area', data: [] },
             { name: 'P / L', type: 'bar', data: [] },
             { name: 'Equity', type: 'line', data: [] },
+            { name: 'Goal', type: 'line', data: [] },
         ];
 
+        let g = SEED_AMOUNT * 0.0075;
         series[0].data = RESULTS.TREND.map((v, i) => { return { x: v.dmmm, y: v.total } });
         series[1].data = RESULTS.TREND.map((v, i) => { return { x: v.dmmm, y: round(v.delta) } });
         series[2].data = RESULTS.TREND.map((v, i) => { return { x: v.dmmm, y: round(v.equity - SEED_AMOUNT) } });
+        series[3].data = RESULTS.TREND.map((v, i) => { return { x: v.dmmm, y: round(i * g) } });
+
 
         // series[0].data = analysis.map((v, i) => { return { x: v.dmmm, y: v.net } });
         // series[1].data = analysis.map((v, i) => { return { x: v.dmmm, y: v.day_gain } });
@@ -509,9 +489,12 @@ async function load_data() {
         // // });
         // // console.log(CHART_TREND.options.annotations.points);
 
-        CHART_TREND.options.annotations.yaxis = [add_annotation_y(326.25, colors.orange)];
+        CHART_TREND.options.dataLabels.enabledOnSeries = [0, 1, 2];
+        CHART_TREND.options.stroke.width = [0.5, 1.5, 5, 5],
+        CHART_TREND.options.stroke.curve = ['straight', 'straight', 'straight', 'straight']; //, 'monotoneCubic'
+        CHART_TREND.options.annotations.yaxis = [add_annotation_y(g, colors.orange)];
         CHART_TREND.options.annotations.xaxis = [add_annotation_x('22-May', colors.grey)];
-        CHART_TREND.options.annotations.yaxis[0].y2 = 326.25 * 1.04;
+        CHART_TREND.options.annotations.yaxis[0].y2 = g * 1.04;
 
         // CHART_TREND.options.dataLabels.enabled = true;
         // CHART_TREND.options.chart.sparkline = false;
@@ -519,14 +502,19 @@ async function load_data() {
         CHART_TREND.options.series = series;
         CHART_TREND.options.plotOptions.bar.colors = {};
         CHART_TREND.options.xaxis.type = 'category';
-        CHART_TREND.options.chart.height = 750;
+        CHART_TREND.options.chart.height = IS_MEDIUM ? 550 : 750;
         CHART_TREND.render();
 
         let t = series[0].data[series[0].data.length - 1].y || 0;
-        document.getElementById('trend-chart-title').innerHTML = `$ ${t.toLocaleString()}`;
+        document.getElementById('trend-chart-title').innerHTML = `$ ${t.toLocaleString()}&nbsp;&nbsp;|&nbsp;&nbsp;${round1(t / SEED_AMOUNT * 100)} %`;
         // document.getElementById('trend-chart-title').innerHTML += ` | <span class="w3-xlarge w3-text-grey">$ ${round2(t / series[0].data.length).toLocaleString()}</span>`;
     };
     update_trend();
+
+    const get_top_list = () => {
+
+    }
+    get_top_list();
 
     // const update_top_movers = () => {
     //     let series = [
@@ -583,26 +571,26 @@ async function load_data() {
     // };
     // update_top_movers();
 
-    const update_analysis = () => {
-        //* CARDS */
-        const template = `<div class="w3-border w3-wide" style="padding:12px;margin:5px;min-width:175px;cursor:pointer;" onclick="click_symbol('{1}')">
-                    <div><i class="fa fa-circle-o {0}"></i>&nbsp;{1}</div>
-                    <div class="w3-xlarge {0}">{2}</div>
-                </div>`
-        let html = ''
-        RESULTS.POSITIONS.map((v) => v.name).forEach((v, i) => {
-            html += template
-                .replace('{0}', RESULTS.POSITIONS[i].gain >= 0 ? 'w3-text-green' : 'w3-text-red')
-                .replace('{0}', RESULTS.POSITIONS[i].gain >= 0 ? 'w3-text-green' : 'w3-text-red')
-                .replace('{1}', v)
-                .replace('{1}', v)
-                .replace('{2}', round1(RESULTS.POSITIONS[i].gain_pct) + '%');
-        });
-        document.getElementById('analysis-symbol-cards').innerHTML = html;
+    // const update_analysis = () => {
+    //     //* CARDS */
+    //     const template = `<div class="w3-border w3-wide" style="padding:12px;margin:5px;min-width:175px;cursor:pointer;" onclick="click_symbol('{1}')">
+    //                 <div><i class="fa fa-circle-o {0}"></i>&nbsp;{1}</div>
+    //                 <div class="w3-xlarge {0}">{2}</div>
+    //             </div>`
+    //     let html = ''
+    //     RESULTS.POSITIONS.map((v) => v.name).forEach((v, i) => {
+    //         html += template
+    //             .replace('{0}', RESULTS.POSITIONS[i].gain >= 0 ? 'w3-text-green' : 'w3-text-red')
+    //             .replace('{0}', RESULTS.POSITIONS[i].gain >= 0 ? 'w3-text-green' : 'w3-text-red')
+    //             .replace('{1}', v)
+    //             .replace('{1}', v)
+    //             .replace('{2}', round1(RESULTS.POSITIONS[i].gain_pct) + '%');
+    //     });
+    //     document.getElementById('analysis-symbol-cards').innerHTML = html;
 
-        //* CHARTS */
-    };
-    update_analysis();
+    //     //* CHARTS */
+    // };
+    // update_analysis();
     click_symbol(SELECTED_SYMBOL);
     load_compare();
 }

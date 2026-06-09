@@ -30,7 +30,7 @@ async function get_symbol_data_24h(name) {
         const hmm = getHMM(new Date);
         // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
         // const start_at = new Date(Date.now() - ((hmm > 1200 ? 1.25 : 0.5) * 24 * 60 * 60 * 1000)).toISOString();
-        const start_at = new Date(Date.now() - (COMPARISON_NUM_DAYS * 24 * 60 * 60 * 1000)).toISOString();
+        const start_at = new Date(Date.now() - (COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString();
         const end_at = new Date().toISOString();
         // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
         url = DATA_SOURCE === 'm3' ?

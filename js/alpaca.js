@@ -100,6 +100,24 @@ function latest_bars(symbols) {
             .catch(err => console.error('error in latest_bars()', err));
     });
 }
+//@ TOP N LIST */
+function top_N(count = 10) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                'APCA-API-KEY-ID': ALPACA_KEY,
+                'APCA-API-SECRET-KEY': ALPACA_SECRET
+            }
+        };
+
+        fetch(`https://data.alpaca.markets/v1beta1/screener/stocks/movers?top=${count}`, options)
+            .then(res => res.json())
+            .then(res => resolve(res))
+            .catch(err => console.error('error in latest_bars()', err));
+    });
+}
 //@ SELL SYMBOL SHARES */
 function sell(symbol) {
     return new Promise((resolve, reject) => {

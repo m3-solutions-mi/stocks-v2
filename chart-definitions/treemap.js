@@ -58,7 +58,8 @@ class Treemap {
         //     }
         // },
         stroke: {
-            width: [0.5, 5, 5, 5, 5, 5],
+            width: [0.5, 5, 5, 5, 5, 5, 5],
+            curve: ['monotoneCubic'],
         },
         plotOptions: {
             // treemap: {
@@ -162,18 +163,18 @@ class Treemap {
                 return round(value / 1000);
             }
         },
-        dataLabels: {
-            enabled: false,
-            // textAnchor: 'middle',
-            // style: {
-            //     fontSize: '24px',
-            // },
-            // formatter: function (text, op) {
-            //     // return [text, op.value];
-            //     return op.value;
-            // },
-            offsetY: -4
-        },
+        // dataLabels: {
+        //     enabled: false,
+        //     // textAnchor: 'middle',
+        //     // style: {
+        //     //     fontSize: '24px',
+        //     // },
+        //     // formatter: function (text, op) {
+        //     //     // return [text, op.value];
+        //     //     return op.value;
+        //     // },
+        //     offsetY: -4
+        // },
         annotations: {
             xaxis: [],
             yaxis: [],

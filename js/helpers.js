@@ -292,7 +292,7 @@ function analyze_account_2(days = true, trim = true) {
     while (e <= Date.now()) {
         const filtered = obj.filter((v) => v.e <= e);
         const value = filtered.length > 0 ? filtered.map((v) => v.amount).reduce((p, c) => p + c) : 0;
-        obj2.push({ date: new Date(e).toISOString().split('T')[0], e: new Date(e).getTime(), amount: value });
+        obj2.push({ date: new Date(e).toISOString().split('T')[0], dmmm: getDMMM(new Date(e)), e: new Date(e).getTime(), amount: value });
         e += (24 * 60 * 60 * 1000);
     }
 

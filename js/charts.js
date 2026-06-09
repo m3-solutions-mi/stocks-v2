@@ -68,8 +68,8 @@ function update_symbol_chart_24h(chart, data, height = 225) {
         add_shade(new Date(d3).setHours(9, 30), 0.1);
         chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(9, 30), null, colors.lightgrey));
         // add_shade(new Date(d3).setHours(16,0),0.075);
-        chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(10, 0), null, colors.darkgray));
-        chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(10, 30), null, colors.lightgrey));
+        chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(10, 0), null, colors.deeppink));
+        chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(10, 30), null, colors.teal));
         chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(11, 30), null, colors.lightgrey));
         chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(16, 0), null, colors.darkgray));
         chart.options.annotations.xaxis.push(add_annotation_x(new Date(d3).setHours(16, 0), null, colors.gray));

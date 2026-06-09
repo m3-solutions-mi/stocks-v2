@@ -1,7 +1,23 @@
 const INVEST_AMOUNT = 1000;
 const SEED_AMOUNT = 43500;
-const COMPARISON_NUM_DAYS = 1.5;
 const COMPARISON_BUY_AMOUNT = 7500;
+
+const COMPARE_PICKS = 'ARM,CRWD,DDOG,DRAM,MRVL,MU,SMCI,SNDK,SOXL,STX,UMC,WDC'.split(',');
+const COMPARE_PICKS_2 = 'AMD,CIFR,WOLF'.split(',');
+const COMPARE_DEFAULT_SYMBOLS = [
+    ...'NQ=F,QQQ,CL=F,^VIX'.split(','),
+    ...COMPARE_PICKS, ...'AMD,ARM,AVGO,CIFR,COHR,CRM,CRDO,CRWD,DDOG,DRAM,LASR,LITE,MRVL,MU,PENG,UMC,SMCI,SNDK,SOXL,STRL,STX,WDC,WOLF,WULF'.split(',').sort()
+];
+const COMPARE_SYMBOLS_LIST = COMPARE_DEFAULT_SYMBOLS.filter((v, i, a) => a.indexOf(v) === i);
+
+// const SEED_AMOUNT = {
+//     '2026-05-22': 43500,
+// }
+const COMPARISON_NUM_DAYS = () => {
+    const dow = new Date().getDay();
+    return dow === 0 ? 3 : (dow === 6 ? 1.75 : 0.75);
+    // return 3;
+}
 
 const ALPACA_KEY = localStorage.getItem('KEY') || '';
 const ALPACA_SECRET = localStorage.getItem('SECRET') || '';

@@ -84,6 +84,10 @@
                             </h1>
                         </div>
 
+                        <div id="is-small" class="w3-hide-medium w3-hide-large w3-right"></div>
+                        <div id="is-medium" class="w3-hide-small w3-hide-large w3-right"></div>
+                        <div id="is-large" class="w3-hide-small w3-hide-medium w3-right"></div>
+
                         <div class="w3-hide w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
                             style="margin-top:8px;display:inline-grid;justify-content: center;">
                             <!-- <b><span id="clock" style="letter-spacing:4px;"></span></b> -->
@@ -115,7 +119,7 @@
                     onclick="liquidate_symbols()"></i>
                 <b><span id="clock"
                         class="w3-right w3-wide w3-margin-top w3-xxlarge w3-text-green w3-margin-right"></span></b>
-                <span id="compare-buying-power" class="w3-hide-small w3-right w3-xxlarge w3-text-blue w3-wide"
+                <span id="compare-buying-power" class="w3-hide-small w3-hide-medium w3-right w3-xxlarge w3-text-blue w3-wide"
                     style="margin-top:15px;margin-right: 75px;">$ -</span>
 
                 <!--@ NAVIGATION -->
@@ -128,14 +132,16 @@
                         </div>
                         <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-xxlarge"
                             style="width:100%;min-width:450px;">
+                            <a onclick="navigate('snowplow')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-line-chart"></i> Trend</a>
                             <a onclick="navigate('overview')" class="w3-hide w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-pie-chart"></i> Overview</a>
                             <a onclick="navigate('day')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-table"></i> Status</a>
+                                    class="fa fa-table"></i> Days</a>
+                            <a onclick="navigate('day-today')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-table"></i> Today</a>
                             <a onclick="navigate('analysis')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-area-chart"></i> Analysis</a>
-                            <a onclick="navigate('snowplow')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-line-chart"></i> Trend</a>
                             <a onclick="navigate('pdt')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-bolt"></i> Day Trader</a>
                             <a onclick="navigate('top')" class="w3-padding w3-bar-item w3-button"><i
@@ -258,6 +264,7 @@
             <div id="content-schedule" class="w3-hide" w3-include-html="./views/content-schedule.html"></div>
             <div id="content-snowplow" class="w3-hide" w3-include-html="./views/content-snowplow.html"></div>
             <div id="content-day" class="w3-hide" w3-include-html="./views/content-day.html"></div>
+            <div id="content-day-today" class="w3-hide" w3-include-html="./views/content-day-today.html"></div>
             <div id="content-analysis" class="w3-hide" w3-include-html="./views/content-analysis.html"></div>
             <div id="content-7day" class="w3-hide" w3-include-html="./views/content-7day.html"></div>
             <div id="content-input" class="w3-hide" w3-include-html="./views/content-input.html"></div>
@@ -285,7 +292,13 @@
     </div>
 
     <script>
-
+        const IS_SMALL = document.getElementById('is-small').checkVisibility();
+        const IS_MEDIUM = document.getElementById('is-medium').checkVisibility();
+        const IS_LARGE = document.getElementById('is-large').checkVisibility();
+        console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:',IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);</script>
+    <script>
+        //* TODO: MOVE TO SETTINGS PAGE */
+        const base_url = 'https://api.alpaca.markets'
         <!--@ HTML INCLUDES -->
         w3.includeHTML(async () => {
             console.log(' content loaded');
@@ -306,6 +319,7 @@
                 dateFormat: "Y-m-d",
                 minDate: "2026-01-01"
             });
+
 
             // load_day();
             // load_schedule();
@@ -336,7 +350,8 @@
     <script>
         let active_page = null;
         const menu_item_map = {
-            day: '<i class="fa fa-calendar"></i> STATUS',
+            day: '<i class="fa fa-calendar"></i> DAYS',
+            ['day-today']: '<i class="fa fa-calendar"></i> TODAY',
             analysis: '<i class="fa fa-area-chart"></i> Analysis',
             snowplow: '<i class="fa fa-line-chart"></i> TREND',
             pdt: 'Day Trading',
