@@ -47,7 +47,7 @@ async function load_compare() {
         // let ha = calculateHeikinAshi(data.map((v) => { return { o: v.o, h: v.h, l: v.l, c: v.c }; }));
         // const last = ha[ha.length-1];
         // console.table(s, round2(last.c - last.o), last);
-        update_symbol_chart_24h(compare_charts_map[`chart-compare-${i + 1}`], data, i < 3 ? 220 : 230);
+        update_symbol_chart_24h(compare_charts_map[`chart-compare-${i + 1}`], data, i < 3 ? 250 : 230);
         document.getElementById(`chart-compare-title-${i + 1}`).innerHTML = s;
         if (i > 3) {
             const position = RESULTS.POSITIONS.find((v) => v.name === s);

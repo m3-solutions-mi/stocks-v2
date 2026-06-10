@@ -57,13 +57,16 @@ function liquidate_symbols() {
 //@ BUY SYMBOL SHARES */
 function buy(symbol, spend = INVEST_AMOUNT) {
     return new Promise((resolve, reject) => {
+        // body: JSON.stringify({time_in_force: 'day', type: 'trailing_stop', trail_percent: '0.75'})
         const payload = {
             side: 'buy',
             type: 'market',
             time_in_force: 'day',
             symbol: symbol,
             // qty: qty.toString(), // /** quantity to buy */
-            notional: round2(spend).toString() // /** dollar amount to buy */
+            notional: round2(spend).toString(), // /** dollar amount to buy */
+            type: 'trailing_stop',
+            trail_percent: '0.75',
         };
         const options = {
             method: 'POST',
@@ -80,42 +83,6 @@ function buy(symbol, spend = INVEST_AMOUNT) {
             .then(res => res.json())
             .then(res => { console.log('BUY', symbol, res); resolve(res) })
             .catch((err) => { console.error('error in buy()', err) });
-    });
-}
-//@ LATEST BARS */
-function latest_bars(symbols) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                'APCA-API-KEY-ID': ALPACA_KEY,
-                'APCA-API-SECRET-KEY': ALPACA_SECRET
-            }
-        };
-
-        fetch(`https://data.alpaca.markets/v2/stocks/bars/latest?symbols=${symbols}`, options)
-            .then(res => res.json())
-            .then(res => resolve(res))
-            .catch(err => console.error('error in latest_bars()', err));
-    });
-}
-//@ TOP N LIST */
-function top_N(count = 10) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                'APCA-API-KEY-ID': ALPACA_KEY,
-                'APCA-API-SECRET-KEY': ALPACA_SECRET
-            }
-        };
-
-        fetch(`https://data.alpaca.markets/v1beta1/screener/stocks/movers?top=${count}`, options)
-            .then(res => res.json())
-            .then(res => resolve(res))
-            .catch(err => console.error('error in latest_bars()', err));
     });
 }
 //@ SELL SYMBOL SHARES */
@@ -153,5 +120,41 @@ function liquidate() {
             .then(res => res.json())
             .then(res => { console.log('LIQUIDATE', res); resolve(res); })
             .catch(err => console.error('error in liquidate()', err));
+    });
+}
+//@ LATEST BARS */
+function latest_bars(symbols) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                'APCA-API-KEY-ID': ALPACA_KEY,
+                'APCA-API-SECRET-KEY': ALPACA_SECRET
+            }
+        };
+
+        fetch(`https://data.alpaca.markets/v2/stocks/bars/latest?symbols=${symbols}`, options)
+            .then(res => res.json())
+            .then(res => resolve(res))
+            .catch(err => console.error('error in latest_bars()', err));
+    });
+}
+//@ TOP N LIST */
+function top_N(count = 10) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                'APCA-API-KEY-ID': ALPACA_KEY,
+                'APCA-API-SECRET-KEY': ALPACA_SECRET
+            }
+        };
+
+        fetch(`https://data.alpaca.markets/v1beta1/screener/stocks/movers?top=${count}`, options)
+            .then(res => res.json())
+            .then(res => resolve(res))
+            .catch(err => console.error('error in latest_bars()', err));
     });
 }

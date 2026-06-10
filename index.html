@@ -154,24 +154,26 @@
                                     class="fa fa-line-chart"></i>&nbsp;Bars&nbsp;Analysis</a>
                             <a onclick="navigate('compare')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-table"></i>&nbsp;Comparison</a>
+                            <a onclick="navigate('mobile')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tablet"></i>&nbsp;Mobile</a>
                         </div>
                     </div>
                 </h2>
             </div>
 
             <div class="w3-col s12 w3-padding _w3-margin-top">
-                <div _id="output" class="w3-row-padding w3-center">
+                <div id="output-cards" class="w3-row-padding w3-center">
 
                     <!--@ GAIN / NET -->
                     <div class="w3-third">
-                        <div class="w3-hide-small w3-panel {5} w3-border _w3-light-grey w3-padding"
+                        <div class="w3-hide-small w3-panel w3-border _w3-light-grey w3-padding"
                             style="height:170px;">
                             <div class="w3-col s12 {3} w3-center">
                                 <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
                                     <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>GAIN</b></div>
                                     <div class="w3-text-grey" style="font-size:48px;"><b
                                             id="day-status-gain"></b>&nbsp;<b id="day-status-gain-pct"
-                                            style="font-size:24px;"></b><span class="w3-xlarge w3-text-grey"> %</span>
+                                            style="font-size:24px;"></b><span class="w3-xlarge w3-text-grey">&nbsp;%</span>
                                     </div>
                                 </div>
                             </div>
@@ -185,8 +187,8 @@
                                 <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
                                     <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>TODAY</b></div>
                                     <div class="w3-text-grey" style="font-size:48px;"><b
-                                            id="day-status-today"></b>&nbsp;<b id="day-status-today-pct"
-                                            style="font-size:24px;"></b><span class="w3-xlarge w3-text-grey"> %</span>
+                                            id="day-status-today"></b>&nbsp;<br class="w3-hide-large"/><b id="day-status-today-pct"
+                                            style="font-size:24px;"></b><span class="w3-xlarge w3-text-grey">&nbsp;%</span>
                                     </div>
                                 </div>
                             </div>
@@ -281,6 +283,7 @@
             <div id="content-top" class="w3-hide" w3-include-html="./views/content-top.html"></div>
             <div id="content-bars-analysis" class="w3-hide" w3-include-html="./views/content-bars-analysis.html"></div>
             <div id="content-compare" class="w3-hide" w3-include-html="./views/content-compare.html"></div>
+            <div id="content-mobile" class="w3-hide" w3-include-html="./views/content-mobile.html"></div>
 
         </div>
     </div>
@@ -360,6 +363,7 @@
             settings: '<i class="fa fa-cogs"></i> Settings',
             'bars-analysis': '<i class="fa fa-line-chart"></i> Bars Analysis',
             compare: '<i class="fa fa-table"></i> Comparison',
+            mobile: '<i class="fa fa-tablet"></i> Mobile',
             // overview: 'OVERVIEW',
             // forecast: '<i class="fa fa-calendar-o"></i> SCHEDULE',
             // summary: '<i class="fa fa-bar-chart"></i> SUMMARY',
@@ -383,6 +387,11 @@
             });
             document.getElementById('selected-view').innerHTML = menu_item_map[value];
             window.history.pushState('stateObj', '', `./?${value}`)
+            if (value === 'mobile') {
+                document.getElementById(`output-cards`).classList.add('w3-hide');
+            } else {
+                document.getElementById(`output-cards`).classList.remove('w3-hide');
+            }
         }
         window.addEventListener('popstate', function (event) {
             console.log('popstate', event.target.window.location.search);
@@ -397,8 +406,8 @@
             document.getElementById('clock').innerHTML = d.toLocaleTimeString().split(' ')[0];
             document.getElementById('date').innerHTML = getDMMM(d);
 
-            // if ([0, 15, 30, 45].indexOf(d.getSeconds()) >= 0 || now) {
-            if ([0, 20, 30, 40, 50].indexOf(d.getSeconds()) >= 0 || now) {
+            if (UPDATE_AT.indexOf(d.getSeconds()) >= 0 || now) {
+            // if ([0, 10, 20, 30, 40, 50].indexOf(d.getSeconds()) >= 0 || now) {
                 setTimeout(() => load_data(), round(Math.random() * 1000));
                 now = false;
             }

@@ -2,6 +2,9 @@ const INVEST_AMOUNT = 1000;
 const SEED_AMOUNT = 43500;
 const COMPARISON_BUY_AMOUNT = 7500;
 
+const UPDATE_AT = [0, 15, 30, 45];
+// const UPDATE_AT = [0, 10, 20, 30, 40, 50];
+
 const COMPARE_PICKS = 'ARM,CRWD,DDOG,DRAM,MRVL,MU,SMCI,SNDK,SOXL,STX,UMC,WDC'.split(',');
 const COMPARE_PICKS_2 = 'AMD,CIFR,WOLF'.split(',');
 const COMPARE_DEFAULT_SYMBOLS = [
@@ -15,7 +18,7 @@ const COMPARE_SYMBOLS_LIST = COMPARE_DEFAULT_SYMBOLS.filter((v, i, a) => a.index
 // }
 const COMPARISON_NUM_DAYS = () => {
     const dow = new Date().getDay();
-    return dow === 0 ? 3 : (dow === 6 ? 1.75 : 0.75);
+    return dow === 0 ? 3 : (dow === 6 ? 1.75 : 0.5);
     // return 3;
 }
 

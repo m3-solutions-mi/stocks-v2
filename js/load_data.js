@@ -263,6 +263,11 @@ async function load_data() {
         // document.getElementById('day-analysis-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
         // document.getElementById('day-analysis-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : '#e50000';
 
+        document.getElementById('mobile-gain').innerText = round(g).toLocaleString();
+        document.getElementById('mobile-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
+        document.getElementById('mobile-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
+        document.getElementById('mobile-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : (RESULTS.CALCS.TODAY === 0 ? 'grey' : '#e50000');
+
         document.getElementById('day-status-target').innerText = RESULTS.CALCS.TARGET.toLocaleString();
         document.getElementById('day-status-target-delta').innerText = round1(RESULTS.CALCS.DELTA).toLocaleString();
         // document.getElementById('day-analysis-target').innerText = RESULTS.CALCS.DELTA.toLocaleString();
@@ -368,7 +373,7 @@ async function load_data() {
         series[0].data = series[0].data.filter((v) => v.x > new Date(series[0].data[0].x).setHours(4, 0));
         series[0].data = series[0].data.filter((v) => v.x < new Date(series[0].data[0].x).setHours(23, 59));
         const equity_0930 = series[0].data.find((v) => new Date(v.x).getHours() === 9 && new Date(v.x).getMinutes() === 30) || 0
-        compare_charts_map.CHART_24H_HISTORY.options.chart.height = 250;
+        compare_charts_map.CHART_24H_HISTORY.options.chart.height = 750;
         compare_charts_map.CHART_24H_HISTORY.options.series = series;
         compare_charts_map.CHART_24H_HISTORY.options.annotations.xaxis = [
             add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
@@ -424,7 +429,7 @@ async function load_data() {
         series = [{ name: 'Gain %', type: 'treemap', data: [] }];
         series[0].data = RESULTS.POSITIONS.map((v, i) => { return { x: v.name, y: v.day_pct } });
         CHART_POSITIONS_TODAY.options.chart.type = 'treemap';
-        CHART_POSITIONS_TODAY.options.chart.height = 175;
+        CHART_POSITIONS_TODAY.options.chart.height = 750;
         // CHART_POSITIONS_TODAY.options.dataLabels.enabled = true;
         CHART_POSITIONS_TODAY.options.xaxis.type = 'category';
         CHART_POSITIONS_TODAY.options.dataLabels.formatter = function (text, op) {
@@ -491,7 +496,7 @@ async function load_data() {
 
         CHART_TREND.options.dataLabels.enabledOnSeries = [0, 1, 2];
         CHART_TREND.options.stroke.width = [0.5, 1.5, 5, 5],
-        CHART_TREND.options.stroke.curve = ['straight', 'straight', 'straight', 'straight']; //, 'monotoneCubic'
+            CHART_TREND.options.stroke.curve = ['straight', 'straight', 'straight', 'straight']; //, 'monotoneCubic'
         CHART_TREND.options.annotations.yaxis = [add_annotation_y(g, colors.orange)];
         CHART_TREND.options.annotations.xaxis = [add_annotation_x('22-May', colors.grey)];
         CHART_TREND.options.annotations.yaxis[0].y2 = g * 1.04;
