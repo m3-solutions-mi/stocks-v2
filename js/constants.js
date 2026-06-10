@@ -5,6 +5,9 @@ const COMPARISON_BUY_AMOUNT = 7500;
 const UPDATE_AT = [0, 15, 30, 45];
 // const UPDATE_AT = [0, 10, 20, 30, 40, 50];
 
+let SELECTED_SYMBOL = 'QQQ';
+let INDICATORS = 'NQ=F,QQQ,NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');
+
 const COMPARE_PICKS = 'ARM,CRWD,DDOG,DRAM,MRVL,MU,SMCI,SNDK,SOXL,STX,UMC,WDC'.split(',');
 const COMPARE_PICKS_2 = 'AMD,CIFR,WOLF'.split(',');
 const COMPARE_DEFAULT_SYMBOLS = [
@@ -31,6 +34,3 @@ const BUY_AMOUNT = +(localStorage.getItem('BUY_AMOUNT') || '250');
 const DATA_SOURCE = localStorage.getItem('DATA_SOURCE') || 'm3';
 const CHART_START_DATE = localStorage.getItem('CHART_START_DATE') || '2026-01-01';
 console.log(`${BUY_AMOUNT} | ${DATA_SOURCE} | ${CHART_START_DATE}`);
-
-let SELECTED_SYMBOL = 'QQQ';
-let INDICATORS = 'QQQ,NDAQ,CL=F,^VIX'.split(','); //'NDAQ,^IXIC,^VIX,CL=F,BTC-USD,ETH-USD'.split(',');

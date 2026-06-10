@@ -46,8 +46,8 @@ function update_symbol_chart(chart, data) {
 }
 //@ SYMBOL CHART - 24H */
 function update_symbol_chart_24h(chart, data, height = 225) {
-    if (active_page === 'compare') {
-        const raw = false; //INDICATORS.indexOf(name) >= 0;
+    if (active_page === 'compare' || active_page === 'mobile') {
+        const raw = INDICATORS.indexOf(name) >= 0;
         let series = [
             { name: 'Close', type: 'area', data: [] },
         ];

@@ -21,6 +21,11 @@ const CHART_BARS_ANALYSIS_TODAY = new Treemap('chart-bars-analysis-today');
 const CHART_BARS_ANALYSIS_ACCOUNT = new Treemap('chart-bars-analysis-account');
 const CHART_BARS_ANALYSIS_POSITIONS = new Treemap('chart-bars-analysis-positions');
 
+const CHART_MOBILE_FUTURES = new Treemap('chart-mobile-futures');
+const CHART_MOBILE_OIL = new Treemap('chart-mobile-oil');
+const CHART_MOBILE_VIX = new Treemap('chart-mobile-vix');
+const CHART_MOBILE_ACCOUNT = new Treemap('chart-mobile-account');
+
 compare_charts_map = {};
 'CHART_DAY_HISTORY,CHART_24H_HISTORY'.split(',').forEach((v) => {
     compare_charts_map[v] = new Treemap(v);
@@ -146,7 +151,7 @@ async function load_data() {
     // const highlight_blue = 'BTSG,CRWD,DDOG,MU,UMC,WOLF'.split(',').sort();
     const highlight_blue = 'AMD,ARM,CRWD,DELL,DDOG,DRAM,MU,PENG,SMCI,SNDK,SOXL,UMC,WDC'.split(',').sort();
     const highlight_purple = 'BE,NBIS'.split(',').sort();
-    const highlight_pink = 'QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
+    const highlight_pink = 'NQ=F,QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
     const highlight_black = 'COMB'.split(',').sort();
     const add_watch_list = () => {
         // let watch_list = 'TNGX,TIGO,TIGR,TSEM,SWMR,SNDK,SMCI,SOXL,STRL,STX,MU,KOPN,UNH,NAUT,NEO,ATOM,MSTR,MDB'
@@ -263,14 +268,19 @@ async function load_data() {
         // document.getElementById('day-analysis-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
         // document.getElementById('day-analysis-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : '#e50000';
 
-        document.getElementById('mobile-gain').innerText = round(g).toLocaleString();
-        document.getElementById('mobile-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
-        document.getElementById('mobile-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
-        document.getElementById('mobile-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : (RESULTS.CALCS.TODAY === 0 ? 'grey' : '#e50000');
+        update_elem_text('mobile-gain', g);
+        document.getElementById('mobile-gain-pct').innerText = round2(g / RESULTS.CALCS.INVESTED * 100).toLocaleString();
+        update_elem_text('mobile-today', RESULTS.CALCS.TODAY);
+        document.getElementById('mobile-today-pct').innerText = round2(RESULTS.CALCS.TODAY / RESULTS.CALCS.INVESTED * 100).toLocaleString();
+
+        // document.getElementById('mobile-gain').innerText = round(g).toLocaleString();
+        // document.getElementById('mobile-gain').style.color = g > 0 ? '#4CAF50' : (g === 0 ? 'grey' : '#e50000');
+        // document.getElementById('mobile-today').innerText = round1(RESULTS.CALCS.TODAY).toLocaleString();
+        // document.getElementById('mobile-today').style.color = RESULTS.CALCS.TODAY > 0 ? '#4CAF50' : (RESULTS.CALCS.TODAY === 0 ? 'grey' : '#e50000');
 
         document.getElementById('day-status-target').innerText = RESULTS.CALCS.TARGET.toLocaleString();
         document.getElementById('day-status-target-delta').innerText = round1(RESULTS.CALCS.DELTA).toLocaleString();
-        // document.getElementById('day-analysis-target').innerText = RESULTS.CALCS.DELTA.toLocaleString();
+        // // document.getElementById('day-analysis-target').innerText = RESULTS.CALCS.DELTA.toLocaleString();
 
         document.getElementById('day-status-equity').innerText = round(RESULTS.CALCS.EQUITY).toLocaleString();
         document.getElementById('day-status-invested').innerText = round(RESULTS.CALCS.INVESTED).toLocaleString();
@@ -521,6 +531,19 @@ async function load_data() {
     }
     get_top_list();
 
+    const update_compare = async () => {
+        const map = {
+            'QQQ': CHART_MOBILE_ACCOUNT,
+            'NQ=F': CHART_MOBILE_FUTURES,
+            'CL=F': CHART_MOBILE_OIL,
+            '^VIX': CHART_MOBILE_VIX,
+        }
+        for await (const s of Object.keys(map)) {
+            const data = await get_symbol_data_24h(s);
+            update_symbol_chart_24h(map[s], data, 200);
+        }
+    }
+    update_compare();
     // const update_top_movers = () => {
     //     let series = [
     //         { name: 'Symbol', _type: 'treemap', data: [] },
