@@ -373,7 +373,7 @@ async function load_data() {
         series[0].data = series[0].data.filter((v) => v.x > new Date(series[0].data[0].x).setHours(4, 0));
         series[0].data = series[0].data.filter((v) => v.x < new Date(series[0].data[0].x).setHours(23, 59));
         const equity_0930 = series[0].data.find((v) => new Date(v.x).getHours() === 9 && new Date(v.x).getMinutes() === 30) || 0
-        compare_charts_map.CHART_24H_HISTORY.options.chart.height = 750;
+        compare_charts_map.CHART_24H_HISTORY.options.chart.height = IS_LARGE ? 750 : 500;
         compare_charts_map.CHART_24H_HISTORY.options.series = series;
         compare_charts_map.CHART_24H_HISTORY.options.annotations.xaxis = [
             add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
@@ -429,7 +429,7 @@ async function load_data() {
         series = [{ name: 'Gain %', type: 'treemap', data: [] }];
         series[0].data = RESULTS.POSITIONS.map((v, i) => { return { x: v.name, y: v.day_pct } });
         CHART_POSITIONS_TODAY.options.chart.type = 'treemap';
-        CHART_POSITIONS_TODAY.options.chart.height = 750;
+        CHART_POSITIONS_TODAY.options.chart.height = IS_LARGE ? 750 : 500;
         // CHART_POSITIONS_TODAY.options.dataLabels.enabled = true;
         CHART_POSITIONS_TODAY.options.xaxis.type = 'category';
         CHART_POSITIONS_TODAY.options.dataLabels.formatter = function (text, op) {
