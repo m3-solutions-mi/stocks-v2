@@ -33,7 +33,7 @@ compare_charts_map = {};
 ''.split(',').forEach((v) => {
     compare_charts_map[v] = new Combo(v);
 })
-for (let x = 1; x <= 30; x++) {
+for (let x = 1; x <= 45; x++) {
     const v = `chart-compare-${x}`;
     compare_charts_map[v] = new Treemap(v);
 }
@@ -138,19 +138,19 @@ async function load_data() {
     add_letters();
 
     let symbol_list = 'AAOI,AIS,ALAB,ALAB,AMD,ARM,AMZN,AVGO,AVT,AXTI,BE,BTSG,BTSG,BTSG,CAT,CIFR,COHR,CRDO,CRWD,CSCO,DDOG,DELL,DELL,DIOD,DRAM,GOOGL,GOOGL,HTLD';
-    symbol_list += ',INTC,IREN,KOPN,MCHP,MDB,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
-    symbol_list += ',SITM,SMCI,SMH,SNDK,SOXL,SOXX,STRL,STX,SYM,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WLDN,WULF,ZM,ZS';
+    symbol_list += ',INTC,IREN,KOPN,MCHP,MDB,MRVL,MPWR,MTSI,MTSI,MU,NBIS,NBIS,NVDA,ON,PENG,PENG,PLUG,PLUG,POWL,RKLB,RKLB,ROKU';
+    symbol_list += ',SITM,SMCI,SMH,SNDK,SOXL,SOXX,STRL,STX,SYM,TER,TSEM,TSEM,TSM,UMC,UMC,VIAV,VRT,VRT,VSAT,WDC,WOLF,WOLF,WLDN,WULF';
 
-    let watch_list = [...symbol_list.split(',').sort()];
-    watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-').sort();
+    let watch_list = [...('AMAT,ASML,BTSG,HTLD,KLAC,LRCX,WLDN'.split(',')), ...symbol_list.split(',').sort()];
+    watch_list = watch_list.filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '-');
     watch_list.push(...INDICATORS, 'COMB');
 
     const highlight_grey = '-'.split(',').sort();
-    const highlight_green = 'AAOI,ALAB,BTSG,CAT,CRDO,HTLD,STRL,WOLF'.split(','); //.sort();
-    const highlight_orange = 'MRVL,STX,VSAT'.split(',').sort();
+    const highlight_green = '-'.split(','); //.sort();
+    const highlight_orange = 'HTLD,WLDN'.split(',').sort();
     // const highlight_blue = 'BTSG,CRWD,DDOG,MU,UMC,WOLF'.split(',').sort();
-    const highlight_blue = 'AMD,ARM,CRWD,DELL,DDOG,DRAM,MU,PENG,SMCI,SNDK,SOXL,UMC,WDC'.split(',').sort();
-    const highlight_purple = 'BE,NBIS'.split(',').sort();
+    const highlight_blue = 'KLAC,LRCX,AMAT,ASML,BTSG,WLDN'.split(',').sort();
+    const highlight_purple = '-'.split(',').sort();
     const highlight_pink = 'NQ=F,QQQ,QQQI,NDAQ,CL=F,^VIX'.split(',').sort();
     const highlight_black = 'COMB'.split(',').sort();
     const add_watch_list = () => {
@@ -383,7 +383,7 @@ async function load_data() {
         series[0].data = series[0].data.filter((v) => v.x > new Date(series[0].data[0].x).setHours(4, 0));
         series[0].data = series[0].data.filter((v) => v.x < new Date(series[0].data[0].x).setHours(23, 59));
         const equity_0930 = series[0].data.find((v) => new Date(v.x).getHours() === 9 && new Date(v.x).getMinutes() === 30) || 0
-        compare_charts_map.CHART_24H_HISTORY.options.chart.height = IS_LARGE ? 750 : 500;
+        compare_charts_map.CHART_24H_HISTORY.options.chart.height = IS_LARGE ? 450 : 250;
         compare_charts_map.CHART_24H_HISTORY.options.series = series;
         compare_charts_map.CHART_24H_HISTORY.options.annotations.xaxis = [
             add_annotation_x(new Date(series[0].data[series[0].data.length - 1].x).setHours(4, 0)),
@@ -531,7 +531,7 @@ async function load_data() {
     }
     get_top_list();
 
-    const update_compare = async () => {
+    const update_mobile = async () => {
         const map = {
             'QQQ': CHART_MOBILE_ACCOUNT,
             'NQ=F': CHART_MOBILE_FUTURES,
@@ -543,7 +543,11 @@ async function load_data() {
             update_symbol_chart_24h(map[s], data, 200);
         }
     }
-    update_compare();
+    update_mobile();
+
+    //@ CHECK POSITIONS */
+    check_positions();
+
     // const update_top_movers = () => {
     //     let series = [
     //         { name: 'Symbol', _type: 'treemap', data: [] },

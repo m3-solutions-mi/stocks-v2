@@ -58,6 +58,7 @@ function liquidate_symbols() {
 function buy(symbol, spend = INVEST_AMOUNT) {
     return new Promise((resolve, reject) => {
         // body: JSON.stringify({time_in_force: 'day', type: 'trailing_stop', trail_percent: '0.75'})
+        // body: JSON.stringify({time_in_force: 'day', type: 'market', trail_percent: '0.75', symbol: 'STRL'})
         const payload = {
             side: 'buy',
             type: 'market',
@@ -65,8 +66,7 @@ function buy(symbol, spend = INVEST_AMOUNT) {
             symbol: symbol,
             // qty: qty.toString(), // /** quantity to buy */
             notional: round2(spend).toString(), // /** dollar amount to buy */
-            type: 'trailing_stop',
-            trail_percent: '0.75',
+            // trail_percent: '0.75',
         };
         const options = {
             method: 'POST',

@@ -45,7 +45,7 @@ function update_symbol_chart(chart, data) {
     chart.render();
 }
 //@ SYMBOL CHART - 24H */
-function update_symbol_chart_24h(chart, data, height = 225) {
+function update_symbol_chart_24h(chart, data, height = 225, futures = null) {
     if (active_page === 'compare' || active_page === 'mobile') {
         const raw = INDICATORS.indexOf(name) >= 0;
         let series = [
@@ -54,7 +54,14 @@ function update_symbol_chart_24h(chart, data, height = 225) {
         let start = data[0].c;
         let shares = raw ? 1 : INVEST_AMOUNT / start;
         series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
-        chart.options.tooltip.enabledOnSeries = [0];
+        // if (futures) {
+        //     series.push({ name: 'Futures', type: 'area', data: [] });
+        //     start = futures[0].c;
+        //     shares = raw ? 1 : INVEST_AMOUNT / start;
+        //     series[1].data = futures.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
+        // }
+        chart.options.tooltip.enabledOnSeries = [0,1];
+        chart.options.stroke.width = [1.1,2];
         chart.options.annotations.xaxis = [];
         chart.options.annotations.yaxis = [];
         const d3 = series[0].data[series[0].data.length - 1].x;
