@@ -86,14 +86,14 @@
                             </h1>
                         </div>
 
-                        <div id="is-small" class="w3-hide-medium w3-hide-large w3-right">small</div>
-                        <div id="is-medium" class="w3-hide-small w3-hide-large w3-right">medium</div>
-                        <div id="is-large" class="w3-hide-small w3-hide-medium w3-right">large</div>
+                        <div id="is-small" class="w3-hide-medium w3-hide-large w3-right"></div>
+                        <div id="is-medium" class="w3-hide-small w3-hide-large w3-right"></div>
+                        <div id="is-large" class="w3-hide-small w3-hide-medium w3-right"></div>
 
-                        <div class="w3-hide w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
+                        <div class="w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
                             style="margin-top:8px;display:inline-grid;justify-content: center;">
-                            <!-- <b><span id="clock" style="letter-spacing:4px;"></span></b> -->
-                            <span id="date" class="w3-xxlarge"></span>
+                            <b><span id="clock" style="letter-spacing:4px;"></span></b>
+                            <!-- <span id="date" class="w3-hide w3-xxlarge"></span> -->
                         </div>
                     </div>
 
@@ -406,7 +406,7 @@
         setInterval(async () => {
             const d = new Date()
             document.getElementById('clock').innerHTML = d.toLocaleTimeString().split(' ')[0];
-            document.getElementById('date').innerHTML = getDMMM(d);
+            // document.getElementById('date').innerHTML = getDMMM(d);
 
             if (UPDATE_AT.indexOf(d.getSeconds()) >= 0 || now) {
             // if ([0, 10, 20, 30, 40, 50].indexOf(d.getSeconds()) >= 0 || now) {

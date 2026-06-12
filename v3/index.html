@@ -1,1 +1,153 @@
-<h1>V3</h1>
+<!-- <h1>V3</h1> -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>M3&nbsp;|&nbsp;WBD</title>
+    <meta charset="UTF-8">
+    <link id="favicon" rel="icon" href="./favicon.ico" type="image/png" sizes="16x16">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1 minimum-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <!-- <link rel="manifest" href="manifest.json"> -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<style>
+</style>
+
+<!--@ HELPERS -->
+<script>
+    const round = (v) => { return Math.round(v * 1) / 1; }
+    const round1 = (v) => { return Math.round(v * 10) / 10; }
+    const round2 = (v) => { return Math.round(v * 100) / 100; }
+    const round3 = (v) => { return Math.round(v * 1000) / 1000; }
+    const round4 = (v) => { return Math.round(v * 10000) / 10000; }
+    const round5 = (v) => { return Math.round(v * 100000) / 100000; }
+    const round6 = (v) => { return Math.round(v * 1000000) / 1000000; }
+</script>
+
+<!--@ INTERVAL UPDATE -->
+<script>
+    function update() {
+
+    }
+</script>
+
+<!--@ GET DATA -->
+<script>
+    function get_data() {
+
+    }
+</script>
+
+<!--@ BUY | SELL -->
+<script>
+    function buy() {
+
+    }
+    function sell() {
+
+    }
+</script>
+
+<body class="w3-light-grey w3-xxlarge" style="font-family:Raleway;">
+
+    <!--@ SCRIPT IMPORTS -->
+    <!-- <script src="./index.js"></script>
+    <script src="./configuration.js"></script>
+    <script src="./csv.js"></script>
+    <script src="./js/helpers.js"></script>
+    <script src="./js/helpers-ui.js"></script>
+    <script src="./js/constants.js"></script>
+    <script src="./js/HackTimer.js"></script>
+    <script src="./chart-definitions/mixed.js"></script>
+    <script src="./chart-definitions/candlestick.js"></script>
+    <script src="./chart-definitions/combo.js"></script>
+    <script src="./chart-definitions/treemap.js"></script>
+    <script src="./chart-definitions/advanced-stock-chart.js"></script>
+    <script src="./js/colors.js"></script>
+    <script src="./js/settings.js"></script>
+    <script src="./js/click_symbol.js"></script>
+    <script src="./js/load_data.js"></script>
+    <script src="./js/compare.js"></script>
+    <script src="./js/alpaca.js"></script>
+    <script src="./js/charts.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/positions.js"></script>
+    <script src="./js/components.js"></script>
+    <script src="./js/heikin-ashi.js"></script>
+    <script src="./js/stock_symbols_detail.js"></script>
+    <script src="./js/nasdaq-symbols.js"></script>
+    <script src="./js/bollinger-bands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexstock"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://www.w3schools.com/lib/w3.js"></script> -->
+
+    <!--@ PAGE CONTENT -->
+    <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:768px;"> <!-- 1450 -->
+
+        <div class="w3-row-padding w3-white">
+            <span class="">
+                <!--@ Header -->
+                <div class="w3-col s12" _style="margin-bottom:20px;">
+                    <div class="w3-large w3-container w3-card _w3-green w3-padding" style="background-color:#6dc573;">
+                        <div class="w3-hide-small w3-col s2 w3-center">
+                            <img class="_w3-hide-small w3-padding"
+                                src="https://offsite-ryan.github.io/m3-trader/favicon-black.png" style="width:100%"
+                                alt="M3 Solutions">
+                        </div>
+
+                        <div class="w3-col s7 w3-padding _w3-xxlarge w3-bold w3-text-black">
+                            <div class="w3-container w3-text-black">
+                                <h1 style="margin-top:10px;">
+                                    <b class="w3-hide-large">M3&nbsp;Solutions&nbsp;MI</b>
+                                    <b class="w3-hide-medium w3-hide-small">M3&nbsp;Solutions&nbsp;MI&nbsp;&nbsp;|&nbsp;&nbsp;<span
+                                            style="letter-spacing:4px;">STOCKS</span></b>
+                                    <div class="w3-hide-small w3-hide medium"
+                                        style="display:flex;font-size:28px !important;letter-spacing:4px;">
+                                        Stock ○ Trading ○ Advisor
+                                        <!-- Status ○ Metrics ○ Insights -->
+                                    </div>
+                            </div>
+                            </h1>
+                        </div>
+
+                        <div id="is-small" class="w3-hide-medium w3-hide-large w3-right"></div>
+                        <div id="is-medium" class="w3-hide-small w3-hide-large w3-right"></div>
+                        <div id="is-large" class="w3-hide-small w3-hide-medium w3-right"></div>
+
+                        <div class="w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
+                            style="margin-top:8px;display:inline-grid;justify-content: center;">
+                            <b><span id="clock" style="letter-spacing:4px;"></span></b>
+                            <!-- <span id="date" class="w3-xxlarge"></span> -->
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!--@ OUTPUT -->
+                <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+                    <div id="output" class="w3-row-padding w3-center">
+                        <div class="w3-wide">OUTPUT</div>
+                    </div>
+                </div>
+        </div>
+
+        <!--@ OUTPUT -->
+        <!-- <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+            <div id="output" class="w3-row-padding w3-center">
+                <div class="w3-wide">OUTPUT</div>
+            </div>
+        </div> -->
+    </div>
+</body>

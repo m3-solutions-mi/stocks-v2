@@ -7,10 +7,10 @@ function check_positions() {
         let total_pct = RESULTS.POSITIONS.map((v) => v.gain_pct).reduce((p, c) => p + c);
         console.log('POSITIONS TOTAL $', total, ' | ', total_pct, '%');
         RESULTS.POSITIONS.forEach((v) => {
-            // if (v.gain_pct <= TRAIL_PCT) {
-            //     //* SELL */
-            //     sell(v.name);
-            // }
+            if (v.gain_pct <= TRAIL_PCT) {
+                //* SELL */
+                sell(v.name);
+            }
         });
     }
 }

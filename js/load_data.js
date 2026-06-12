@@ -538,9 +538,46 @@ async function load_data() {
             'CL=F': CHART_MOBILE_OIL,
             '^VIX': CHART_MOBILE_VIX,
         }
+        const map_title = {
+            'QQQ': 'qqq-last',
+            'NQ=F': 'futures-last',
+            'CL=F': 'oil-last',
+            '^VIX': 'vix-last',
+        }
+        const get_last = (data) => {
+            const v = data[data.length-1].y;
+            // const prev = data[data.length-2].y;
+            return round2(v - 1000);
+        }
+        const get_prev = (data) => {
+            const v = data[data.length-2].y;
+            // const prev = data[data.length-2].y;
+            return round2(v - 1000);
+        }
+        const change = (data) => {
+            // const open = data[data.length-2].c;
+            // const shares = 1000/open;
+            // const last = normalize(data);
+            // const prev = normalize(data, 2);
+            
+            const last = get_last(data);
+            const prev = get_prev(data);
+            return round2(last-prev);
+        } 
+        let i = 0;
         for await (const s of Object.keys(map)) {
             const data = await get_symbol_data_24h(s);
             update_symbol_chart_24h(map[s], data, 200);
+
+            const values = map[s].options.series[0].data;
+            i < 2 ? update_elem_text(`${map_title[s]}-change`, change(values)) : '';
+            document.getElementById(map_title[s]).innerText = i < 2 ? get_last(values) : data[data.length-1].c;
+            if (i === 0) {
+                const l = get_last(values);
+                const p = get_prev(values);
+                console.log(`${l} | ${p} | ${round2(l - p)}`);
+            }
+            i++;
         }
     }
     update_mobile();

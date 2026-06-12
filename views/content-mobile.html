@@ -8,9 +8,11 @@
                 <div class="w3-col s12 w3-center w3-border" style="height:170px;">
                     <div class="w3-xxlarge w3-wide" style="padding-top:15px;">
                         <div class="w3-wide w3-text-grey w3-xlarge"><b>GAIN</b></div>
-                        <div class="w3-wide w3-text-grey" style="font-size:48px;margin-top:-10px;"><b id="mobile-gain"></b>
+                        <div class="w3-wide w3-text-grey" style="font-size:48px;margin-top:-10px;"><b
+                                id="mobile-gain"></b>
                         </div>
-                        <div class="w3-xlarge w3-text-grey">&nbsp;<b id="mobile-gain-pct" style="font-size:24px;"></b>&nbsp;%</div>
+                        <div class="w3-xlarge w3-text-grey">&nbsp;<b id="mobile-gain-pct"
+                                style="font-size:24px;"></b>&nbsp;%</div>
                     </div>
                 </div>
             </div>
@@ -22,9 +24,11 @@
                 <div class="w3-col s12 {3} w3-center w3-border" style="height:170px;">
                     <div class="w3-xxlarge w3-wide" style="padding-top:15px;">
                         <div class="w3-wide w3-text-grey w3-xlarge"><b>TODAY</b></div>
-                        <div class="w3-wide w3-text-grey" style="font-size:48px;margin-top:-10px;"><b id="mobile-today"></b>
+                        <div class="w3-wide w3-text-grey" style="font-size:48px;margin-top:-10px;"><b
+                                id="mobile-today"></b>
                         </div>
-                        <div class="w3-xlarge w3-text-grey">&nbsp;<b id="mobile-today-pct" style="font-size:24px;"></b>&nbsp;%</div>
+                        <div class="w3-xlarge w3-text-grey">&nbsp;<b id="mobile-today-pct"
+                                style="font-size:24px;"></b>&nbsp;%</div>
                     </div>
                 </div>
             </div>
@@ -51,6 +55,9 @@
                 <div class="w3-panel">
                     <div class="w3-col s12" style="_height:260px;">
                         <div class="w3-xxlarge w3-wide" style="padding-top:15px;">
+                            <div class="w3-right w3-text-blue w3-left w3-wide w3-xlarge">
+                                <b><span id="qqq-last">-</span></b> | <span id="qqq-last-change">-</span>
+                            </div>
                             <div class="w3-text-grey w3-xlarge w3-margin-bottom"><b>QQQ</b></div>
                             <div id="chart-mobile-account" class="" style=""></div>
                         </div>
@@ -61,7 +68,10 @@
                 <div class="w3-panel">
                     <div class="w3-col s12" style="_height:260px;">
                         <div class="w3-xxlarge w3-wide" style="padding-top:15px;">
-                            <div class="w3-text-grey w3-xlarge w3-margin-bottom"><b>Futures</b></div>
+                            <div class="w3-right w3-text-blue w3-left w3-wide w3-xlarge">
+                                <b><span id="futures-last">-</span></b> | <span id="futures-last-change">-</span>
+                            </div>
+                            <div class="w3-text-grey w3-xlarge w3-margin-bottom"><b>FUTURES</b></div>
                             <div id="chart-mobile-futures" class="" style=""></div>
                         </div>
                     </div>
@@ -70,8 +80,11 @@
             <div class="w3-col s2 w3-hide-small w3-hide-medium">
                 <div class="w3-panel">
                     <div class="w3-col s12" style="_height:260px;">
-                        <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
-                            <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>OIL</b></div>
+                        <div class="w3-xxlarge w3-wide" style="padding-top:15px;">
+                            <div class="w3-right w3-text-blue w3-left w3-wide w3-xlarge">
+                                <span id="oil-last">-</span><!--<span id="oil-last-change">-</span>-->
+                            </div>
+                            <div class="w3-text-grey w3-xlarge w3-margin-bottom"><b>OIL</b></div>
                             <div id="chart-mobile-oil" class="" style=""></div>
                         </div>
                     </div>
@@ -80,8 +93,11 @@
             <div class="w3-col s2 w3-hide-small w3-hide-medium">
                 <div class="w3-panel">
                     <div class="w3-col s12" style="_height:260px;">
-                        <div class="w3-xxlarge w3-wide" style="padding-top:25px;">
-                            <div class="w3-text-grey w3-xlarge _w3-margin-top"><b>VIX</b></div>
+                        <div class="w3-xxlarge w3-wide" style="padding-top:15px;">
+                            <div class="w3-right w3-text-blue w3-left w3-wide w3-xlarge">
+                                <span id="vix-last">-</span><!--<span id="vix-last-change">-</span>-->
+                            </div>
+                            <div class="w3-text-grey w3-xlarge w3-margin-bottom"><b>VIX</b></div>
                             <div id="chart-mobile-vix" class="" style=""></div>
                         </div>
                     </div>
@@ -90,7 +106,13 @@
 
             <!--@ CHARTS -->
             <div class="w3-col s12 w3-padding w3-margin-top w3-xlarge">
-                <div class="w3-text-grey w3-left w3-wide"><b>Account</b></div>
+                <div class="w3-right w3-text-blue w3-left w3-wide"><b>$ <span id="buying-power">42,447</span></b></div>
+                <i class="fa fa-credit-card w3-xlarge w3-text-green w3-margin-left w3-margin-right pointer"
+                    onclick="buy_symbol(10000, 'QQQ')"></i>
+                <i class="fa fa-credit-card w3-xlarge w3-text-red w3-margin-right pointer"
+                    onclick="sell_symbol('QQQ')"></i>
+                <div class="w3-text-grey w3-left w3-wide"><b>ACCOUNT</b>
+                </div>
                 <div id="CHART_24H_HISTORY"></div>
             </div>
             <div class="w3-hide w3-col s12 m3 w3-padding w3-margin-top w3-xlarge">
