@@ -322,7 +322,7 @@
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
                     const data = await DATA.get_symbols();
                     // console.log(data);
-                    CHART.update(data['QQQ'],200);
+                    CHART.update(data['QQQ'],275);
                     CHART_FUTURES.update(data['FUTURES'], 150);
                     CHART_OIL.update(data['OIL'], 150);
                     CHART_VIX.update(data['VIX'], 150);
