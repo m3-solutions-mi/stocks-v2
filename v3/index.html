@@ -23,82 +23,27 @@
 <style>
 </style>
 
-<!--@ HELPERS -->
-<script>
-    const round = (v) => { return Math.round(v * 1) / 1; }
-    const round1 = (v) => { return Math.round(v * 10) / 10; }
-    const round2 = (v) => { return Math.round(v * 100) / 100; }
-    const round3 = (v) => { return Math.round(v * 1000) / 1000; }
-    const round4 = (v) => { return Math.round(v * 10000) / 10000; }
-    const round5 = (v) => { return Math.round(v * 100000) / 100000; }
-    const round6 = (v) => { return Math.round(v * 1000000) / 1000000; }
-</script>
-
-<!--@ INTERVAL UPDATE -->
-<script>
-    function update() {
-
-    }
-</script>
-
-<!--@ GET DATA -->
-<script>
-    function get_data() {
-
-    }
-</script>
-
-<!--@ BUY | SELL -->
-<script>
-    function buy() {
-
-    }
-    function sell() {
-
-    }
-</script>
-
 <body class="w3-light-grey w3-xxlarge" style="font-family:Raleway;">
 
     <!--@ SCRIPT IMPORTS -->
-    <!-- <script src="./index.js"></script>
-    <script src="./configuration.js"></script>
-    <script src="./csv.js"></script>
-    <script src="./js/helpers.js"></script>
-    <script src="./js/helpers-ui.js"></script>
-    <script src="./js/constants.js"></script>
-    <script src="./js/HackTimer.js"></script>
-    <script src="./chart-definitions/mixed.js"></script>
-    <script src="./chart-definitions/candlestick.js"></script>
-    <script src="./chart-definitions/combo.js"></script>
-    <script src="./chart-definitions/treemap.js"></script>
-    <script src="./chart-definitions/advanced-stock-chart.js"></script>
-    <script src="./js/colors.js"></script>
-    <script src="./js/settings.js"></script>
-    <script src="./js/click_symbol.js"></script>
-    <script src="./js/load_data.js"></script>
-    <script src="./js/compare.js"></script>
-    <script src="./js/alpaca.js"></script>
-    <script src="./js/charts.js"></script>
-    <script src="./js/data.js"></script>
-    <script src="./js/positions.js"></script>
-    <script src="./js/components.js"></script>
-    <script src="./js/heikin-ashi.js"></script>
-    <script src="./js/stock_symbols_detail.js"></script>
-    <script src="./js/nasdaq-symbols.js"></script>
-    <script src="./js/bollinger-bands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexstock"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://www.w3schools.com/lib/w3.js"></script> -->
+    <script src="https://www.w3schools.com/lib/w3.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/apexstock"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> -->
+    <!-- <script src="./index.js"></script> -->
+    <script src="./_chart.js"></script>
+    <script src="./_colors.js"></script>
 
     <!--@ PAGE CONTENT -->
     <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:768px;"> <!-- 1450 -->
 
         <div class="w3-row-padding w3-white">
             <span class="">
+
                 <!--@ Header -->
                 <div class="w3-col s12" _style="margin-bottom:20px;">
+
+                    <!-- LOGO -->
                     <div class="w3-large w3-container w3-card _w3-green w3-padding" style="background-color:#6dc573;">
                         <div class="w3-hide-small w3-col s2 w3-center">
                             <img class="_w3-hide-small w3-padding"
@@ -106,48 +51,303 @@
                                 alt="M3 Solutions">
                         </div>
 
+                        <!-- COMPANY NAME -->
                         <div class="w3-col s7 w3-padding _w3-xxlarge w3-bold w3-text-black">
-                            <div class="w3-container w3-text-black">
+                            <div class="w3-container w3-center w3-text-black">
                                 <h1 style="margin-top:10px;">
-                                    <b class="w3-hide-large">M3&nbsp;Solutions&nbsp;MI</b>
-                                    <b class="w3-hide-medium w3-hide-small">M3&nbsp;Solutions&nbsp;MI&nbsp;&nbsp;|&nbsp;&nbsp;<span
-                                            style="letter-spacing:4px;">STOCKS</span></b>
-                                    <div class="w3-hide-small w3-hide medium"
-                                        style="display:flex;font-size:28px !important;letter-spacing:4px;">
-                                        Stock ○ Trading ○ Advisor
-                                        <!-- Status ○ Metrics ○ Insights -->
-                                    </div>
+                                    <b class="">M3&nbsp;Solutions&nbsp;MI</b>
+                                </h1>
                             </div>
-                            </h1>
                         </div>
 
+                        <!-- CLOCK -->
+                        <div class="w3-col s12 m3 w3-center w3-xxlarge w3-text-black" style="margin-top:18px;">
+                            <b><span id="clock" style="letter-spacing:4px;">-</span></b>
+                        </div>
+
+                        <!-- SCREEN SIZE -->
                         <div id="is-small" class="w3-hide-medium w3-hide-large w3-right"></div>
                         <div id="is-medium" class="w3-hide-small w3-hide-large w3-right"></div>
                         <div id="is-large" class="w3-hide-small w3-hide-medium w3-right"></div>
 
-                        <div class="w3-col s12 m3 w3-center w3-xxxlarge w3-text-black"
-                            style="margin-top:8px;display:inline-grid;justify-content: center;">
-                            <b><span id="clock" style="letter-spacing:4px;"></span></b>
-                            <!-- <span id="date" class="w3-xxlarge"></span> -->
-                        </div>
                     </div>
 
                 </div>
-
 
                 <!--@ OUTPUT -->
                 <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
                     <div id="output" class="w3-row-padding w3-center">
-                        <div class="w3-wide">OUTPUT</div>
+                        <div class="w3-wide">CHART</div>
+                        <div id="chart" class="w3-col s12 w3-border" style="min-height:325px;"></div>
+                        <div id="chart-futures" class="w3-hide-small w3-col s4 w3-border w3-margin-top"
+                            style="min-height:225px;"></div>
+                        <div id="chart-oil" class="w3-hide-small w3-col s4 w3-border w3-margin-top"
+                            style="min-height:225px;"></div>
+                        <div id="chart-vix" class="w3-hide-small w3-col s4 w3-border w3-margin-top"
+                            style="min-height:225px;"></div>
+
+                        <div class="w3-wide w3-large">
+                            <table class="w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
+                                <tr>
+                                    <!-- <th>ACCOUNT</th>
+                                    <th>ACCOUNT PCT</th> -->
+                                </tr>
+                                <tr class="">
+                                    <td class="w3-text-blue" style="margin-top:18px;"><b>$<span id="account-gain">12,327</span></b></td>
+                                    <td></td>
+                                    <td class="">
+                                        <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                        <div class="w3-right w3-text-green"
+                                            style="margin-right:20px;cursor:pointer;font-size:22px;">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                        <div class="w3-right w3-text-grey"
+                                            style="margin-right:20px;cursor:pointer;font-size:22px;">
+                                            <i class="fa fa-credit-card"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>BAL</td>
+                                    <td></td>
+                                    <td class="w3-right"><b>$<span id="account-gain">42.7</span> K</b>&nbsp;|&nbsp;<span
+                                            id="account-pct">-1.5</span>%</td>
+                                </tr>
+                                <tr>
+                                    <td>TODAY</td>
+                                    <td></td>
+                                    <td class="w3-right"><b>$<span id="account-gain">127.52</span></b>&nbsp;|&nbsp;<span
+                                            id="account-pct">1.3</span>%</td>
+                                </tr>
+                                <tr>
+                                    <td>LAST</td>
+                                    <td></td>
+                                    <td class="w3-right"><b><span id="last-gain">$7.21</span></b>&nbsp;|&nbsp;<span
+                                            id="last-pct">0.1%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>SEED</td>
+                                    <td></td>
+                                    <td class="w3-right"><b>$<span id="invested">37,500</span></b></td>
+                                </tr>
+                            </table>
+                            <!-- &nbsp; -->
+                        </div>
                     </div>
                 </div>
         </div>
-
-        <!--@ OUTPUT -->
-        <!-- <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
-            <div id="output" class="w3-row-padding w3-center">
-                <div class="w3-wide">OUTPUT</div>
-            </div>
-        </div> -->
     </div>
+
+    <!--@ CONFIGURATION -->
+    <script>
+        class Configuration {
+            constructor() { }
+            SYMBOL = 'QQQ';
+            data_api_url = null;
+            account_api_url = null;
+            API_KEY = null;
+            API_SECRET = null;
+            API_TOKEN = null;
+            UPDATE_AT = [0, 10, 20, 30, 40, 50];
+            // UPDATE_AT = [0, 15, 30, 45];
+
+            COMPARISON_NUM_DAYS = () => {
+                const dow = new Date().getDay();
+                const hmm = HELPERS.getHMM(new Date());
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (0.5));
+            }
+            TRAIL_PCT = -0.5;
+        }
+    </script>
+
+    <!--@ HELPERS -->
+    <script>
+        class Helpers {
+            constructor() { }
+
+            //* ROUND FUNCTIONS */
+            round = (v) => { return Math.round(v * 1) / 1; };
+            round1 = (v) => { return Math.round(v * 10) / 10; };
+            round2 = (v) => { return Math.round(v * 100) / 100; };
+
+            //* UPDATE TEXT w/ COLOR */
+            update_elem_text(id, v) {
+                const elem = document.getElementById(id);
+                elem.innerText = round2(v).toLocaleString();
+                elem.style.color = v > 0 ? '#4CAF50' : (v === 0 ? 'grey' : '#e50000');
+            }
+            
+            //* REPLACE ALL */
+            replace_all = (text, str, replace_with) => {
+                while (text.indexOf(text) >= 0) {
+                    text = text.replace(str, replace_with);
+                }
+                return text;
+            };
+
+            //* REDUCE - SAFE */
+            reduce_safe = (array, default_value = 0) => {
+                if (array.length === 0) {
+                    return default_value;
+                } else {
+                    return array.reduce((p, c) => p + c);
+                }
+            };
+
+            //* REMOVE DUPLICATES */
+            remove_duplicates = (array) => {
+                return array.filter((v, i, a) => a.indexOf(v) === i);
+            };
+            //* GET HMM */
+            getHMM(date) {
+                const d = new Date(date);
+                let v = d.getHours() * 100;
+                v += d.getMinutes();
+                return v;
+            }
+
+            //* DEEP CLONE */
+            deepClone(obj) {
+                if (typeof obj !== "object" || obj === null) {
+                    return obj;
+                }
+
+                const clonedObj = Array.isArray(obj) ? [] : {};
+
+                for (const key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        clonedObj[key] = deepClone(obj[key]);
+                    }
+                }
+
+                return clonedObj;
+            }
+        };
+    </script>
+
+    <!--@ Chart -->
+    <!-- <script>
+        class Chart {
+            constructor(id) { }
+            options = null;
+            update() {
+
+            };
+        }
+    </script> -->
+
+    <!--@ BUY | SELL -->
+    <script>
+        class Account {
+            _symbol = 'QQQ';
+            constructor() { }
+            _get_headers() {
+                return {
+                    accept: 'application/json',
+                    'APCA-API-KEY-ID': CONFIG.API_KEY,
+                    'APCA-API-SECRET-KEY': CONFIG.API_SECRET,
+                }
+            };
+            buy(amount) {
+
+            };
+            sell() {
+
+            };
+            liquidate() {
+
+            };
+            account() {
+
+            };
+            orders() {
+
+            };
+            positions() {
+
+            };
+        }
+    </script>
+
+    <!--@ GET DATA -->
+    <script>
+        class Data {
+            constructor() { }
+            // bars = null;
+
+            //* GET SYMBOLS */
+            async get_symbols() {
+                const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX'].map((s) => {
+                    return this.get_data(s);
+                });
+                const obj = await Promise.allSettled(promises);
+                return {
+                    'QQQ': obj[0].value,
+                    'FUTURES': obj[1].value,
+                    'OIL': obj[2].value,
+                    'VIX': obj[3].value,
+                };
+            }
+
+            //* GET DATA | M3-SOLUTIONS-MI */
+            async get_data(name = CONFIG.SYMBOL) {
+                return new Promise(async (resolve, reject) => {
+                    const dow = new Date().getDay();
+                    const hmm = HELPERS.getHMM(new Date);
+                    // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
+                    // const start_at = new Date(Date.now() - ((hmm > 1200 ? 1.25 : 0.5) * 24 * 60 * 60 * 1000)).toISOString();
+                    const start_at = new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString();
+                    const end_at = new Date().toISOString();
+                    // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
+                    const m3_url = 'https://m3-solutions-mi.com';
+                    const url = `${m3_url}/${name}/1Min/${start_at}/${end_at}`;
+
+                    const resp = await fetch(url, {
+                        method: 'GET',
+                    }).then((resp) => resp.json());
+                    resolve(resp.bars[name]);
+                });
+            };
+        }
+    </script>
+
+    <!--@ INTERVAL UPDATE -->
+    <script>
+        class Interval {
+            constructor() { }
+            async update(now = false) {
+                const dt = new Date();
+                if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
+                    const data = await DATA.get_symbols();
+                    // console.log(data);
+                    CHART.update(data['QQQ']);
+                    CHART_FUTURES.update(data['FUTURES'], 150);
+                    CHART_OIL.update(data['OIL'], 150);
+                    CHART_VIX.update(data['VIX'], 150);
+                }
+                document.getElementById('clock').innerText = dt.toLocaleTimeString().split(' ')[0];
+            }
+        }
+    </script>
+
+    <!--@ LOAD -->
+    <script>
+        //* INITIALIZE CLASSES
+        const CONFIG = new Configuration();
+        const HELPERS = new Helpers();
+        const CHART = new Chart('chart');
+        const CHART_FUTURES = new Chart('chart-futures');
+        const CHART_OIL = new Chart('chart-oil');
+        const CHART_VIX = new Chart('chart-vix');
+        const ACCOUNT = new Account();
+        const DATA = new Data();
+
+        //* INTERVAL */
+        const INTERVAL = new Interval();
+        INTERVAL.update(true);
+        setInterval(() => INTERVAL.update(), 1000);
+    </script>
+
 </body>
