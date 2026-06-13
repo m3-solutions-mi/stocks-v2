@@ -31,8 +31,8 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/apexstock"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> -->
     <!-- <script src="./index.js"></script> -->
-    <script src="./_chart.js"></script>
-    <script src="./_colors.js"></script>
+    <script src="./chart.js"></script>
+    <script src="./colors.js"></script>
 
     <!--@ PAGE CONTENT -->
     <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:768px;"> <!-- 1450 -->
@@ -178,7 +178,7 @@
                 elem.innerText = round2(v).toLocaleString();
                 elem.style.color = v > 0 ? '#4CAF50' : (v === 0 ? 'grey' : '#e50000');
             }
-            
+
             //* REPLACE ALL */
             replace_all = (text, str, replace_with) => {
                 while (text.indexOf(text) >= 0) {
