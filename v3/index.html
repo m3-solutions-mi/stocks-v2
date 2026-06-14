@@ -143,8 +143,8 @@
                                     <th>ACCOUNT PCT</th> -->
                                 </tr>
                                 <tr class="">
-                                    <td class="w3-text-blue w3-xlarge" style="margin-top:18px;"><b>$ <span
-                                                id="account-gain">12.3</span>&nbsp;K</b></td>
+                                    <td class="w3-text-grey w3-xlarge" style="margin-top:18px;"><b><span
+                                                id="gain">-</span></b></td>
                                     <td></td>
                                     <td class="">
                                         <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
@@ -166,25 +166,25 @@
                                 <tr>
                                     <td>TODAY</td>
                                     <td></td>
-                                    <td class="w3-right"><b> <span id="account-gain" class="w3-wide">$
-                                                127.52</span></b>&nbsp;|&nbsp;<span id="account-pct">1.3</span>%</td>
+                                    <td class="w3-right"><b> <span id="today-gain" class="">$
+                                                -</span></b>&nbsp;|&nbsp;<span id="today-pct">-</span></td>
                                 </tr>
                                 <tr>
                                     <td>LAST</td>
                                     <td></td>
-                                    <td class="w3-right"><b><span id="last-gain" class="w3-wide">$
-                                                7.21</span></b>&nbsp;|&nbsp;<span id="last-pct">0.1%</span></td>
+                                    <td class="w3-right"><b><span id="last-gain" class="">
+                                                -</span></b>&nbsp;|&nbsp;<span id="last-pct">-</span></td>
                                 </tr>
                                 <tr>
                                     <td>SEED</td>
                                     <td></td>
-                                    <td class="w3-right"><b>$ <span id="invested" class="w3-wide">37,500</span></b></td>
+                                    <td class="w3-right"><b><span id="invested" class="">-</span></b></td>
                                 </tr>
                                 <tr>
                                     <td>BAL</td>
                                     <td></td>
-                                    <td class="w3-right"><b>$ <span id="account-gain" class="w3-wide">42.7</span>
-                                            K</b>&nbsp;|&nbsp;<span id="account-pct">-1.5</span>%</td>
+                                    <td class="w3-right"><b><span id="account-gain" class="">-</span>
+                                            </b>&nbsp;|&nbsp;<span id="account-pct">-</span></td>
                                 </tr>
                             </table>
                             <!-- &nbsp; -->
@@ -275,10 +275,17 @@
             round2 = (v) => { return Math.round(v * 100) / 100; };
 
             //* UPDATE TEXT w/ COLOR */
-            update_elem_text(id, v) {
+            update_elem_text_colored(id, v, prefix = '$', postfix = 'K') {
                 const elem = document.getElementById(id);
-                elem.innerText = round2(v).toLocaleString();
+                elem.innerHTML = `${prefix}&nbsp;${HELPERS.round2(v).toLocaleString()}&nbsp;${postfix}`;
                 elem.style.color = v > 0 ? '#4CAF50' : (v === 0 ? 'grey' : '#e50000');
+            }
+
+            //* UPDATE TEXT */
+            update_elem_text(id, v, prefix = '$', postfix = 'K') {
+                const elem = document.getElementById(id);
+                elem.innerHTML = `${prefix}&nbsp;${HELPERS.round2(v).toLocaleString()}&nbsp;${postfix}`;
+                // elem.style.color = 'grey';
             }
 
             //* REPLACE ALL */
@@ -380,14 +387,26 @@
                     const data = await DATA.get_symbols();
                     const account_history = await ACCOUNT.history();
                     const account_detail = await ACCOUNT.detail();
+                    const account_positions = await ACCOUNT.positions();
                     // console.log(data);
                     // console.log(account_history);
+                    console.log(account_positions);
 
+                    //* CHARTS */
                     CHART.update(data[CONFIG.SYMBOL], 250);
                     CHART_FUTURES.update(data['FUTURES'], 150);
                     CHART_OIL.update(data['OIL'], 150);
                     CHART_VIX.update(data['VIX'], 150);
                     CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 75);
+
+                    //* TABLE */
+                    const seed = 43500; //TODO: get from account activity
+                    HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$','');
+                    HELPERS.update_elem_text('today-gain', HELPERS.round1(account_positions[0].unrealized_intraday_pl),'$','');
+                    HELPERS.update_elem_text_colored('today-pct', HELPERS.round1(account_positions[0].unrealized_intraday_plpc),'','%');
+                    HELPERS.update_elem_text('invested', HELPERS.round(account_positions[0].cost_basis),'$','');
+                    HELPERS.update_elem_text('account-gain', HELPERS.round1(account_detail.equity / 1000), '$','K');
+                    HELPERS.update_elem_text_colored('account-pct', HELPERS.round2((account_detail.equity / seed * 100) - 100), '','%');
                 }
                 document.getElementById('clock').innerText = dt.toLocaleTimeString().split(' ')[0];
             }
