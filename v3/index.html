@@ -223,7 +223,9 @@
             console.log(input);
             const obj = JSON.parse(input);
             console.log(Object.entries(obj));
-            Object.entries(obj).forEach((v) => localStorage.setItem(v[0], v[1]))
+            Object.entries(obj).forEach((v) => localStorage.setItem(v[0], v[1]));
+
+            window.location = window.location;
         }
         function save_settings() {
             settings_fields.forEach((v) => {
@@ -381,7 +383,7 @@
                     // console.log(data);
                     // console.log(account_history);
 
-                    CHART.update(data[CONFIG.SYMBOL], 275);
+                    CHART.update(data[CONFIG.SYMBOL], 250);
                     CHART_FUTURES.update(data['FUTURES'], 150);
                     CHART_OIL.update(data['OIL'], 150);
                     CHART_VIX.update(data['VIX'], 150);
