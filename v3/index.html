@@ -163,11 +163,22 @@
         <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
         <div class="w3-xlarge w3-wide">ACCOUNT<b><span id="gain" class=w3-right>-</span></b></div>
         <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:75px;"></div>
-        <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div>
-        <div id="chart-futures" class="w3-hide-small w3-col s4 w3-border" style="min-height:75px;">
+        <!-- <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div> -->
+
+
+        <div class="w3-hide-small w3-col s4">
+            <div class="w3-xlarge w3-wide">FUTURES</div>
+            <div id="chart-futures" class="w3-border" style="min-height:75px;">
+            </div>
         </div>
-        <div id="chart-oil" class="w3-hide-small w3-col s4 w3-border" style="min-height:75px;"></div>
-        <div id="chart-vix" class="w3-hide-small w3-col s4 w3-border" style="min-height:75px;"></div>
+        <div class="w3-hide-small w3-col s4">
+            <div class="w3-xlarge w3-wide">OIL</div>
+            <div id="chart-oil" class="w3-border" style="min-height:75px;"></div>
+        </div>
+        <div class="w3-hide-small w3-col s4">
+            <div class="w3-xlarge w3-wide">VIX</div>
+            <div id="chart-vix" class="w3-border" style="min-height:75px;"></div>
+        </div>
 
         <!--@ TABLE -->
         <div class="_w3-wide w3-large">
@@ -267,7 +278,7 @@
                     localStorage.setItem(`m3-stocks-v3-${v}`, document.getElementById(v).value);
                 } else {
                     const value = -(+(Array.from(document.getElementsByName(v)).filter((v) => v.checked)[0].value.replace('%', '')))
-                    localStorage.setItem(`m3-stocks-v3-${v}`, isNaN(value) ? 'OFF' :value);
+                    localStorage.setItem(`m3-stocks-v3-${v}`, isNaN(value) ? 'OFF' : value);
                 }
             });
 
@@ -439,9 +450,9 @@
                     // CHART_1.update(data['ASML'], 200);
                     // CHART_2.update(data['KLAC'], 200);
                     CHART_FUTURES.update(data['FUTURES'], 150);
-                    CHART_OIL.update(data['OIL'], 150);
-                    CHART_VIX.update(data['VIX'], 150);
-                    CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 75);
+                    CHART_OIL.update(data['OIL'], 150, true);
+                    CHART_VIX.update(data['VIX'], 150, true);
+                    CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 75, true);
 
                     //* LAST */
                     // const values = CHART.options.series[0].data.map((v)=>v.y);
@@ -456,8 +467,8 @@
                     const position_gain = account_positions[0].unrealized_pl;
                     const position_gain_pct = account_positions[0].unrealized_plpc;
                     const spend = HELPERS.round(account_positions[0].cost_basis);
-                    const today_gain = account_history[account_history.length - 1].net - account_history[account_history.length-2].net;
-                    const today_gain_pct = account_history[account_history.length - 1].net - account_history[account_history.length-2].net;
+                    const today_gain = account_history[account_history.length - 1].net - account_history[account_history.length - 2].net;
+                    const today_gain_pct = account_history[account_history.length - 1].net - account_history[account_history.length - 2].net;
 
                     //* LAST */
                     HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(this.last ? position_gain - this.last : 0), '$', '');
@@ -469,13 +480,15 @@
                     HELPERS.update_elem_text_colored('positions-gain', HELPERS.round2(position_gain), '$', '');
                     HELPERS.update_elem_text_colored('positions-pct', HELPERS.round2(position_gain_pct), '', '%');
                     HELPERS.update_elem_text_colored('today-gain', HELPERS.round2(today_gain), '$', '');
-                    HELPERS.update_elem_text_colored('today-pct', HELPERS.round2(today_gain_pct), '', '%'); //* TOP PERCENT */
+                    // HELPERS.update_elem_text_colored('today-pct', HELPERS.round2(today_gain_pct), '', '%'); //* TOP FIELD */
+                    document.getElementById('today-pct').innerText = CONFIG.SYMBOL;
                     HELPERS.update_elem_text_colored('today-pct-2', HELPERS.round2(today_gain_pct), '', '%');
                     HELPERS.update_elem_text('invested', spend, '$', '');
                     HELPERS.update_elem_text('account-gain', HELPERS.round1(account_detail.equity / 1000), '$', 'K');
                     HELPERS.update_elem_text_colored('account-pct', HELPERS.round2((account_detail.equity / seed * 100) - 100), '', '%');
                     HELPERS.update_elem_text('buying-power', HELPERS.round(account_detail.buying_power), '$', '');
 
+                    //* UPSDAT FIELDS FOR CHANGE CALCULATION */
                     this.last = position_gain;
                     this.last_pct = position_gain_pct;
 

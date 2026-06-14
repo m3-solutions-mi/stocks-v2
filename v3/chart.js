@@ -259,7 +259,7 @@ class Chart {
                     // if (typeof y !== 'undefined') {
                     //     return y.toFixed(0)
                     // }
-                    return HELPERS.round2(y)
+                    return HELPERS.round2(y).toLocaleString()
                 },
             },
         },
@@ -307,7 +307,7 @@ class Chart {
     }
 
     //@ SYMBOL CHART - 24H */
-    update(data, height = 280) {
+    update(data, height = 280, raw = false) {
         // const raw = INDICATORS.indexOf(name) >= 0;
         let series = [
             { name: 'Close', type: 'area', data: [] },
@@ -315,7 +315,7 @@ class Chart {
         ];
         let start = data[0].c;
         let shares = 1000 / start;
-        series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
+        series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
         // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.o) * shares } });
         // if (futures) {
         //     series.push({ name: 'Futures', type: 'area', data: [] });
