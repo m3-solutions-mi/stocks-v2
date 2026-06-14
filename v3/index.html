@@ -138,56 +138,53 @@
                 </div>
 
                 <!--@ OUTPUT -->
-                <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+                <!-- <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
                     <div id="output" class="w3-marging w3-row-padding">
-                        <div class="w3-xlarge w3-wide"><b><span id="today-pct">-</span></b>
-            </span>
-            <span class="">
-                <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;" onclick="ACCOUNT.sell()">
-                    <i class="fa fa-credit-card"></i>
-                </div>
-                <div class="w3-right w3-text-green" style="margin-right:20px;cursor:pointer;font-size:22px;"
-                    onclick="ACCOUNT.buy(10000)">
-                    <i class="fa fa-credit-card"></i>
-                </div>
-                <div class="w3-right w3-text-grey" style="margin-right:20px;cursor:pointer;font-size:22px;"
-                    onclick="ACCOUNT.buy(100)">
-                    <i class="fa fa-credit-card"></i>
-                </div>
+                        <div class="w3-xlarge w3-wide"><b><span id="today-pct">-</span></b> -->
             </span>
         </div>
 
         <!--@ CHARTS -->
-        <div id="chart" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:75px;"></div>
-        <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
-        <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
-        <div class="w3-xlarge w3-wide">ACCOUNT<b><span id="gain" class=w3-right>-</span></b></div>
-        <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:75px;"></div>
-        <!-- <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div> -->
+        <div class="w3-col s12 w3-large w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+            <div id="output" class="w3-margin-top w3-row-padding">
+                <div class="w3-large">
+                    <span id="today-pct" class="w3-wide">-</span>
+                    <div id="chart" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:75px;"></div>
+                </div>
+                <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
+                <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
+                <div class="">TODAY
+                    <span class="w3-right"><b><span id="today-gain" class="">
+                                -</span></b> | <b><span id="today-pct-2" class="w3-wide">-</span></b></span>
+                    <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom"
+                        style="min-height:75px;">
+                    </div>
+                </div>
+                <!-- <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div> -->
 
 
-        <div class="w3-hide-small w3-col s4">
-            <div class="w3-xlarge w3-wide">FUTURES</div>
-            <div id="chart-futures" class="w3-border" style="min-height:75px;">
-            </div>
-        </div>
-        <div class="w3-hide-small w3-col s4">
-            <div class="w3-xlarge w3-wide">OIL</div>
-            <div id="chart-oil" class="w3-border" style="min-height:75px;"></div>
-        </div>
-        <div class="w3-hide-small w3-col s4">
-            <div class="w3-xlarge w3-wide">VIX</div>
-            <div id="chart-vix" class="w3-border" style="min-height:75px;"></div>
-        </div>
+                <div class="w3-hide-small w3-col s4">
+                    <div class="w3-wide">FUTURES</div>
+                    <div id="chart-futures" class="w3-border" style="min-height:75px;">
+                    </div>
+                </div>
+                <div class="w3-hide-small w3-col s4">
+                    <div class="w3-wide">OIL</div>
+                    <div id="chart-oil" class="w3-border" style="min-height:75px;"></div>
+                </div>
+                <div class="w3-hide-small w3-col s4">
+                    <div class="w3-wide">VIX</div>
+                    <div id="chart-vix" class="w3-border" style="min-height:75px;"></div>
+                </div>
 
-        <!--@ TABLE -->
-        <div class="_w3-wide w3-large">
-            <table class="w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
-                <tr>
-                    <!-- <th>ACCOUNT</th>
+                <!--@ TABLE -->
+                <div class="w3-medium">
+                    <table class="w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
+                        <tr>
+                            <!-- <th>ACCOUNT</th>
                                     <th>ACCOUNT PCT</th> -->
-                </tr>
-                <!-- <tr class="">
+                        </tr>
+                        <!-- <tr class="">
                                     <td class="w3-text-grey w3-xlarge" style="margin-top:18px;">
                                         <span class="">
                                             <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
@@ -207,35 +204,59 @@
                                         </span>
                                     </td>
                                 </tr> -->
-                <tr>
-                    <td>POSITIONS<span class="w3-right"><b><span id="positions-gain" class="">
-                                    -</span></b> | <b><span id="positions-pct">-</span></b></span></td>
-                </tr>
-                <tr>
-                    <td>CHANGE<span class="w3-right"><b><span id="last-gain" class="">
-                                    -</span></b>&nbsp;|&nbsp;<b><span id="last-pct">-</span></b></span></td>
-                </tr>
-                <tr>
+                        <tr>
+                            <td>
+                                <span class="w3-text-blue w3-xlarge"><span id="buying-power" class="">-</span></span>
+
+                                <span class="">
+                                    <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
+                                        onclick="ACCOUNT.sell()">
+                                        <i class="fa fa-credit-card"></i>
+                                    </div>
+                                    <div class="w3-right w3-text-green"
+                                        style="margin-right:20px;cursor:pointer;font-size:22px;"
+                                        onclick="ACCOUNT.buy(10000)">
+                                        <i class="fa fa-credit-card"></i>
+                                    </div>
+                                    <div class="w3-right w3-text-grey"
+                                        style="margin-right:20px;cursor:pointer;font-size:22px;"
+                                        onclick="ACCOUNT.buy(100)">
+                                        <i class="fa fa-credit-card"></i>
+                                    </div>
+                                </span>
+                            </td>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>POSITION<span class="w3-right"><b><span id="positions-gain" class="">
+                                            -</span></b> | <b><span id="positions-pct"
+                                            class="w3-wide">-</span></b></span></td>
+                        </tr>
+                        <tr>
+                            <td>CHANGE<span class="w3-right"><b><span id="last-gain" class="">
+                                            -</span></b>&nbsp;|&nbsp;<b><span id="last-pct"
+                                            class="w3-wide">-</span></b></span></td>
+                        </tr>
+                        <!-- <tr>
                     <td>TODAY<span class="w3-right"><b><span id="today-gain" class="">
                                     -</span></b> | <b><span id="today-pct-2">-</span></b></span></td>
-                </tr>
-                <tr>
-                    <td>INVESTED<span class="w3-right"><b><span id="invested" class="">-</span></b></span>
-                    </td>
-                </tr>
-                <tr>
+                </tr> -->
+                        <tr>
+                            <td>INVESTED<span class="w3-right"><b><span id="invested" class="">-</span></b></span>
+                            </td>
+                        </tr>
+                        <!-- <tr>
                     <td>BUY PWR<span class="w3-right w3-text-blue"><span id="buying-power" class="">-</span></span></td>
-                </tr>
-                <tr>
-                    <td>BAL<span class="w3-right"><span id="account-gain" class="">-</span>
-                            &nbsp;|&nbsp;<b><span id="account-pct">-</span></b></span></td>
-                </tr>
-            </table>
-            <!-- &nbsp; -->
+                </tr> -->
+                        <tr>
+                            <td>BAL<span class="w3-right"><span id="account-gain" class="">-</span>
+                                    &nbsp;|&nbsp;<b><span id="account-pct" class="w3-wide">-</span></b></span></td>
+                        </tr>
+                    </table>
+                    <!-- &nbsp; -->
+                </div>
+            </div>
         </div>
-    </div>
-    </div>
-    </div>
     </div>
 
     <!--@ SETTINGS -->
@@ -476,7 +497,7 @@
 
                     //* TABLE */
                     const seed = 43500; //** TODO: get from account activity **/
-                    HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
+                    // HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
                     HELPERS.update_elem_text_colored('positions-gain', HELPERS.round2(position_gain), '$', '');
                     HELPERS.update_elem_text_colored('positions-pct', HELPERS.round2(position_gain_pct), '', '%');
                     HELPERS.update_elem_text_colored('today-gain', HELPERS.round2(today_gain), '$', '');
