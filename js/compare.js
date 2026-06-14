@@ -58,7 +58,7 @@ async function load_compare() {
 
             // if (i > 3) {
             const position = RESULTS.POSITIONS.find((v) => v.name === s);
-            const value = position ? position.gain_pct : round2((data[data.length - 1].c - data[0].c) / data[0].c * 100);
+            const value = /*position ? position.gain_pct :*/ round2((data[data.length - 1].c - data[0].c) / data[0].c * 100);
             document.getElementById(`chart-compare-title-${i + 1}`).style.color = value > 0 ? 'green !important' : (value < 0 ? 'red !important' : '');
             document.getElementById(`chart-compare-title-pct-${i + 1}`).innerHTML = value;
             if (position) {

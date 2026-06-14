@@ -25,7 +25,7 @@ const COMPARE_SYMBOLS_LIST = COMPARE_DEFAULT_SYMBOLS.filter((v, i, a) => a.index
 // }
 const COMPARISON_NUM_DAYS = () => {
     const dow = new Date().getDay();
-    return dow === 0 ? 3 : (dow === 6 ? 1.75 : 0.5);
+    return dow === 0 ? 3 : (dow === 6 ? 1.75 : 0.75);
     // return 3;
 }
 

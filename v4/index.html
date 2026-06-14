@@ -99,7 +99,7 @@
                         <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">ACCOUNT URL
                             <input id="account-url" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-margin-top w3-margin-left">
+                        <div class="w3-col s12 w3-padding w3-margin-top w3-margin-left w3-margin-bottom">
                             <span class="w3-text-grey">Stop Loss</span>
                             <!-- <i class="fa fa-toggle-off w3-right w3-margin-right"> 0.25</i>
                             <i class="fa fa-toggle-on w3-right w3-margin-right"> 0.5</i>
@@ -116,19 +116,6 @@
                                 <label>0.75 %</label>
                             </div>
                         </div>
-                        <div class="w3-col s12 w3-padding w3-margin-left w3-margin-bottom">
-                            <span class="w3-text-grey">Trail Percent</span>
-                            <div class="w3-right">
-                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.25%">
-                                <label>0.25 %</label>
-
-                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.5%">
-                                <label>0.5 %</label>
-
-                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.75%">
-                                <label>0.75 %</label>
-                            </div>
-                        </div>
                         <div class="w3-button w3-border w3-wide w3-right pointer" style="width:180px;"
                             onclick="save_settings()">Save</div>
                         <div class="w3-button w3-border w3-wide w3-right pointer" style="width:180px;margin-right:20px;"
@@ -140,43 +127,40 @@
                 <!--@ OUTPUT -->
                 <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
                     <div id="output" class="w3-marging w3-row-padding">
-                        <div class="w3-xlarge w3-wide"><b><span id="today-pct">-</span></b>
-            </span>
-            <span class="">
-                <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;" onclick="ACCOUNT.sell()">
-                    <i class="fa fa-credit-card"></i>
-                </div>
-                <div class="w3-right w3-text-green" style="margin-right:20px;cursor:pointer;font-size:22px;"
-                    onclick="ACCOUNT.buy(10000)">
-                    <i class="fa fa-credit-card"></i>
-                </div>
-                <div class="w3-right w3-text-grey" style="margin-right:20px;cursor:pointer;font-size:22px;"
-                    onclick="ACCOUNT.buy(100)">
-                    <i class="fa fa-credit-card"></i>
-                </div>
-            </span>
-        </div>
+                        <div class="w3-xlarge w3-wide"><b><span id="today-pct">-</span></b></span>
+                            <span class="">
+                                <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
+                                    onclick="ACCOUNT.sell()">
+                                    <i class="fa fa-credit-card"></i>
+                                </div>
+                                <div class="w3-right w3-text-green"
+                                    style="margin-right:20px;cursor:pointer;font-size:22px;"
+                                    onclick="ACCOUNT.buy(10000)">
+                                    <i class="fa fa-credit-card"></i>
+                                </div>
+                                <div class="w3-right w3-text-grey"
+                                    style="margin-right:20px;cursor:pointer;font-size:22px;" onclick="ACCOUNT.buy(100)">
+                                    <i class="fa fa-credit-card"></i>
+                                </div>
+                            </span>
+                        </div>
+                        <div id="chart" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:325px;"></div>
+                        <div class="w3-xlarge w3-wide">ACCOUNT<b><span id="gain" class=w3-right>-</span></b></div>
+                        <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom"
+                            style="min-height:75px;"></div>
+                        <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div>
+                        <div id="chart-futures" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;">
+                        </div>
+                        <div id="chart-oil" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;"></div>
+                        <div id="chart-vix" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;"></div>
 
-        <!--@ CHARTS -->
-        <div id="chart" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:325px;"></div>
-        <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
-        <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
-        <div class="w3-xlarge w3-wide">ACCOUNT<b><span id="gain" class=w3-right>-</span></b></div>
-        <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:75px;"></div>
-        <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div>
-        <div id="chart-futures" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;">
-        </div>
-        <div id="chart-oil" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;"></div>
-        <div id="chart-vix" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;"></div>
-
-        <!--@ TABLE -->
-        <div class="_w3-wide w3-large">
-            <table class="w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
-                <tr>
-                    <!-- <th>ACCOUNT</th>
+                        <div class="_w3-wide w3-large">
+                            <table class="w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
+                                <tr>
+                                    <!-- <th>ACCOUNT</th>
                                     <th>ACCOUNT PCT</th> -->
-                </tr>
-                <!-- <tr class="">
+                                </tr>
+                                <!-- <tr class="">
                                     <td class="w3-text-grey w3-xlarge" style="margin-top:18px;">
                                         <span class="">
                                             <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
@@ -196,28 +180,28 @@
                                         </span>
                                     </td>
                                 </tr> -->
-                <tr>
-                    <td>TODAY<span class="w3-right"><b><span id="today-gain" class="">$
+                                <tr>
+                                    <td>TODAY<span class="w3-right"><b><span id="today-gain" class="">$
                                     -</span></b> | <b><span id="today-pct-2">-</span></b></span></td>
-                </tr>
-                <tr>
-                    <td>CHANGE<span class="w3-right"><b><span id="last-gain" class="">
-                                    -</span></b>&nbsp;|&nbsp;<b><span id="last-pct">-</span></b></span></td>
-                </tr>
-                <tr>
-                    <td>SEED<span class="w3-right"><b><span id="invested" class="">-</span></b></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BAL<span class="w3-right"><span id="account-gain" class="">-</span>
-                            &nbsp;|&nbsp;<b><span id="account-pct">-</span></b></span></td>
-                </tr>
-            </table>
-            <!-- &nbsp; -->
+                                </tr>
+                                <tr>
+                                    <td>LAST<span class="w3-right"><b><span id="last-gain" class="">
+                                                    -</span></b>&nbsp;|&nbsp;<span id="last-pct">-</span></span></td>
+                                </tr>
+                                <tr>
+                                    <td>SEED<span class="w3-right"><b><span id="invested" class="">-</span></b></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>BAL<span class="w3-right"><span id="account-gain" class="">-</span>
+                                            &nbsp;|&nbsp;<b><span id="account-pct">-</span></b></span></td>
+                                </tr>
+                            </table>
+                            <!-- &nbsp; -->
+                        </div>
+                    </div>
+                </div>
         </div>
-    </div>
-    </div>
-    </div>
     </div>
 
     <!--@ SETTINGS -->
@@ -227,9 +211,9 @@
         const IS_LARGE = document.getElementById('is-large').checkVisibility();
         console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:', IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);
 
-        const settings_fields = 'symbol,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
+        const settings_fields = 'symbol,api-key,api-secret,api-url,account-url,stop-loss'.split(',');
         settings_fields.forEach((v) => {
-            if (v !== 'stop-loss' && v !== 'trail-pct') {
+            if (v !== 'stop-loss') {
                 document.getElementById(v).value = localStorage.getItem(`m3-stocks-v3-${v}`);
             } else {
                 const stop_loss = (-localStorage.getItem(`m3-stocks-v3-${v}`) || '0.5') + '%';
@@ -255,7 +239,7 @@
         }
         function save_settings() {
             settings_fields.forEach((v) => {
-                if (v !== 'stop-loss' && v !== 'trail-pct') {
+                if (v !== 'stop-loss') {
                     localStorage.setItem(`m3-stocks-v3-${v}`, document.getElementById(v).value);
                 } else {
                     localStorage.setItem(`m3-stocks-v3-${v}`, -(+(Array.from(document.getElementsByName(v)).filter((v) => v.checked)[0].value.replace('%', ''))));
@@ -278,15 +262,14 @@
             API_SECRET = localStorage.getItem('m3-stocks-v3-api-secret') || '';
             API_URL = localStorage.getItem('m3-stocks-v3-api-url') || '';
             ACCOUNT_URL = localStorage.getItem('m3-stocks-v3-account-url') || '';
-            STOP_LOSS = +(localStorage.getItem('m3-stocks-v3-stop-loss')) || -0.5;
-            TRAIL_PCT = +(localStorage.getItem('m3-stocks-v3-trail-pct')) || -0.5;
+            STOP_LOSS = +(localStorage.getItem('m3-stocks-v3-trail-pct')) || -0.5;
             UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
 
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 2.25 : (dow === 6 ? 1.75 : (0.5));
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (0.5));
             }
         }
     </script>
@@ -371,7 +354,7 @@
 
             //* GET SYMBOLS */
             async get_symbols() {
-                const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX', /*'AMAT', 'ASML', 'KLAC'*/].map((s) => {
+                const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX'].map((s) => {
                     return this.get_data(s);
                 });
                 const obj = await Promise.allSettled(promises);
@@ -380,9 +363,6 @@
                     'FUTURES': obj[1].value,
                     'OIL': obj[2].value,
                     'VIX': obj[3].value,
-                    // 'AMAT': obj[4].value,
-                    // 'ASML': obj[5].value,
-                    // 'KLAC': obj[6].value,
                 };
             }
 
@@ -410,9 +390,6 @@
     <!--@ UPDATE ON INTERVAL -->
     <script>
         class Interval {
-            position_peak_pct = -100;
-            last = 0;
-            last_pct = 0;
             constructor() { }
             async update(now = false) {
                 const dt = new Date();
@@ -426,50 +403,21 @@
                     // console.log(account_positions);
 
                     //* CHARTS */
-                    CHART.update(data[CONFIG.SYMBOL], 200);
-                    // CHART_1.update(data['ASML'], 200);
-                    // CHART_2.update(data['KLAC'], 200);
+                    CHART.update(data[CONFIG.SYMBOL], 250);
                     CHART_FUTURES.update(data['FUTURES'], 150);
                     CHART_OIL.update(data['OIL'], 150);
                     CHART_VIX.update(data['VIX'], 150);
                     CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 75);
 
-                    //* LAST */
-                    // const values = CHART.options.series[0].data.map((v)=>v.y);
-                    // const current = values[values.length-1];
-                    // const previous = values[values.length-2];
-                    // const delta = HELPERS.round2(current - previous);
-                    // const delta_pct = HELPERS.round2((current - previous) / previous * 100);
-                    // HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(delta), '$', '');
-                    // HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(delta_pct), '', '%');
-
-                    const gain = account_positions[0].unrealized_intraday_pl;
-                    const gain_pct = account_positions[0].unrealized_intraday_plpc;
-                    const spend = HELPERS.round(account_positions[0].cost_basis);
-
-                    //* LAST */
-                    HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(gain - this.last), '$', '');
-                    HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(gain_pct - this.last_pct), '', '%');
-
                     //* TABLE */
-                    const seed = 43500; //** TODO: get from account activity **/
+                    const seed = 43500; //TODO: get from account activity
                     HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
-                    HELPERS.update_elem_text_colored('today-gain', HELPERS.round1(gain), '$', '');
-                    HELPERS.update_elem_text_colored('today-pct', HELPERS.round1(gain_pct), '', '%');
-                    HELPERS.update_elem_text_colored('today-pct-2', HELPERS.round1(gain_pct), '', '%');
-                    HELPERS.update_elem_text('invested', spend, '$', '');
+                    HELPERS.update_elem_text_colored('today-gain', HELPERS.round1(account_positions[0].unrealized_intraday_pl), '$', '');
+                    HELPERS.update_elem_text_colored('today-pct', HELPERS.round1(account_positions[0].unrealized_intraday_plpc), '', '%');
+                    HELPERS.update_elem_text_colored('today-pct-2', HELPERS.round1(account_positions[0].unrealized_intraday_plpc), '', '%');
+                    HELPERS.update_elem_text('invested', HELPERS.round(account_positions[0].cost_basis), '$', '');
                     HELPERS.update_elem_text('account-gain', HELPERS.round1(account_detail.equity / 1000), '$', 'K');
                     HELPERS.update_elem_text_colored('account-pct', HELPERS.round2((account_detail.equity / seed * 100) - 100), '', '%');
-
-                    this.last = gain;
-                    this.last_pct = gain_pct;
-
-                    //* STOP LOSS & TRAILING PERCENT CHECKS */
-                    const pct = account_positions[0].unrealized_intraday_plpc;
-                    if (pct < CONFIG.STOP_LOSS) {
-                        ACCOUNT.sell();
-                    }
-                    this.position_peak_pct = gain_pct > this.position_peak_pct ? gain_pct : this.position_peak_pct;
                 }
                 document.getElementById('clock').innerText = dt.toLocaleTimeString().split(' ')[0];
             }
@@ -482,8 +430,6 @@
         const CONFIG = new Configuration();
         const HELPERS = new Helpers();
         const CHART = new Chart('chart');
-        // const CHART_1 = new Chart('chart-1');
-        // const CHART_2 = new Chart('chart-2');
         const CHART_FUTURES = new Chart('chart-futures');
         const CHART_OIL = new Chart('chart-oil');
         const CHART_VIX = new Chart('chart-vix');
