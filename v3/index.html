@@ -149,7 +149,7 @@
             <div id="output" class="w3-margin-top w3-row-padding">
 
                 <!--@ SYMBOL SELECTION-->
-                <span id="symbol-last-value" class="w3-right w3-text-blue">$ 0.39</span>
+                <span id="symbol-last-value" class="w3-right w3-text-blue">$-</span>
                 <div class="w3-dropdown-hover w3-white w3-wide">
                     <div class="" style="min-width:350px;">
                         <span id="symbol-name" class="">-</span>&nbsp;&nbsp;<span class="w3-text-grey">▼</span>
@@ -196,18 +196,18 @@
 
 
                 <div class="w3-hide-small w3-col s4">
-                    <span id="futures-last-value" class="w3-right w3-text-blue">$ 3.78</span>
+                    <span id="futures-last-value" class="w3-right w3-text-blue">-</span>
                     <div class="w3-wide">FUTURES</div>
                     <div id="chart-futures" class="w3-border" style="min-height:75px;">
                     </div>
                 </div>
                 <div class="w3-hide-small w3-col s4">
-                    <span id="oil-last-value" class="w3-right w3-text-blue">$ 80.2</span>
+                    <span id="oil-last-value" class="w3-right w3-text-blue">-</span>
                     <div class="w3-wide">OIL</div>
                     <div id="chart-oil" class="w3-border" style="min-height:75px;"></div>
                 </div>
                 <div class="w3-hide-small w3-col s4">
-                    <span id="vix-last-value" class="w3-right w3-text-blue">$ 16.7</span>
+                    <span id="vix-last-value" class="w3-right w3-text-blue">-</span>
                     <div class="w3-wide">VIX</div>
                     <div id="chart-vix" class="w3-border" style="min-height:75px;"></div>
                 </div>
@@ -550,6 +550,12 @@
                     const seed = 43500; //** TODO: get from account activity **/
                     // HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
                     document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
+                    HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length-1].y - 1000, '$', '');
+
+                    HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length-1].y - 1000, '$', '');
+                    HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length-1].y, '$', '');
+                    HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length-1].y, '$', '');
+
                     HELPERS.update_elem_text_colored('positions-gain', HELPERS.round2(position_gain), '$', '');
                     HELPERS.update_elem_text_colored('positions-pct', HELPERS.round2(position_gain_pct), '', '%');
                     HELPERS.update_elem_text_colored('today-gain', HELPERS.round2(today_gain), '$', '');
