@@ -27,7 +27,7 @@ class Account {
             let url = `${CONFIG.ACCOUNT_URL}/v2/orders`;
             fetch(url, options)
                 .then(res => res.json())
-                .then(res => { console.log('BUY', symbol, res); resolve(res) })
+                .then(res => { console.log('BUY', symbol, res); })
                 .catch((err) => { console.error('error in buy()', err) });
         } else {
             console.log('cancelled');
@@ -43,14 +43,24 @@ class Account {
             let url = `${CONFIG.ACCOUNT_URL}/v2/positions/${symbol.replace('/', '')}?percentage=100`;
             fetch(url, options)
                 .then(res => res.json())
-                .then(res => { console.log('SELL', symbol, res); resolve(res); })
+                .then(res => { console.log('SELL', symbol, res); })
                 .catch(err => console.error('error in sell()', err));
         } else {
             console.log('cancelled');
         }
     };
     liquidate() {
-        console.warn('NOT IMPLEMENTED');
+        // console.warn('NOT IMPLEMENTED');
+        const options = {
+            method: 'DELETE',
+            headers: this._get_headers(),
+        };
+        // https://paper-api.alpaca.markets/v2/positions
+        let url = `${CONFIG.ACCOUNT_URL}/v2/positions`;
+        fetch(url, options)
+            .then(res => res.json())
+            .then(res => { console.log('LIQUIDATE', res); })
+            .catch(err => console.error('error in liquidate()', err));
     };
     detail() {
         return new Promise((resolve, reject) => {

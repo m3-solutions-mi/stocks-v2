@@ -160,10 +160,16 @@
                                 class="fa fa-tag"></i> QQQ</a>
                         <a onclick="select_symbol('AMAT')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> AMAT</a>
+                        <a onclick="select_symbol('ARM')" class="w3-padding w3-bar-item w3-button"><i
+                                class="fa fa-tag"></i> ARM</a>
                         <a onclick="select_symbol('KLAC')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> KLAC</a>
                         <a onclick="select_symbol('DRAM')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> DRAM</a>
+                        <a onclick="select_symbol('MRVL')" class="w3-padding w3-bar-item w3-button"><i
+                                class="fa fa-tag"></i> MRVL</a>
+                        <a onclick="select_symbol('MU')" class="w3-padding w3-bar-item w3-button"><i
+                                class="fa fa-tag"></i> MU</a>
                         <a onclick="select_symbol('SOXL')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> SOXL</a>
                         <a onclick="select_symbol('UMC')" class="w3-padding w3-bar-item w3-button"><i
@@ -366,7 +372,7 @@
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 3 : (dow === 6 ? 1.75 : 0.5);
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (2/24));
             }
         }
     </script>
@@ -558,9 +564,10 @@
                     //* STOP LOSS & TRAILING PERCENT CHECKS */
                     const pct = account_positions[0].unrealized_intraday_plpc;
                     if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
-                        ACCOUNT.sell();
+                        // ACCOUNT.sell();
                     }
                     this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
+                    console.log(`%c${HELPERS.round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
                     // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
                     //     ACCOUNT.sell();
                     // }
