@@ -149,33 +149,33 @@
             <div id="output" class="w3-margin-top w3-row-padding">
 
                 <!--@ SYMBOL SELECTION-->
+                <div class="w3-right w3-text-blue"><span id="symbol-last-value"></div>
                 <div class="w3-dropdown-hover w3-white w3-wide">
-                    <span id="symbol-last-value" class="w3-right w3-text-blue">$-</span>
-                    <div class="" style="min-width:350px;">
-                        <span id="symbol-name" class="">-</span>&nbsp;&nbsp;<span class="w3-text-grey">▼</span>
-                    </div>
-                    <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-large"
+                    <div class="" _style="min-width:350px;">
+                        <div><span id="symbol-name" class="">-</span></span>&nbsp;&nbsp;<span class="w3-right w3-text-grey">▼</span></div>
+                        <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-large"
                         style="width:100%;min-width:450px;">
                         <a onclick="select_symbol('QQQ')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> QQQ</a>
-                        <a onclick="select_symbol('AMAT')" class="w3-padding w3-bar-item w3-button"><i
+                            class="fa fa-tag"></i> QQQ</a>
+                            <a onclick="select_symbol('AMAT')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> AMAT</a>
                         <a onclick="select_symbol('ARM')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> ARM</a>
                         <a onclick="select_symbol('KLAC')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> KLAC</a>
-                        <a onclick="select_symbol('DRAM')" class="w3-padding w3-bar-item w3-button"><i
+                            class="fa fa-tag"></i> KLAC</a>
+                            <a onclick="select_symbol('DRAM')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> DRAM</a>
-                        <a onclick="select_symbol('MRVL')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> MRVL</a>
-                        <a onclick="select_symbol('MU')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> MU</a>
-                        <a onclick="select_symbol('SOXL')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> SOXL</a>
-                        <a onclick="select_symbol('UMC')" class="w3-padding w3-bar-item w3-button"><i
+                                <a onclick="select_symbol('MRVL')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> MRVL</a>
+                                    <a onclick="select_symbol('MU')" class="w3-padding w3-bar-item w3-button"><i
+                                        class="fa fa-tag"></i> MU</a>
+                                        <a onclick="select_symbol('SOXL')" class="w3-padding w3-bar-item w3-button"><i
+                                            class="fa fa-tag"></i> SOXL</a>
+                                            <a onclick="select_symbol('UMC')" class="w3-padding w3-bar-item w3-button"><i
                                 class="fa fa-tag"></i> UMC</a>
                         <a onclick="select_symbol('WDC')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> WDC</a>
+                            class="fa fa-tag"></i> WDC</a>
+                        </div>
                     </div>
                 </div>
 
@@ -372,7 +372,7 @@
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (2/24));
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm >= 1200 ? 8/24 : 3/24));
             }
         }
     </script>
