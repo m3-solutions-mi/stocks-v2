@@ -176,7 +176,6 @@ async function click_symbol(name) {
         const mid = round2((max + min) / 2);
         // console.log(last, min, max, '|', swing, mid);
 
-
         document.getElementById('pdt-today-title').innerHTML = `<b>${name}</b>&nbsp;&nbsp;|&nbsp;&nbsp;${get_description(name)}`;
         document.getElementById('pdt-today-title-day').innerHTML = `$ ${round2(series_3[0].data[series_3[0].data.length - 1].y - series_3[0].data[0].y)}`;
         // document.getElementById('analysis-buying-power').innerHTML = RESULTS ? '$ ' + round(RESULTS.ACCOUNT.buying_power).toLocaleString() : '-';
