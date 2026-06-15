@@ -530,6 +530,10 @@
                     // HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(delta), '$', '');
                     // HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(delta_pct), '', '%');
 
+                    const account_history_last = account_history_14d[account_history_14d.length-1]
+                    if (new Date(account_history_last.t).getDate() !== new Date().getDate()) {
+                        account_history_14d.push({e:Date.now(),t: new Date().toLocaleString(), hmm: HELPERS.getHMM(new Date()), net: account_detail.equity})
+                    }
                     // _intraday
                     const position_gain = account_positions[0].unrealized_pl;
                     const position_gain_pct = account_positions[0].unrealized_plpc * 100;
