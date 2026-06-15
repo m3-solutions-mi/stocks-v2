@@ -179,7 +179,7 @@
 
                 <!--@ TABLE -->
                 <div class="w3-medium">
-                    <table class="w3-large w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
+                    <table id="table" class="w3-large w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
                         <tr>
                             <!-- <th>ACCOUNT</th>
                                     <th>ACCOUNT PCT</th> -->
@@ -543,6 +543,11 @@
         const CHART_ACCOUNT_HISTORY = new Chart('chart-account-history');
         const ACCOUNT = new Account();
         const DATA = new Data();
+
+        //* ADJUST BASED ON VIEW */
+        if (IS_MEDIUM || IS_LARGE) {
+            document.getElementById('table').classList.replace('w3-large', 'w3-xlarge');
+        }
 
         //* INTERVAL */
         const INTERVAL = new Interval();
