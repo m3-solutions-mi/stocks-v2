@@ -3,7 +3,7 @@
 <html>
 
 <head>
-    <title>M3&nbsp;|&nbsp;WBD</title>
+    <title>M3&nbsp;|&nbsp;V3</title>
     <meta charset="UTF-8">
     <link id="favicon" rel="icon" href="./favicon.ico" type="image/png" sizes="16x16">
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
@@ -99,20 +99,33 @@
                         <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">ACCOUNT URL
                             <input id="account-url" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-margin-top w3-margin-left w3-margin-bottom">
+                        <div class="w3-col s12 w3-padding w3-margin-top w3-margin-left">
                             <span class="w3-text-grey">Stop Loss</span>
                             <!-- <i class="fa fa-toggle-off w3-right w3-margin-right"> 0.25</i>
                             <i class="fa fa-toggle-on w3-right w3-margin-right"> 0.5</i>
                             <i class="fa fa-toggle-off w3-right w3-margin-right"> 0.75</i> -->
 
                             <div class="w3-right">
+                                <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="OFF">
+                                <label>OFF</label>
                                 <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="0.25%">
                                 <label>0.25 %</label>
-
                                 <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="0.5%">
                                 <label>0.5 %</label>
-
                                 <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="0.75%">
+                                <label>0.75 %</label>
+                            </div>
+                        </div>
+                        <div class="w3-col s12 w3-padding w3-margin-left w3-margin-bottom">
+                            <span class="w3-text-grey">Trail Percent</span>
+                            <div class="w3-right">
+                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="OFF">
+                                <label>OFF</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.25%">
+                                <label>0.25 %</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.5%">
+                                <label>0.5 %</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.75%">
                                 <label>0.75 %</label>
                             </div>
                         </div>
@@ -125,42 +138,53 @@
                 </div>
 
                 <!--@ OUTPUT -->
-                <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+                <!-- <div class="w3-col s12 w3-xxlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding">
                     <div id="output" class="w3-marging w3-row-padding">
-                        <div class="w3-xlarge w3-wide"><b><span id="today-pct">-</span></b></span>
-                            <span class="">
-                                <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
-                                    onclick="ACCOUNT.sell()">
-                                    <i class="fa fa-credit-card"></i>
-                                </div>
-                                <div class="w3-right w3-text-green"
-                                    style="margin-right:20px;cursor:pointer;font-size:22px;"
-                                    onclick="ACCOUNT.buy(10000)">
-                                    <i class="fa fa-credit-card"></i>
-                                </div>
-                                <div class="w3-right w3-text-grey"
-                                    style="margin-right:20px;cursor:pointer;font-size:22px;" onclick="ACCOUNT.buy(100)">
-                                    <i class="fa fa-credit-card"></i>
-                                </div>
-                            </span>
-                        </div>
-                        <div id="chart" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:325px;"></div>
-                        <div class="w3-xlarge w3-wide">ACCOUNT<b><span id="gain" class=w3-right>-</span></b></div>
-                        <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom"
-                            style="min-height:75px;"></div>
-                        <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div>
-                        <div id="chart-futures" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;">
-                        </div>
-                        <div id="chart-oil" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;"></div>
-                        <div id="chart-vix" class="w3-hide-small w3-col s4 w3-border" style="min-height:225px;"></div>
+                        <div class="w3-xlarge w3-wide"><b><span id="today-pct">-</span></b> -->
+            </span>
+        </div>
 
-                        <div class="_w3-wide w3-large">
-                            <table class="w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
-                                <tr>
-                                    <!-- <th>ACCOUNT</th>
+        <!--@ CHARTS -->
+        <div class="w3-col s12 w3-large w3-panel w3-border w3-white w3-margin-bottom w3-padding">
+            <div id="output" class="w3-margin-top w3-row-padding">
+                <div class="w3-large">
+                    <span id="today-pct" class="w3-wide">-</span>
+                    <div id="chart" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:75px;"></div>
+                </div>
+                <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
+                <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
+                <div class="w3-wide">TODAY
+                    <span class="w3-right"><b><span id="today-gain" class="">
+                                -</span></b> | <b><span id="today-pct-2" class="w3-wide">-</span></b></span>
+                    <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom"
+                        style="min-height:75px;">
+                    </div>
+                </div>
+                <!-- <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div> -->
+
+
+                <div class="w3-hide-small w3-col s4">
+                    <div class="w3-wide">FUTURES</div>
+                    <div id="chart-futures" class="w3-border" style="min-height:75px;">
+                    </div>
+                </div>
+                <div class="w3-hide-small w3-col s4">
+                    <div class="w3-wide">OIL</div>
+                    <div id="chart-oil" class="w3-border" style="min-height:75px;"></div>
+                </div>
+                <div class="w3-hide-small w3-col s4">
+                    <div class="w3-wide">VIX</div>
+                    <div id="chart-vix" class="w3-border" style="min-height:75px;"></div>
+                </div>
+
+                <!--@ TABLE -->
+                <div class="w3-medium">
+                    <table id="table" class="w3-large w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
+                        <tr>
+                            <!-- <th>ACCOUNT</th>
                                     <th>ACCOUNT PCT</th> -->
-                                </tr>
-                                <!-- <tr class="">
+                        </tr>
+                        <!-- <tr class="">
                                     <td class="w3-text-grey w3-xlarge" style="margin-top:18px;">
                                         <span class="">
                                             <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
@@ -180,27 +204,61 @@
                                         </span>
                                     </td>
                                 </tr> -->
-                                <tr>
-                                    <td>TODAY<span class="w3-right"><b><span id="today-gain" class="">$
+                        <tr>
+                            <td>
+                                <span class="w3-text-blue w3-xlarge"><span id="buying-power" class="">-</span></span>
+
+                                <span class="">
+                                    <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
+                                        onclick="ACCOUNT.sell()">
+                                        <i class="fa fa-credit-card"></i>
+                                    </div>
+                                    <div class="w3-right w3-text-green"
+                                        style="margin-right:20px;cursor:pointer;font-size:22px;"
+                                        onclick="ACCOUNT.buy(10000)">
+                                        <i class="fa fa-credit-card"></i>
+                                    </div>
+                                    <div class="w3-right w3-text-grey"
+                                        style="margin-right:20px;cursor:pointer;font-size:22px;"
+                                        onclick="ACCOUNT.buy(100)">
+                                        <i class="fa fa-credit-card"></i>
+                                    </div>
+                                </span>
+                            </td>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>POSITION<span class="w3-right"><b><span id="positions-gain" class="">
+                                            -</span></b> | <b><span id="positions-pct"
+                                            class="w3-wide">-</span></b></span></td>
+                        </tr>
+                        <tr>
+                            <td>CHANGE<span class="w3-right"><b><span id="last-gain" class="">
+                                            -</span></b>&nbsp;|&nbsp;<b><span id="last-pct"
+                                            class="w3-wide">-</span></b></span></td>
+                        </tr>
+                        <!-- <tr>
+                    <td>TODAY<span class="w3-right"><b><span id="today-gain" class="">
                                     -</span></b> | <b><span id="today-pct-2">-</span></b></span></td>
-                                </tr>
-                                <tr>
-                                    <td>LAST<span class="w3-right"><b><span id="last-gain" class="">
-                                                    -</span></b>&nbsp;|&nbsp;<span id="last-pct">-</span></span></td>
-                                </tr>
-                                <tr>
-                                    <td>SEED<span class="w3-right"><b><span id="invested" class="">-</span></b></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>BAL<span class="w3-right"><span id="account-gain" class="">-</span>
-                                            &nbsp;|&nbsp;<b><span id="account-pct">-</span></b></span></td>
-                                </tr>
-                            </table>
-                            <!-- &nbsp; -->
-                        </div>
-                    </div>
+                </tr> -->
+                        <tr>
+                            <td>INVESTED<span class="w3-right"><b><span id="invested" class="">-</span></b></span>
+                            </td>
+                        </tr>
+                        <!-- <tr>
+                    <td>BUY PWR<span class="w3-right w3-text-blue"><span id="buying-power" class="">-</span></span></td>
+                </tr> -->
+                        <tr>
+                            <td>BAL<span class="w3-right">
+                                    <b><span id="account-delta" class="">-</span></b>
+                                    &nbsp;|&nbsp;<b><span id="account-pct" class="w3-wide">-</span></b>
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                    <!-- &nbsp; -->
                 </div>
+            </div>
         </div>
     </div>
 
@@ -211,12 +269,13 @@
         const IS_LARGE = document.getElementById('is-large').checkVisibility();
         console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:', IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);
 
-        const settings_fields = 'symbol,api-key,api-secret,api-url,account-url,stop-loss'.split(',');
+        const settings_fields = 'symbol,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
         settings_fields.forEach((v) => {
-            if (v !== 'stop-loss') {
+            if (v !== 'stop-loss' && v !== 'trail-pct') {
                 document.getElementById(v).value = localStorage.getItem(`m3-stocks-v3-${v}`);
             } else {
-                const stop_loss = (-localStorage.getItem(`m3-stocks-v3-${v}`) || '0.5') + '%';
+                const value = (localStorage.getItem(`m3-stocks-v3-${v}`) || 'OFF');
+                const stop_loss = value === 'OFF' ? 'OFF' : -value + '%';
                 Array.from(document.getElementsByName(v)).filter((v) => v.value === stop_loss)[0].checked = true;
             }
         });
@@ -239,10 +298,11 @@
         }
         function save_settings() {
             settings_fields.forEach((v) => {
-                if (v !== 'stop-loss') {
+                if (v !== 'stop-loss' && v !== 'trail-pct') {
                     localStorage.setItem(`m3-stocks-v3-${v}`, document.getElementById(v).value);
                 } else {
-                    localStorage.setItem(`m3-stocks-v3-${v}`, -(+(Array.from(document.getElementsByName(v)).filter((v) => v.checked)[0].value.replace('%', ''))));
+                    const value = -(+(Array.from(document.getElementsByName(v)).filter((v) => v.checked)[0].value.replace('%', '')))
+                    localStorage.setItem(`m3-stocks-v3-${v}`, isNaN(value) ? 'OFF' : value);
                 }
             });
 
@@ -262,14 +322,15 @@
             API_SECRET = localStorage.getItem('m3-stocks-v3-api-secret') || '';
             API_URL = localStorage.getItem('m3-stocks-v3-api-url') || '';
             ACCOUNT_URL = localStorage.getItem('m3-stocks-v3-account-url') || '';
-            STOP_LOSS = +(localStorage.getItem('m3-stocks-v3-trail-pct')) || -0.5;
+            STOP_LOSS = +(localStorage.getItem('m3-stocks-v3-stop-loss')) || 'OFF';
+            TRAIL_PCT = +(localStorage.getItem('m3-stocks-v3-trail-pct')) || 'OFF';
             UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
 
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (0.5));
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : 0.5);
             }
         }
     </script>
@@ -354,7 +415,7 @@
 
             //* GET SYMBOLS */
             async get_symbols() {
-                const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX'].map((s) => {
+                const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX', /*'AMAT', 'ASML', 'KLAC'*/].map((s) => {
                     return this.get_data(s);
                 });
                 const obj = await Promise.allSettled(promises);
@@ -363,6 +424,9 @@
                     'FUTURES': obj[1].value,
                     'OIL': obj[2].value,
                     'VIX': obj[3].value,
+                    // 'AMAT': obj[4].value,
+                    // 'ASML': obj[5].value,
+                    // 'KLAC': obj[6].value,
                 };
             }
 
@@ -390,12 +454,16 @@
     <!--@ UPDATE ON INTERVAL -->
     <script>
         class Interval {
+            position_peak_pct = -100;
+            last = 0;
+            last_pct = 0;
             constructor() { }
             async update(now = false) {
                 const dt = new Date();
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
                     const data = await DATA.get_symbols();
                     const account_history = await ACCOUNT.history();
+                    const account_history_14d = await ACCOUNT.history('14D', '1D');
                     const account_detail = await ACCOUNT.detail();
                     const account_positions = await ACCOUNT.positions();
                     // console.log(data);
@@ -403,21 +471,60 @@
                     // console.log(account_positions);
 
                     //* CHARTS */
-                    CHART.update(data[CONFIG.SYMBOL], 250);
+                    CHART.update(data[CONFIG.SYMBOL], 200);
+                    // CHART_1.update(data['ASML'], 200);
+                    // CHART_2.update(data['KLAC'], 200);
                     CHART_FUTURES.update(data['FUTURES'], 150);
-                    CHART_OIL.update(data['OIL'], 150);
-                    CHART_VIX.update(data['VIX'], 150);
-                    CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 75);
+                    CHART_OIL.update(data['OIL'], 150, true);
+                    CHART_VIX.update(data['VIX'], 150, true);
+                    CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 75, true);
+
+                    //* LAST */
+                    // const values = CHART.options.series[0].data.map((v)=>v.y);
+                    // const current = values[values.length-1];
+                    // const previous = values[values.length-2];
+                    // const delta = HELPERS.round2(current - previous);
+                    // const delta_pct = HELPERS.round2((current - previous) / previous * 100);
+                    // HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(delta), '$', '');
+                    // HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(delta_pct), '', '%');
+
+                    // _intraday
+                    const position_gain = account_positions[0].unrealized_pl;
+                    const position_gain_pct = account_positions[0].unrealized_plpc * 100;
+                    const spend = HELPERS.round(account_positions[0].cost_basis);
+                    
+                    const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
+                    const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net *100;
+
+                    //* LAST */
+                    HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(this.last ? position_gain - this.last : 0), '$', '');
+                    HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(this.last_pct ? position_gain_pct - this.last_pct : 0), '', '%');
 
                     //* TABLE */
-                    const seed = 43500; //TODO: get from account activity
-                    HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
-                    HELPERS.update_elem_text_colored('today-gain', HELPERS.round1(account_positions[0].unrealized_intraday_pl), '$', '');
-                    HELPERS.update_elem_text_colored('today-pct', HELPERS.round1(account_positions[0].unrealized_intraday_plpc), '', '%');
-                    HELPERS.update_elem_text_colored('today-pct-2', HELPERS.round1(account_positions[0].unrealized_intraday_plpc), '', '%');
-                    HELPERS.update_elem_text('invested', HELPERS.round(account_positions[0].cost_basis), '$', '');
-                    HELPERS.update_elem_text('account-gain', HELPERS.round1(account_detail.equity / 1000), '$', 'K');
+                    const seed = 43500; //** TODO: get from account activity **/
+                    // HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
+                    HELPERS.update_elem_text_colored('positions-gain', HELPERS.round2(position_gain), '$', '');
+                    HELPERS.update_elem_text_colored('positions-pct', HELPERS.round2(position_gain_pct), '', '%');
+                    HELPERS.update_elem_text_colored('today-gain', HELPERS.round2(today_gain), '$', '');
+                    // HELPERS.update_elem_text_colored('today-pct', HELPERS.round2(today_gain_pct), '', '%'); //* TOP FIELD */
+                    document.getElementById('today-pct').innerText = CONFIG.SYMBOL;
+                    HELPERS.update_elem_text_colored('today-pct-2', HELPERS.round2(today_gain_pct), '', '%');
+                    HELPERS.update_elem_text('invested', spend, '$', '');
+                    // HELPERS.update_elem_text('account-equity', HELPERS.round1(account_detail.equity / 1000), '$', 'K');
+                    HELPERS.update_elem_text_colored('account-delta', HELPERS.round1(account_detail.equity - seed), '$', '');
                     HELPERS.update_elem_text_colored('account-pct', HELPERS.round2((account_detail.equity / seed * 100) - 100), '', '%');
+                    HELPERS.update_elem_text('buying-power', HELPERS.round(account_detail.buying_power), '$', '');
+
+                    //* UPSDAT FIELDS FOR CHANGE CALCULATION */
+                    this.last = position_gain;
+                    this.last_pct = position_gain_pct;
+
+                    //* STOP LOSS & TRAILING PERCENT CHECKS */
+                    const pct = account_positions[0].unrealized_intraday_plpc;
+                    if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
+                        ACCOUNT.sell();
+                    }
+                    this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
                 }
                 document.getElementById('clock').innerText = dt.toLocaleTimeString().split(' ')[0];
             }
@@ -430,12 +537,19 @@
         const CONFIG = new Configuration();
         const HELPERS = new Helpers();
         const CHART = new Chart('chart');
+        const CHART_1 = new Chart('chart-1');
+        const CHART_2 = new Chart('chart-2');
         const CHART_FUTURES = new Chart('chart-futures');
         const CHART_OIL = new Chart('chart-oil');
         const CHART_VIX = new Chart('chart-vix');
         const CHART_ACCOUNT_HISTORY = new Chart('chart-account-history');
         const ACCOUNT = new Account();
         const DATA = new Data();
+
+        //* ADJUST BASED ON VIEW */
+        if (IS_MEDIUM || IS_LARGE) {
+            document.getElementById('table').classList.replace('w3-large', 'w3-xlarge');
+        }
 
         //* INTERVAL */
         const INTERVAL = new Interval();
