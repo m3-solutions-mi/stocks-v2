@@ -463,6 +463,7 @@
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
                     const data = await DATA.get_symbols();
                     const account_history = await ACCOUNT.history();
+                    const account_history_14d = await ACCOUNT.history('14D', '1D');
                     const account_detail = await ACCOUNT.detail();
                     const account_positions = await ACCOUNT.positions();
                     // console.log(data);
@@ -491,8 +492,9 @@
                     const position_gain = account_positions[0].unrealized_pl;
                     const position_gain_pct = account_positions[0].unrealized_plpc * 100;
                     const spend = HELPERS.round(account_positions[0].cost_basis);
-                    const today_gain = account_history[account_history.length - 1].net - account_history[account_history.length - 2].net;
-                    const today_gain_pct = account_history[account_history.length - 1].net - account_history[account_history.length - 2].net;
+                    
+                    const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
+                    const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net *100;
 
                     //* LAST */
                     HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(this.last ? position_gain - this.last : 0), '$', '');
