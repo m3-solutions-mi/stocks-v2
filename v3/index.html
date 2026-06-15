@@ -520,11 +520,11 @@
                     this.last_pct = position_gain_pct;
 
                     //* STOP LOSS & TRAILING PERCENT CHECKS */
-                    const pct = account_positions[0].unrealized_intraday_plpc;
-                    if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
-                        ACCOUNT.sell();
-                    }
-                    this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
+                    // const pct = account_positions[0].unrealized_intraday_plpc;
+                    // if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
+                    //     ACCOUNT.sell();
+                    // }
+                    // this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
                 }
                 document.getElementById('clock').innerText = dt.toLocaleTimeString().split(' ')[0];
             }
