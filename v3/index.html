@@ -184,7 +184,8 @@
 
                 <div class="w3-large">
                     <!-- <span id="symbol-name" class="w3-wide">-</span> ▼ -->
-                    <div id="chart" class="w3-col s12 w3-border w3-margin-bottom" style="min-height:75px;"></div>
+                    <div id="chart" class="w3-col s10 w3-border w3-margin-bottom w3-padding" style="min-height:75px;"></div>
+                    <div id="chart-zoom" class="w3-col s2 w3-border w3-margin-bottom w3-padding" style="min-height:205px;"></div>
                 </div>
                 <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
                 <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
@@ -375,7 +376,7 @@
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm <= 900 ? 1 : 3 / 24));
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm <= 900 ? 1 : (hmm < 1200 ? 3 / 24 : 6.5 / 24)));
             }
         }
     </script>
@@ -517,6 +518,7 @@
 
                     //* CHARTS */
                     CHART.update(data[CONFIG.SYMBOL], 200);
+                    CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-15), 200);
                     // CHART_1.update(data['ASML'], 200);
                     // CHART_2.update(data['KLAC'], 200);
                     CHART_FUTURES.update(data['FUTURES'], 150);
@@ -596,6 +598,7 @@
         const CONFIG = new Configuration();
         const HELPERS = new Helpers();
         const CHART = new Chart('chart');
+        const CHART_ZOOM = new Chart('chart-zoom');
         const CHART_1 = new Chart('chart-1');
         const CHART_2 = new Chart('chart-2');
         const CHART_FUTURES = new Chart('chart-futures');
