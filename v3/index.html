@@ -152,29 +152,32 @@
                 <div class="w3-right w3-text-blue"><span id="symbol-last-value"></div>
                 <div class="w3-dropdown-hover w3-white w3-wide">
                     <div class="" _style="min-width:350px;">
-                        <div><span id="symbol-name" class="">-</span></span>&nbsp;&nbsp;<span class="w3-right w3-text-grey">▼</span></div>
+                        <div><span id="symbol-name" class="">-</span></span>&nbsp;&nbsp;<span
+                                class="w3-right w3-text-grey">▼</span></div>
                         <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-large"
-                        style="width:100%;min-width:450px;">
-                        <a onclick="select_symbol('QQQ')" class="w3-padding w3-bar-item w3-button"><i
-                            class="fa fa-tag"></i> QQQ</a>
+                            style="width:100%;min-width:450px;">
+                            <a onclick="select_symbol('QQQ')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> QQQ</a>
+                            <a onclick="select_symbol('QQQM')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> QQQM</a>
                             <a onclick="select_symbol('AMAT')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> AMAT</a>
-                        <a onclick="select_symbol('ARM')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> ARM</a>
-                        <a onclick="select_symbol('KLAC')" class="w3-padding w3-bar-item w3-button"><i
-                            class="fa fa-tag"></i> KLAC</a>
+                                    class="fa fa-tag"></i> AMAT</a>
+                            <a onclick="select_symbol('ARM')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> ARM</a>
+                            <a onclick="select_symbol('KLAC')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> KLAC</a>
                             <a onclick="select_symbol('DRAM')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> DRAM</a>
-                                <a onclick="select_symbol('MRVL')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> DRAM</a>
+                            <a onclick="select_symbol('MRVL')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-tag"></i> MRVL</a>
-                                    <a onclick="select_symbol('MU')" class="w3-padding w3-bar-item w3-button"><i
-                                        class="fa fa-tag"></i> MU</a>
-                                        <a onclick="select_symbol('SOXL')" class="w3-padding w3-bar-item w3-button"><i
-                                            class="fa fa-tag"></i> SOXL</a>
-                                            <a onclick="select_symbol('UMC')" class="w3-padding w3-bar-item w3-button"><i
-                                class="fa fa-tag"></i> UMC</a>
-                        <a onclick="select_symbol('WDC')" class="w3-padding w3-bar-item w3-button"><i
-                            class="fa fa-tag"></i> WDC</a>
+                            <a onclick="select_symbol('MU')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> MU</a>
+                            <a onclick="select_symbol('SOXL')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> SOXL</a>
+                            <a onclick="select_symbol('UMC')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> UMC</a>
+                            <a onclick="select_symbol('WDC')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> WDC</a>
                         </div>
                     </div>
                 </div>
@@ -372,7 +375,7 @@
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm >= 1200 ? 8/24 : 3/24));
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm <= 900 ? 1 : 3 / 24));
             }
         }
     </script>
@@ -530,9 +533,9 @@
                     // HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(delta), '$', '');
                     // HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(delta_pct), '', '%');
 
-                    const account_history_last = account_history_14d[account_history_14d.length-1]
+                    const account_history_last = account_history_14d[account_history_14d.length - 1]
                     if (new Date(account_history_last.t).getDate() !== new Date().getDate()) {
-                        account_history_14d.push({e:Date.now(),t: new Date().toLocaleString(), hmm: HELPERS.getHMM(new Date()), net: account_detail.equity})
+                        account_history_14d.push({ e: Date.now(), t: new Date().toLocaleString(), hmm: HELPERS.getHMM(new Date()), net: account_detail.equity })
                     }
                     // _intraday
                     const position_gain = account_positions[0].unrealized_pl;
@@ -550,11 +553,11 @@
                     const seed = 43500; //** TODO: get from account activity **/
                     // HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
                     document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
-                    HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length-1].y - 1000, '$', '');
+                    HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
 
-                    HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length-1].y - 1000, '$', '');
-                    HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length-1].y, '$', '');
-                    HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length-1].y, '$', '');
+                    HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
+                    HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
+                    HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
 
                     HELPERS.update_elem_text_colored('positions-gain', HELPERS.round2(position_gain), '$', '');
                     HELPERS.update_elem_text_colored('positions-pct', HELPERS.round2(position_gain_pct), '', '%');
