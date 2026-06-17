@@ -105,9 +105,11 @@
                             <i class="fa fa-toggle-on w3-right w3-margin-right"> 0.5</i>
                             <i class="fa fa-toggle-off w3-right w3-margin-right"> 0.75</i> -->
 
-                            <div class="w3-right">
+                            <div class="w3-right w3-large">
                                 <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="OFF">
                                 <label>OFF</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="0.1%">
+                                <label>0.10 %</label>
                                 <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="0.25%">
                                 <label>0.25 %</label>
                                 <input class="w3-radio w3-margin-left" type="radio" name="stop-loss" value="0.5%">
@@ -118,9 +120,11 @@
                         </div>
                         <div class="w3-col s12 w3-padding w3-margin-left w3-margin-bottom">
                             <span class="w3-text-grey">Trail Percent</span>
-                            <div class="w3-right">
+                            <div class="w3-right w3-large">
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="OFF">
                                 <label>OFF</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.1%">
+                                <label>0.10 %</label>
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.25%">
                                 <label>0.25 %</label>
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.5%">
@@ -308,7 +312,7 @@
         const IS_LARGE = document.getElementById('is-large').checkVisibility();
         console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:', IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);
 
-        const settings_fields = 'symbol,api-key,api-secret,api-url,account-url,stop-loss'.split(',');
+        const settings_fields = 'symbol,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
         settings_fields.forEach((v) => {
             if (v !== 'stop-loss' && v !== 'trail-pct') {
                 document.getElementById(v).value = localStorage.getItem(`m3-stocks-v3-${v}`);
@@ -344,7 +348,7 @@
         }
         function save_settings() {
             settings_fields.forEach((v) => {
-                if (v !== 'stop-loss' /*&& v !== 'trail-pct'*/) {
+                if (v !== 'stop-loss' && v !== 'trail-pct') {
                     localStorage.setItem(`m3-stocks-v3-${v}`, document.getElementById(v).value);
                 } else {
                     const value = -(+(Array.from(document.getElementsByName(v)).filter((v) => v.checked)[0].value.replace('%', '')))
