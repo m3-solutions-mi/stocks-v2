@@ -329,7 +329,7 @@ class Chart {
         this.options.annotations.yaxis = [];
 
         const d3 = series[0].data[series[0].data.length - 1].x;
-        // const d2 = d3 - (24 * 60 * 60 * 1000);
+        const d2 = d3 - (24 * 60 * 60 * 1000);
         // const d1 = d3 - (2 * 24 * 60 * 60 * 1000);
         // const add_shade = (e, o = 0.25) => {
         //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].x2 = e;
@@ -337,6 +337,7 @@ class Chart {
         // }
         // add_shade(new Date(d3).setHours(9, 30), 0.1);
         // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.gray));
+        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
         this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.teal));
         this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
         this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
@@ -349,6 +350,9 @@ class Chart {
         // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
         this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.teal));
         this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(20, 0), null, colors.lightgrey));
+
+        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
+        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey));
 
         // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(4, 0), null, colors.darkgray));
         // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));

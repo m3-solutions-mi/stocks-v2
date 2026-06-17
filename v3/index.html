@@ -184,8 +184,8 @@
 
                 <div class="w3-large">
                     <!-- <span id="symbol-name" class="w3-wide">-</span> ▼ -->
-                    <div id="chart" class="w3-col s10 w3-border w3-margin-bottom w3-padding" style="min-height:75px;"></div>
-                    <div id="chart-zoom" class="w3-col s2 w3-border w3-margin-bottom w3-padding" style="min-height:205px;"></div>
+                    <div id="chart" class="w3-col s8 m10 w3-border w3-margin-bottom w3-padding" style="min-height:75px;"></div>
+                    <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding" style="min-height:205px;"></div>
                 </div>
                 <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
                 <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
@@ -518,7 +518,7 @@
 
                     //* CHARTS */
                     CHART.update(data[CONFIG.SYMBOL], 200);
-                    CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-15), 200);
+                    CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 200);
                     // CHART_1.update(data['ASML'], 200);
                     // CHART_2.update(data['KLAC'], 200);
                     CHART_FUTURES.update(data['FUTURES'], 150);
