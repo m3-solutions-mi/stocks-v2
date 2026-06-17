@@ -153,9 +153,9 @@
             <div id="output" class="w3-margin-top w3-row-padding">
 
                 <!--@ SYMBOL SELECTION-->
-                <div class="w3-right w3-text-blue"><span id="symbol-last-value"></div>
+                <div class="w3-xlarge w3-right w3-text-blue"><span id="symbol-last-value"></div>
                 <div class="w3-dropdown-hover w3-white w3-wide">
-                    <div class="" _style="min-width:350px;">
+                    <div class="w3-xlarge" _style="min-width:350px;">
                         <div><span id="symbol-name" class="">-</span></span>&nbsp;&nbsp;<span
                                 class="w3-right w3-text-grey">▼</span></div>
                         <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-large"
@@ -188,12 +188,14 @@
 
                 <div class="w3-large">
                     <!-- <span id="symbol-name" class="w3-wide">-</span> ▼ -->
-                    <div id="chart" class="w3-col s8 m10 w3-border w3-margin-bottom w3-padding" style="min-height:75px;"></div>
-                    <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding" style="min-height:205px;"></div>
+                    <div id="chart" class="w3-col s8 m10 w3-border w3-margin-bottom w3-padding"
+                        style="min-height:75px;"></div>
+                    <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding"
+                        style="min-height:205px;"></div>
                 </div>
                 <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
                 <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
-                <div class=""><span class="w3-wide">TODAY&nbsp;&nbsp;<span class="w3-text-grey">▼</span></span>
+                <div class="w3-xlarge"><span class="w3-wide">TODAY&nbsp;&nbsp;<span class="w3-text-grey">▼</span></span>
                     <span class="w3-right "><b><span id="today-gain" class="">
                                 -</span></b> | <b><span id="today-pct-2" class="w3-wide">-</span></b></span>
                     <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom"
@@ -204,20 +206,20 @@
 
 
                 <div class="w3-hide-small w3-col s4">
-                    <span id="futures-last-value" class="w3-right w3-text-blue">-</span>
+                    <span id="futures-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">FUTURES</div>
-                    <div id="chart-futures" class="w3-border" style="min-height:75px;">
+                    <div id="chart-futures" class="w3-border w3-margin-top" style="min-height:75px;">
                     </div>
                 </div>
                 <div class="w3-hide-small w3-col s4">
-                    <span id="oil-last-value" class="w3-right w3-text-blue">-</span>
+                    <span id="oil-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">OIL</div>
-                    <div id="chart-oil" class="w3-border" style="min-height:75px;"></div>
+                    <div id="chart-oil" class="w3-border w3-margin-top" style="min-height:75px;"></div>
                 </div>
                 <div class="w3-hide-small w3-col s4">
-                    <span id="vix-last-value" class="w3-right w3-text-blue">-</span>
+                    <span id="vix-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">VIX</div>
-                    <div id="chart-vix" class="w3-border" style="min-height:75px;"></div>
+                    <div id="chart-vix" class="w3-border w3-margin-top" style="min-height:75px;"></div>
                 </div>
 
                 <!--@ TABLE -->
@@ -394,6 +396,8 @@
             round = (v) => { return Math.round(v * 1) / 1; };
             round1 = (v) => { return Math.round(v * 10) / 10; };
             round2 = (v) => { return Math.round(v * 100) / 100; };
+            round3 = (v) => { return Math.round(v * 1000) / 1000; };
+            round4 = (v) => { return Math.round(v * 10000) / 10000; };
 
             //* UPDATE TEXT w/ COLOR */
             update_elem_text_colored(id, v, prefix = '$', postfix = 'K') {
@@ -503,6 +507,7 @@
 
     <!--@ UPDATE ON INTERVAL -->
     <script>
+        "use strict";
         class Interval {
             position_peak_pct = -100;
             last = 0;
@@ -521,14 +526,14 @@
                     // console.log(account_positions);
 
                     //* CHARTS */
-                    CHART.update(data[CONFIG.SYMBOL], 200);
-                    CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 200);
+                    CHART.update(data[CONFIG.SYMBOL], 180);
+                    CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 180);
                     // CHART_1.update(data['ASML'], 200);
                     // CHART_2.update(data['KLAC'], 200);
-                    CHART_FUTURES.update(data['FUTURES'], 150);
-                    CHART_OIL.update(data['OIL'], 150, true);
-                    CHART_VIX.update(data['VIX'], 150, true);
-                    CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 75, true);
+                    CHART_FUTURES.update(data['FUTURES'], 140);
+                    CHART_OIL.update(data['OIL'], 140, true);
+                    CHART_VIX.update(data['VIX'], 140, true);
+                    CHART_ACCOUNT_HISTORY.update(account_history.map((v) => { return { t: v.t, c: v.net } }), 100, true);
 
                     //* LAST */
                     // const values = CHART.options.series[0].data.map((v)=>v.y);
@@ -581,12 +586,15 @@
                     this.last_pct = position_gain_pct;
 
                     //* STOP LOSS & TRAILING PERCENT CHECKS */
-                    const pct = account_positions[0].unrealized_intraday_plpc;
+                    const pct = account_positions[0].unrealized_plpc;
+                    // console.log(`%c${HELPERS.round4(pct*100)}`, 'color:yellow');
                     if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
                         // ACCOUNT.sell();
                     }
                     this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
-                    console.log(`%c${HELPERS.round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
+                    const trail_stop_pct = INTERVAL.position_peak_pct * (1 - (CONFIG.TRAIL_PCT));
+                    console.log(`%c${HELPERS.round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${HELPERS.round4(trail_stop_pct)}`, 'color:yellow')
+                    // console.log(`%c${HELPERS.round2(INTERVAL.position_peak_pct)} | ${HELPERS.round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
                     // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
                     //     ACCOUNT.sell();
                     // }
