@@ -1,6 +1,6 @@
 const INVEST_AMOUNT = 1000;
 const SEED_AMOUNT = 43500;
-const COMPARISON_BUY_AMOUNT = 5000;
+const COMPARISON_BUY_AMOUNT = 10000;
 const TRAIL_PCT = -0.5;
 
 // const UPDATE_AT = [0, 15, 30, 45];

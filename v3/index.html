@@ -34,6 +34,7 @@
     <script src="./chart.js"></script>
     <script src="./colors.js"></script>
     <script src="./account.js"></script>
+    <script src="./gemini.js"></script>
 
     <!--@ PAGE CONTENT -->
     <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:768px;"> <!-- 1450 -->
@@ -86,6 +87,10 @@
                         <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">
                             SYMBOL
                             <input id="symbol" style="width:100%;" value="" />
+                        </div>
+                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">
+                            SYMBOL LIST
+                            <input id="symbol-list" style="width:100%;" value="QQQ" />
                         </div>
                         <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">API KEY
                             <input id="api-key" style="width:100%;" value="" />
@@ -160,10 +165,11 @@
                                 class="w3-right w3-text-grey">▼</span></div>
                         <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-large"
                             style="width:100%;min-width:450px;">
-                            <a onclick="select_symbol('QQQ')" class="w3-padding w3-bar-item w3-button"><i
+                            <span id="symbols-list"></span>
+                            <!-- <a onclick="select_symbol('QQQ')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-tag"></i> QQQ</a>
-                            <a onclick="select_symbol('QQQM')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> QQQM</a>
+                            <a onclick="select_symbol('LITE')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> LITE</a>
                             <a onclick="select_symbol('AMAT')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-tag"></i> AMAT</a>
                             <a onclick="select_symbol('ARM')" class="w3-padding w3-bar-item w3-button"><i
@@ -178,28 +184,27 @@
                                     class="fa fa-tag"></i> MU</a>
                             <a onclick="select_symbol('SOXL')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-tag"></i> SOXL</a>
+                            <a onclick="select_symbol('SRTL')" class="w3-padding w3-bar-item w3-button"><i
+                                    class="fa fa-tag"></i> STRL</a>
                             <a onclick="select_symbol('UMC')" class="w3-padding w3-bar-item w3-button"><i
                                     class="fa fa-tag"></i> UMC</a>
                             <a onclick="select_symbol('WDC')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> WDC</a>
+                                    class="fa fa-tag"></i> WDC</a> -->
                         </div>
                     </div>
                 </div>
 
                 <div class="w3-large">
                     <!-- <span id="symbol-name" class="w3-wide">-</span> ▼ -->
-                    <div id="chart" class="w3-col s8 m10 w3-border w3-margin-bottom w3-padding"
-                        style="min-height:75px;"></div>
-                    <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding"
-                        style="min-height:205px;"></div>
+                    <div id="chart" class="w3-col s8 m10 w3-border w3-margin-bottom w3-padding" style=""></div>
+                    <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding" style=""></div>
                 </div>
                 <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
                 <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
                 <div class="w3-xlarge"><span class="w3-wide">TODAY&nbsp;&nbsp;<span class="w3-text-grey">▼</span></span>
                     <span class="w3-right "><b><span id="today-gain" class="">
                                 -</span></b> | <b><span id="today-pct-2" class="w3-wide">-</span></b></span>
-                    <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom"
-                        style="min-height:75px;">
+                    <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom" style="">
                     </div>
                 </div>
                 <!-- <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div> -->
@@ -208,18 +213,18 @@
                 <div class="w3-hide-small w3-col s4">
                     <span id="futures-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">FUTURES</div>
-                    <div id="chart-futures" class="w3-border w3-margin-top" style="min-height:75px;">
+                    <div id="chart-futures" class="w3-border w3-margin-top" style="">
                     </div>
                 </div>
                 <div class="w3-hide-small w3-col s4">
                     <span id="oil-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">OIL</div>
-                    <div id="chart-oil" class="w3-border w3-margin-top" style="min-height:75px;"></div>
+                    <div id="chart-oil" class="w3-border w3-margin-top" style=""></div>
                 </div>
                 <div class="w3-hide-small w3-col s4">
                     <span id="vix-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">VIX</div>
-                    <div id="chart-vix" class="w3-border w3-margin-top" style="min-height:75px;"></div>
+                    <div id="chart-vix" class="w3-border w3-margin-top" style=""></div>
                 </div>
 
                 <!--@ TABLE -->
@@ -255,8 +260,8 @@
 
                                 <span class="">
                                     <div class="w3-right w3-text-red" style="cursor:pointer;font-size:22px;"
-                                        onclick="ACCOUNT.sell()">
-                                        <i class="fa fa-credit-card"></i>
+                                        onclick="ACCOUNT.liquidate()">
+                                        <i class="fa fa-ban"></i>
                                     </div>
                                     <div class="w3-right w3-text-green"
                                         style="margin-right:20px;cursor:pointer;font-size:22px;"
@@ -307,6 +312,7 @@
         </div>
     </div>
 
+
     <!--@ SETTINGS -->
     <script>
         const IS_SMALL = document.getElementById('is-small').checkVisibility();
@@ -314,7 +320,7 @@
         const IS_LARGE = document.getElementById('is-large').checkVisibility();
         console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:', IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);
 
-        const settings_fields = 'symbol,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
+        const settings_fields = 'symbol,symbol-list,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
         settings_fields.forEach((v) => {
             if (v !== 'stop-loss' && v !== 'trail-pct') {
                 document.getElementById(v).value = localStorage.getItem(`m3-stocks-v3-${v}`);
@@ -370,6 +376,7 @@
         class Configuration {
             constructor() { }
             SYMBOL = localStorage.getItem('m3-stocks-v3-symbol') || 'QQQ';
+            SYMBOL_LIST = localStorage.getItem('m3-stocks-v3-symbol-list') || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
             API_KEY = localStorage.getItem('m3-stocks-v3-api-key') || '';
             API_SECRET = localStorage.getItem('m3-stocks-v3-api-secret') || '';
             API_URL = localStorage.getItem('m3-stocks-v3-api-url') || '';
@@ -382,7 +389,7 @@
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm <= 900 ? 1 : (hmm < 1200 ? 3 / 24 : 6.5 / 24)));
+                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm <= 900 ? 1 : (hmm < 1600 ? 4 / 24 : 6.5 / 24)));
             }
         }
     </script>
@@ -624,6 +631,17 @@
         if (IS_MEDIUM || IS_LARGE) {
             document.getElementById('table').classList.replace('w3-large', 'w3-xlarge');
         }
+        
+        //* LOADF SYMBOL LIST */
+        html = '';
+        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort()].forEach((s) => {
+            const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
+                <i class="fa fa-tag"></i>&nbsp;
+            ${s}</a>
+            `;
+            html += template;
+        })
+        document.getElementById('symbols-list').innerHTML = html;
 
         //* INTERVAL */
         const INTERVAL = new Interval();
