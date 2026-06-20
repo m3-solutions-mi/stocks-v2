@@ -259,7 +259,7 @@ class Chart {
                     // if (typeof y !== 'undefined') {
                     //     return y.toFixed(0)
                     // }
-                    return HELPERS.round2(y).toLocaleString()
+                    return round2(y).toLocaleString()
                 },
             },
         },

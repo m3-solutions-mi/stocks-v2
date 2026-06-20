@@ -34,6 +34,7 @@
     <script src="./chart.js"></script>
     <script src="./colors.js"></script>
     <script src="./account.js"></script>
+    <script src="./calendar.js"></script>
     <script src="./gemini.js"></script>
 
     <!--@ PAGE CONTENT -->
@@ -313,6 +314,16 @@
     </div>
 
 
+    <!--@ GLOBAL HELPERS -->
+    <script>
+        //* ROUND FUNCTIONS */
+        round = (v) => { return Math.round(v * 1) / 1; };
+        round1 = (v) => { return Math.round(v * 10) / 10; };
+        round2 = (v) => { return Math.round(v * 100) / 100; };
+        round3 = (v) => { return Math.round(v * 1000) / 1000; };
+        round4 = (v) => { return Math.round(v * 10000) / 10000; };
+    </script>
+
     <!--@ SETTINGS -->
     <script>
         const IS_SMALL = document.getElementById('is-small').checkVisibility();
@@ -389,7 +400,19 @@
             COMPARISON_NUM_DAYS = () => {
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
-                return dow === 0 ? 3 : (dow === 6 ? 1.75 : (hmm <= 900 ? 1 : (hmm < 1600 ? 4 / 24 : 6.5 / 24)));
+                const mo = market_open();
+                const lmo = last_market_open();
+                const now = HELPERS.getYMD(new Date());
+                const diff = Math.abs(round2((new Date(lmo + 'T04:00:00') - new Date(now)) / 24 / 60 / 60 / 1000));
+                // console.log(
+                //     `%c${last_market_open()} %c | %c${mo} | ${lmo} | ${now} | ${diff}`
+                //     , 'color:orange'
+                //     , 'color:grey', 'color:lightblue'
+                // );
+
+                // console.log(new Date(HELPERS.getYMD(new Date())).getTime() - new Date(last_market_open()).getTime() / 60 / 60 / 1000);
+                return diff + 1;
+                // return dow === 0 ? 3 : (dow === 6 ? 1.25 : (hmm <= 900 ? 1 : (hmm < 1600 ? 4 / 24 : 6.5 / 24)));
             }
         }
     </script>
@@ -399,24 +422,17 @@
         class Helpers {
             constructor() { }
 
-            //* ROUND FUNCTIONS */
-            round = (v) => { return Math.round(v * 1) / 1; };
-            round1 = (v) => { return Math.round(v * 10) / 10; };
-            round2 = (v) => { return Math.round(v * 100) / 100; };
-            round3 = (v) => { return Math.round(v * 1000) / 1000; };
-            round4 = (v) => { return Math.round(v * 10000) / 10000; };
-
             //* UPDATE TEXT w/ COLOR */
             update_elem_text_colored(id, v, prefix = '$', postfix = 'K') {
                 const elem = document.getElementById(id);
-                elem.innerHTML = `${prefix}&nbsp;${HELPERS.round2(v).toLocaleString()}&nbsp;${postfix}`;
+                elem.innerHTML = `${prefix}&nbsp;${round2(v).toLocaleString()}&nbsp;${postfix}`;
                 elem.style.color = v > 0 ? '#4CAF50' : (v === 0 ? 'grey' : '#e50000');
             }
 
             //* UPDATE TEXT */
             update_elem_text(id, v, prefix = '$', postfix = 'K') {
                 const elem = document.getElementById(id);
-                elem.innerHTML = `${prefix}&nbsp;${HELPERS.round2(v).toLocaleString()}&nbsp;${postfix}`;
+                elem.innerHTML = `${prefix}&nbsp;${round2(v).toLocaleString()}&nbsp;${postfix}`;
                 // elem.style.color = 'grey';
             }
 
@@ -448,6 +464,20 @@
                 v += d.getMinutes();
                 return v;
             }
+            getYMD(date, includeYear = true) {
+                const d = new Date(date);
+                let month = '' + (d.getMonth() + 1);
+                let day = '' + d.getDate();
+                const year = d.getFullYear();
+
+                if (month.length < 2)
+                    month = '0' + month;
+                if (day.length < 2)
+                    day = '0' + day;
+
+                // return '2025-06-04'
+                return (includeYear ? [year, month, day] : [month, day]).join('-');
+            }
 
             //* DEEP CLONE */
             deepClone(obj) {
@@ -464,6 +494,15 @@
                 }
 
                 return clonedObj;
+            }
+
+            get_indicator(v, outline = false, color = '') {
+                const char = v > 0 ? (outline ? '△' : '▲') : (v < 0 ? (outline ? '▽' : '▼') : '');
+                return `<span style="color:${color}">${char}</span>`;
+            };
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
             }
         };
     </script>
@@ -546,10 +585,10 @@
                     // const values = CHART.options.series[0].data.map((v)=>v.y);
                     // const current = values[values.length-1];
                     // const previous = values[values.length-2];
-                    // const delta = HELPERS.round2(current - previous);
-                    // const delta_pct = HELPERS.round2((current - previous) / previous * 100);
-                    // HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(delta), '$', '');
-                    // HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(delta_pct), '', '%');
+                    // const delta = round2(current - previous);
+                    // const delta_pct = round2((current - previous) / previous * 100);
+                    // HELPERS.update_elem_text_colored('last-gain', round2(delta), '$', '');
+                    // HELPERS.update_elem_text_colored('last-pct', round2(delta_pct), '', '%');
 
                     const account_history_last = account_history_14d[account_history_14d.length - 1]
                     if (new Date(account_history_last.t).getDate() !== new Date().getDate()) {
@@ -558,18 +597,18 @@
                     // _intraday
                     const position_gain = account_positions[0].unrealized_pl;
                     const position_gain_pct = account_positions[0].unrealized_plpc * 100;
-                    const spend = HELPERS.round(account_positions[0].cost_basis);
+                    const spend = round(account_positions[0].cost_basis);
 
                     const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
                     const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
 
                     //* LAST */
-                    HELPERS.update_elem_text_colored('last-gain', HELPERS.round2(this.last ? position_gain - this.last : 0), '$', '');
-                    HELPERS.update_elem_text_colored('last-pct', HELPERS.round2(this.last_pct ? position_gain_pct - this.last_pct : 0), '', '%');
+                    HELPERS.update_elem_text_colored('last-gain', round2(this.last ? position_gain - this.last : 0), '$', '');
+                    HELPERS.update_elem_text_colored('last-pct', round2(this.last_pct ? position_gain_pct - this.last_pct : 0), '', '%');
 
                     //* TABLE */
                     const seed = 43500; //** TODO: get from account activity **/
-                    // HELPERS.update_elem_text_colored('gain', HELPERS.round2(account_detail.equity - seed), '$', '');
+                    // HELPERS.update_elem_text_colored('gain', round2(account_detail.equity - seed), '$', '');
                     document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
                     HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
 
@@ -577,16 +616,16 @@
                     HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
                     HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
 
-                    HELPERS.update_elem_text_colored('positions-gain', HELPERS.round2(position_gain), '$', '');
-                    HELPERS.update_elem_text_colored('positions-pct', HELPERS.round2(position_gain_pct), '', '%');
-                    HELPERS.update_elem_text_colored('today-gain', HELPERS.round2(today_gain), '$', '');
-                    // HELPERS.update_elem_text_colored('today-pct', HELPERS.round2(today_gain_pct), '', '%'); //* TOP FIELD */
-                    HELPERS.update_elem_text_colored('today-pct-2', HELPERS.round2(today_gain_pct), '', '%');
+                    HELPERS.update_elem_text_colored('positions-gain', round2(position_gain), '$', '');
+                    HELPERS.update_elem_text_colored('positions-pct', round2(position_gain_pct), '', '%');
+                    HELPERS.update_elem_text_colored('today-gain', round2(today_gain), '$', '');
+                    // HELPERS.update_elem_text_colored('today-pct', round2(today_gain_pct), '', '%'); //* TOP FIELD */
+                    HELPERS.update_elem_text_colored('today-pct-2', round2(today_gain_pct), '', '%');
                     HELPERS.update_elem_text('invested', spend, '$', '');
-                    // HELPERS.update_elem_text('account-equity', HELPERS.round1(account_detail.equity / 1000), '$', 'K');
-                    HELPERS.update_elem_text_colored('account-delta', HELPERS.round1(account_detail.equity - seed), '$', '');
-                    HELPERS.update_elem_text_colored('account-pct', HELPERS.round2((account_detail.equity / seed * 100) - 100), '', '%');
-                    HELPERS.update_elem_text('buying-power', HELPERS.round(account_detail.buying_power), '$', '');
+                    // HELPERS.update_elem_text('account-equity', round1(account_detail.equity / 1000), '$', 'K');
+                    HELPERS.update_elem_text_colored('account-delta', round1(account_detail.equity - seed), '$', '');
+                    HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity / seed * 100) - 100), '', '%');
+                    HELPERS.update_elem_text('buying-power', round(account_detail.buying_power), '$', '');
 
                     //* UPSDAT FIELDS FOR CHANGE CALCULATION */
                     this.last = position_gain;
@@ -594,14 +633,14 @@
 
                     //* STOP LOSS & TRAILING PERCENT CHECKS */
                     const pct = account_positions[0].unrealized_plpc;
-                    // console.log(`%c${HELPERS.round4(pct*100)}`, 'color:yellow');
+                    // console.log(`%c${round4(pct*100)}`, 'color:yellow');
                     if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
                         // ACCOUNT.sell();
                     }
                     this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
                     const trail_stop_pct = INTERVAL.position_peak_pct * (1 - (CONFIG.TRAIL_PCT));
-                    console.log(`%c${HELPERS.round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${HELPERS.round4(trail_stop_pct)}`, 'color:yellow')
-                    // console.log(`%c${HELPERS.round2(INTERVAL.position_peak_pct)} | ${HELPERS.round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
+                    console.log(`%c${round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
+                    // console.log(`%c${round2(INTERVAL.position_peak_pct)} | ${round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
                     // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
                     //     ACCOUNT.sell();
                     // }
@@ -631,10 +670,10 @@
         if (IS_MEDIUM || IS_LARGE) {
             document.getElementById('table').classList.replace('w3-large', 'w3-xlarge');
         }
-        
+
         //* LOADF SYMBOL LIST */
         html = '';
-        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort()].forEach((s) => {
+        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort(), 'BTC-USD'].forEach((s) => {
             const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
                 <i class="fa fa-tag"></i>&nbsp;
             ${s}</a>

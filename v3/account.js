@@ -17,7 +17,7 @@ class Account {
                 type: 'market',
                 time_in_force: 'day',
                 symbol: symbol,
-                notional: HELPERS.round2(spend).toString(),
+                notional: round2(spend).toString(),
             };
             const options = {
                 method: 'POST',
