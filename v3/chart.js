@@ -264,15 +264,107 @@ class Chart {
             },
         },
     };
+    options_candlestick = {
+        series: [
+            {
+                name: 'line',
+                type: 'line',
+                data: [],
+            },
+            {
+                name: 'candle',
+                type: 'candlestick',
+                data: [
+                    // {
+                    //     x: new Date(1538778600000),
+                    //     y: [6629.81, 6650.5, 6623.04, 6633.33],
+                    // },
+                ],
+            },
+        ],
+        chart: {
+            height: 180,
+            type: 'line',
+            animations: {
+                enabled: false,
+            },
+            toolbar: {
+                show: false,
+            },
+            sparkline: {
+                enabled: true,
+            }
+        },
+        title: {
+            _text: 'CandleStick Chart',
+            align: 'left',
+        },
+        legend: {
+            show: false,
+        },
+        
+        annotations: {
+            xaxis: [],
+        },
+        stroke: {
+            width: [2, 0.5],
+        },
+        noData: { text: 'No Data Available', style: { color: '#000' } },
+        colors: ['#007bf7', '#4CAF50', '#E91E63', '#445c68', '#FF9800'],
+        _fill: {
+            type: 'gradient',
+            opacity: [1, 1],
+        },
+        tooltip: {
+            shared: true,
+            x: {
+                show: true,
+                format: 'dd MMM | h:mm tt',
+            },
+            _custom: [
+                function ({ seriesIndex, dataPointIndex, w }) {
+                    return w.globals.series[seriesIndex][dataPointIndex]
+                },
+                function ({ seriesIndex, dataPointIndex, w }) {
+                    var o = w.globals.seriesCandleO[seriesIndex][dataPointIndex]
+                    var h = w.globals.seriesCandleH[seriesIndex][dataPointIndex]
+                    var l = w.globals.seriesCandleL[seriesIndex][dataPointIndex]
+                    var c = w.globals.seriesCandleC[seriesIndex][dataPointIndex]
+                    return (
+                        '<div class="apexcharts-tooltip-candlestick">' +
+                        '<div>Open: <span class="value">' +
+                        o +
+                        '</span></div>' +
+                        '<div>High: <span class="value">' +
+                        h +
+                        '</span></div>' +
+                        '<div>Low: <span class="value">' +
+                        l +
+                        '</span></div>' +
+                        '<div>Close: <span class="value">' +
+                        c +
+                        '</span></div>' +
+                        '</div>'
+                    )
+                },
+            ],
+        },
+        xaxis: {
+            type: 'datetime',
+            labels: {
+                datetimeUTC: false
+            }
+        },
+    }
     constructor(id) {
         this.chart_id = id;
     }
-    _render() {
+    _render(o = this.options) {
         if (this.chart_instance) {
             // console.log(this.chart_id);
             this.chart_instance.destroy();
         }
-        this.chart_instance = new ApexCharts(document.querySelector(`#${this.chart_id}`), this.options);
+        this.chart_instance = new ApexCharts(document.querySelector(`#${this.chart_id}`), o);
         this.chart_instance.render();
         // console.log(this.chart_id, this.options);
     }
@@ -307,64 +399,92 @@ class Chart {
     }
 
     //@ SYMBOL CHART - 24H */
-    update(data, height = 280, raw = false) {
+    update(data, height = 280, raw = false, ohlc = false) {
         // const raw = INDICATORS.indexOf(name) >= 0;
         let series = [
             { name: 'Close', type: 'area', data: [] },
-            // { name: 'Open', type: 'line', data: [] },
+            // { name: 'Bollinger', type: 'line', data: [] },
         ];
         let start = data[0].c;
         let shares = 1000 / start;
-        series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
-        // series[1].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.o) * shares } });
-        // if (futures) {
-        //     series.push({ name: 'Futures', type: 'area', data: [] });
-        //     start = futures[0].c;
-        //     shares = raw ? 1 : INVEST_AMOUNT / start;
-        //     series[1].data = futures.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
-        // }
-        this.options.tooltip.enabledOnSeries = [0, 1];
-        this.options.stroke.width = [0.75, 2];
-        this.options.annotations.xaxis = [];
-        this.options.annotations.yaxis = [];
+        if (ohlc) {
+            const ohlc_data = calculateHeikinAshi(data);
+            series[0].type = 'candlestick';
+            series[0].data = ohlc_data
+                // .slice(-200)
+                .filter((v) => HELPERS.getHMM(new Date(v.e)) >= 930)
+                .filter((v) => HELPERS.getHMM(new Date(v.e)) <= 1600)
+                .map((v, i) => { return { x: v.e, y: [round2(v.o * shares), round2(v.h * shares), round2(v.l * shares), round2(v.c * shares)] } });
+            // series.push({
+            //     name: 'Close',
+            //     type: 'line',
+            //     data: data
+            //         .filter((v) => HELPERS.getHMM(new Date(v.e)) >= 930)
+            //         .filter((v) => HELPERS.getHMM(new Date(v.e)) <= 1600)
+            //         .map((v, i) => { return { x: v.e, y: round2(v.c * shares) } })
+            // })
+            const d3 = series[0].data[series[0].data.length - 1].x;
+            this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
+            this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
+            this.options_candlestick.chart.type = 'line';
+            this.options_candlestick.chart.height = height;
+            this.options_candlestick.series = series;
+            this._render(this.options_candlestick);
+        } else {
+            series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
 
-        const d3 = series[0].data[series[0].data.length - 1].x;
-        const d2 = d3 - (24 * 60 * 60 * 1000);
-        // const d1 = d3 - (2 * 24 * 60 * 60 * 1000);
-        // const add_shade = (e, o = 0.25) => {
-        //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].x2 = e;
-        //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].opacity = o;
-        // }
-        // add_shade(new Date(d3).setHours(9, 30), 0.1);
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.gray));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.teal));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 0), null, colors.lightgrey));
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 30), null, colors.lightgrey));
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 30), null, colors.lightgrey));
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.teal));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(20, 0), null, colors.lightgrey));
+            // const bands = applyBands(data.map((v)=>{ return { c: v.c }}),4,1);
+            // series[1].data = bands.map((v, i) => { return { x: series[0].data[i].x, y: v.bands_c.sma * shares } });
 
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
-        this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey));
+            // if (futures) {
+            //     series.push({ name: 'Futures', type: 'area', data: [] });
+            //     start = futures[0].c;
+            //     shares = raw ? 1 : INVEST_AMOUNT / start;
+            //     series[1].data = futures.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * shares } });
+            // }
+            this.options.tooltip.enabledOnSeries = [0, 1];
+            this.options.stroke.width = [0.75, 2];
+            this.options.annotations.xaxis = [];
+            this.options.annotations.yaxis = [];
 
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(4, 0), null, colors.darkgray));
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.deeppink));
+            const d3 = series[0].data[series[0].data.length - 1].x;
+            const d2 = d3 - (24 * 60 * 60 * 1000);
+            // const d1 = d3 - (2 * 24 * 60 * 60 * 1000);
+            // const add_shade = (e, o = 0.25) => {
+            //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].x2 = e;
+            //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].opacity = o;
+            // }
+            // add_shade(new Date(d3).setHours(9, 30), 0.1);
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.gray));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.teal));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 0), null, colors.lightgrey));
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 30), null, colors.lightgrey));
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 30), null, colors.lightgrey));
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.teal));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(20, 0), null, colors.lightgrey));
 
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(4, 0), null, colors.darkgray));
-        // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(9, 30), null, colors.lightgrey));
-        this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y * 1.005, colors.violet));
-        this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y, colors.grey));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
+            this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey));
 
-        this.options.chart.height = height;
-        this.options.series = series;
-        this._render();
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(4, 0), null, colors.darkgray));
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.deeppink));
+
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(4, 0), null, colors.darkgray));
+            // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(9, 30), null, colors.lightgrey));
+            this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y * 1.005, colors.violet));
+            this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y, colors.grey));
+
+            this.options.chart.height = height;
+            this.options.series = series;
+            this._render();
+        }
     }
 }
