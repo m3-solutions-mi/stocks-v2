@@ -518,6 +518,9 @@ class Chart {
 
     //@ SYMBOL CHART - 24H */
     update(data, height = 280, raw = false, type = null) {
+        if (!data) {
+            return;
+        }
         // const raw = INDICATORS.indexOf(name) >= 0;
         let series = [
             { name: 'Close', type: 'area', data: [] },
@@ -574,8 +577,9 @@ class Chart {
             // );
         } else
             if (type === 'mixed') {
-                const hmm_s = 900;
-                const hmm_e = 1130;
+                const hmm_s = 400;
+                const hmm_e = 1030;
+                const last_n = 45;
                 const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';
                 series[0].data = ohlc_data
@@ -583,6 +587,7 @@ class Chart {
                     .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
                     .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
                     .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
+                    .slice(-last_n)
                     .map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
                 let cumulative = 0;
                 series.push({
@@ -592,6 +597,7 @@ class Chart {
                     data: ohlc_data
                         .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
                         .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
+                        .slice(-last_n)
                         .map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } })
                 })
                 const d3 = series[0].data[series[0].data.length - 1].x;
@@ -617,7 +623,7 @@ class Chart {
                         opposite: true,
                         axisTicks: { show: true },
                         axisBorder: { show: true, color: '#00E396' },
-                        labels: { style: { colors: '#00E396' } },
+                        // labels: { style: { colors: '#00E396' } },
                         title: { text: 'Units (positive only)', style: { color: '#00E396' } },
                     },
                 ];

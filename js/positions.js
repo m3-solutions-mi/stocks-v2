@@ -9,7 +9,7 @@ function check_positions() {
         RESULTS.POSITIONS.forEach((v) => {
             if (v.gain_pct <= TRAIL_PCT) {
                 //* SELL */
-                sell(v.name);
+                // sell(v.name);
             }
         });
     }

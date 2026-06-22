@@ -583,7 +583,7 @@ async function load_data() {
     update_mobile();
 
     //@ CHECK POSITIONS */
-    check_positions();
+    // check_positions();
 
     // const update_top_movers = () => {
     //     let series = [

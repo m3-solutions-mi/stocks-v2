@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 
+
 <style>
 </style>
 
@@ -95,6 +96,10 @@
                             SYMBOL LIST
                             <input id="symbol-list" style="width:100%;" value="QQQ" />
                         </div>
+                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">
+                            WATCH LIST
+                            <input id="watch-list" style="width:100%;" value="MU" />
+                        </div>
                         <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">API KEY
                             <input id="api-key" style="width:100%;" value="" />
                         </div>
@@ -160,8 +165,23 @@
         <div class="w3-col s12 w3-large w3-panel w3-border w3-white w3-margin-bottom w3-padding">
             <div id="output" class="w3-margin-top w3-row-padding">
 
+                <!--@ ACCOUNT SUMMARY-->
+                <div class="w3-col s12 w3-xlarge w3-margin-bottom w3-border-bottom">
+                    POSITIONS:
+                    <span class="w3-right"><b><span id="positions-gain" class="">
+                                -</span></b> | <b><span id="positions-pct" class="w3-wide"
+                                style="color: rgb(76, 175, 80);">&nbsp;-&nbsp;%</span></b></span>
+                </div>
+                <div class="w3-col s12 w3-xlarge w3-margin-bottom w3-border-bottom">
+                    CHANGE:
+                    <span class="w3-right"><b><span id="last-gain" class=""
+                                style="color: rgb(229, 0, 0);">$&nbsp;-&nbsp;</span></b>&nbsp;|&nbsp;<b><span
+                                id="last-pct" class="w3-wide"
+                                style="color: rgb(229, 0, 0);">&nbsp;-&nbsp;%</span></b></span>
+                </div>
+
                 <!--@ SYMBOL SELECTION-->
-                <div class="w3-xlarge w3-right w3-text-blue"><span id="symbol-last-value"></div>
+                <!-- <div class="w3-xlarge w3-right w3-text-blue"><span id="symbol-last-value"></div>
                 <div class="w3-dropdown-hover w3-white w3-wide">
                     <div class="w3-xlarge" _style="min-width:350px;">
                         <div><span id="symbol-name" class="">-</span></span>&nbsp;&nbsp;<span
@@ -169,71 +189,90 @@
                         <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-large"
                             style="width:100%;min-width:450px;">
                             <span id="symbols-list"></span>
-                            <!-- <a onclick="select_symbol('QQQ')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> QQQ</a>
-                            <a onclick="select_symbol('LITE')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> LITE</a>
-                            <a onclick="select_symbol('AMAT')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> AMAT</a>
-                            <a onclick="select_symbol('ARM')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> ARM</a>
-                            <a onclick="select_symbol('KLAC')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> KLAC</a>
-                            <a onclick="select_symbol('DRAM')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> DRAM</a>
-                            <a onclick="select_symbol('MRVL')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> MRVL</a>
-                            <a onclick="select_symbol('MU')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> MU</a>
-                            <a onclick="select_symbol('SOXL')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> SOXL</a>
-                            <a onclick="select_symbol('SRTL')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> STRL</a>
-                            <a onclick="select_symbol('UMC')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> UMC</a>
-                            <a onclick="select_symbol('WDC')" class="w3-padding w3-bar-item w3-button"><i
-                                    class="fa fa-tag"></i> WDC</a> -->
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div class="w3-large">
-                    <!-- <span id="symbol-name" class="w3-wide">-</span> ▼ -->
-                    <div id="chart-ha-1" class="w3-col s2 m6 w3-border w3-margin-bottom w3-padding" style=""></div>
-                    <div id="chart-ha-2" class="w3-col s2 m6 w3-border w3-margin-bottom w3-padding" style=""></div>
-                    <div id="chart-ha-3" class="w3-col s2 m6 w3-border w3-margin-bottom w3-padding" style=""></div>
-                    <div id="chart-ha-4" class="w3-col s2 m6 w3-border w3-margin-bottom w3-padding" style=""></div>
-                    <div id="chart" class="w3-col s8 m8 w3-border w3-margin-bottom w3-padding" style=""></div>
+                <div id="output-charts" class="w3-large">
+                    <!-- <span class="w3-col s2 m4 w3-margin-bottom w3-padding">
+                        <div class="w3-medium w3-wide"><b id="title-ha-0">-</b>
+                            <div class="w3-right w3-text-red" style="_margin-right:20px;cursor:pointer;font-size:22px;"
+                                onclick="ACCOUNT.sell()">
+                                <i class="fa fa-credit-card"></i>
+                            </div>
+                            <div class="w3-right w3-text-green" style="margin-right:20px;cursor:pointer;font-size:22px;"
+                                onclick="ACCOUNT.buy(10000)">
+                                <i class="fa fa-credit-card"></i>
+                            </div>
+                            <div class="w3-right w3-text-grey" style="margin-right:20px;cursor:pointer;font-size:22px;"
+                                onclick="ACCOUNT.buy(100)">
+                                <i class="fa fa-credit-card"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="w3-margin-top w3-medium w3-wide w3-right w3-text-blue"><b
+                                    id="title-ha-gain-0">-</b></span>
+                        </div>
+
+
+                        <div id="chart-ha-0"></div>
+                    </span> -->
+
+                    <!-- <span class="w3-col s2 m4 w3-margin-bottom w3-padding">
+                        <span class="w3-medium w3-wide"><b id="title-ha-1">-</b></span>
+                        <span class="w3-medium w3-wide w3-right w3-text-blue"><b id="title-ha-gain-1">-</b></span>
+                        <div id="chart-ha-1"></div>
+                    </span>
+                    <span class="w3-col s2 m4 w3-margin-bottom w3-padding">
+                        <span class="w3-medium w3-wide"><b id="title-ha-2">-</b></span>
+                        <span class="w3-medium w3-wide w3-right w3-text-blue"><b id="title-ha-gain-2">-</b></span>
+                        <div id="chart-ha-2"></div>
+                    </span>
+                    <span class="w3-col s2 m4 w3-margin-bottom w3-padding">
+                        <span class="w3-medium w3-wide"><b id="title-ha-3">-</b></span>
+                        <span class="w3-medium w3-wide w3-right w3-text-blue"><b id="title-ha-gain-3">-</b></span>
+                        <div id="chart-ha-3"></div>
+                    </span>
+                    <span class="w3-col s2 m4 w3-margin-bottom w3-padding">
+                        <span class="w3-medium w3-wide"><b id="title-ha-4">-</b></span>
+                        <span class="w3-medium w3-wide w3-right w3-text-blue"><b id="title-ha-gain-4">-</b></span>
+                        <div id="chart-ha-4"></div>
+                    </span>
+                    <span class="w3-col s2 m4 w3-margin-bottom w3-padding">
+                        <span class="w3-medium w3-wide"><b id="title-ha-5">-</b></span>
+                        <span class="w3-medium w3-wide w3-right w3-text-blue"><b id="title-ha-gain-5">-</b></span>
+                        <div id="chart-ha-5"></div>
+                    </span> -->
+
+                    <!-- <div id="chart" class="w3-col s8 m8 w3-border w3-margin-bottom w3-padding" style=""></div>
                     <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding" style=""></div>
                     <div id="chart-account-history" class="w3-col s2 w3-border w3-margin-bottom w3-padding" style="">
                     </div>
-                    <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
-                    <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
                     <div class="w3-hide w3-xlarge"><span class="w3-wide">TODAY&nbsp;&nbsp;<span
                                 class="w3-text-grey">▼</span></span>
                         <span class="w3-right "><b><span id="today-gain" class="">
                                     -</span></b> | <b><span id="today-pct-2" class="w3-wide">-</span></b></span>
-                    </div>
+                    </div> -->
                 </div>
                 <!-- <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div> -->
 
 
-                <div class="w3-hide-small w3-col s4">
+                <!-- <div class="w3-hide-small w3-col s4">
                     <span id="futures-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">FUTURES</div>
                     <div id="chart-futures" class="w3-border w3-margin-top" style="">
                     </div>
-                </div>
-                <div class="w3-hide-small w3-col s4">
+                </div> -->
+                <!-- <div class="w3-hide-small w3-col s4">
                     <span id="oil-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">OIL</div>
                     <div id="chart-oil" class="w3-border w3-margin-top" style=""></div>
-                </div>
-                <div class="w3-hide-small w3-col s4">
+                </div> -->
+                <!-- <div class="w3-hide-small w3-col s4">
                     <span id="vix-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">VIX</div>
                     <div id="chart-vix" class="w3-border w3-margin-top" style=""></div>
-                </div>
+                </div> -->
 
                 <!--@ TABLE -->
                 <div class="w3-medium">
@@ -242,43 +281,46 @@
                         </tr>
                         <tr>
                             <td>
-                                <span class="w3-text-blue w3-xlarge"><span id="buying-power" class="">-</span></span>
+                                <span class="w3-text-blue w3-xlarge">
+                                    <span id="buying-power" class="">-</span>
+                                    <span> | <span id="invested" class="">-</span></span>
+                                </span>
 
                                 <span class="">
                                     <div class="w3-right w3-text-pink" style="cursor:pointer;font-size:22px;"
                                         onclick="ACCOUNT.liquidate()">
                                         <i class="fa fa-ban"></i>
                                     </div>
-                                    <div class="w3-right w3-text-red"
+                                    <!-- <div class="w3-right w3-text-red"
                                         style="margin-right:20px;cursor:pointer;font-size:22px;"
                                         onclick="ACCOUNT.sell()">
                                         <i class="fa fa-credit-card"></i>
-                                    </div>
-                                    <div class="w3-right w3-text-green"
+                                    </div> -->
+                                    <!-- <div class="w3-right w3-text-green"
                                         style="margin-right:20px;cursor:pointer;font-size:22px;"
                                         onclick="ACCOUNT.buy(10000)">
                                         <i class="fa fa-credit-card"></i>
-                                    </div>
-                                    <div class="w3-right w3-text-grey"
+                                    </div> -->
+                                    <!-- <div class="w3-right w3-text-grey"
                                         style="margin-right:20px;cursor:pointer;font-size:22px;"
                                         onclick="ACCOUNT.buy(100)">
                                         <i class="fa fa-credit-card"></i>
-                                    </div>
+                                    </div> -->
                                 </span>
                             </td>
                             </td>
                         </tr>
-                        <tr>
+                        <!-- <tr>
                             <td>POSITION<span class="w3-right"><b><span id="positions-gain" class="">
                                             -</span></b> | <b><span id="positions-pct"
                                             class="w3-wide">-</span></b></span></td>
-                        </tr>
-                        <tr>
+                        </tr> -->
+                        <!-- <tr>
                             <td>CHANGE<span class="w3-right"><b><span id="last-gain" class="">
                                             -</span></b>&nbsp;|&nbsp;<b><span id="last-pct"
                                             class="w3-wide">-</span></b></span></td>
-                        </tr>
-                        <tr>
+                        </tr> -->
+                        <tr class="w3-hide">
                             <td>INVESTED<span class="w3-right"><b><span id="invested" class="">-</span></b></span>
                             </td>
                         </tr>
@@ -349,7 +391,7 @@
         const IS_LARGE = document.getElementById('is-large').checkVisibility();
         console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:', IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);
 
-        const settings_fields = 'symbol,symbol-list,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
+        const settings_fields = 'symbol,symbol-list,watch-list,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
         settings_fields.forEach((v) => {
             if (v !== 'stop-loss' && v !== 'trail-pct') {
                 document.getElementById(v).value = localStorage.getItem(`m3-stocks-v3-${v}`);
@@ -402,10 +444,12 @@
 
     <!--@ CONFIGURATION -->
     <script>
+        "use strict";
         class Configuration {
             constructor() { }
             SYMBOL = localStorage.getItem('m3-stocks-v3-symbol') || 'QQQ';
             SYMBOL_LIST = localStorage.getItem('m3-stocks-v3-symbol-list') || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
+            WATCH_LIST = localStorage.getItem('m3-stocks-v3-watch-list') || 'MU';
             API_KEY = localStorage.getItem('m3-stocks-v3-api-key') || '';
             API_SECRET = localStorage.getItem('m3-stocks-v3-api-secret') || '';
             API_URL = localStorage.getItem('m3-stocks-v3-api-url') || '';
@@ -437,6 +481,38 @@
 
     <!--@ HELPERS -->
     <script>
+        "use strict";
+        function load_chart_cards() {
+            let html = '';
+            CONFIG.WATCH_LIST
+                .split(',')
+                .slice(0, 9)
+                .forEach((s, i) => {
+                    html += `<span class="w3-col s2 m4 w3-margin-bottom w3-padding">
+                        <div class="w3-col s6 w3-medium w3-wide"><b id="title-ha-${i}">-</b></div>
+                        <div class="w3-col s6 w3-right w3-medium w3-wide"><b id="title-ha-gain-${i}"" class="w3-right">-</b></div>
+                        <div class="w3-col s6 w3-small" style="margin-top:5px;">
+                            <b><span id="${s}-gain">-</span>&nbsp;|&nbsp;<span id="${s}-pct">-</span></b><!--&nbsp;|&nbsp;<span id="${s}-basis">-</span>-->
+                        </div>
+                        <div class="w3-col s6 w3-right w3-medium w3-wide" style="margin-top:5px;">
+                            <i class="fa fa-circle w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
+                            <i class="fa fa-circle w3-right w3-text-green pointer" style="margin-right:10px;" onclick="ACCOUNT.buy(10000,'${s}')"></i>
+                            <i class="fa fa-circle w3-right w3-text-grey pointer" style="margin-right:10px;" onclick="ACCOUNT.buy(100,'${s}')"></i>
+                        </div>
+
+                        <div class="w3-col s12">
+                            <div id="chart-ha-${i}"></div>
+                        </div>
+                        </span>`;
+                });
+            document.getElementById('output-charts').innerHTML += html;
+        }
+
+    </script>
+
+    <!--@ HELPERS -->
+    <script>
+        "use strict";
         class Helpers {
             constructor() { }
 
@@ -528,24 +604,32 @@
 
     <!--@ GET DATA -->
     <script>
+        "use strict";
         class Data {
             constructor() { }
             // bars = null;
 
             //* GET SYMBOLS */
-            async get_symbols() {
-                const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX', 'SNDK', 'DRAM', 'SOXL', /*'AMAT', 'ASML', 'KLAC'*/].map((s) => {
+            // , /*'AMAT', 'ASML', 'KLAC'*/
+            // ${CONFIG.SYMBOL}
+            async get_symbols(symbols = `${CONFIG.WATCH_LIST},NQ=F,CL=F,^VIX`.split(',').filter((v, i, a) => a.indexOf(v) === i)) {
+                const promises = symbols.map((s) => {
                     return this.get_data(s);
                 });
                 const obj = await Promise.allSettled(promises);
                 return {
-                    [CONFIG.SYMBOL]: obj[0].value,
-                    'FUTURES': obj[1].value,
-                    'OIL': obj[2].value,
-                    'VIX': obj[3].value,
-                    'SNDK': obj[4].value,
-                    'DRAM': obj[5].value,
-                    'SOXL': obj[6].value,
+                    [symbols[0]]: obj[0]?.value || [],
+                    [symbols[1]]: obj[1]?.value || [],
+                    [symbols[2]]: obj[2]?.value || [],
+                    [symbols[3]]: obj[3]?.value || [],
+                    [symbols[4]]: obj[4]?.value || [],
+                    [symbols[5]]: obj[5]?.value || [],
+                    [symbols[6]]: obj[6]?.value || [],
+                    [symbols[7]]: obj[7]?.value || [],
+                    [symbols[8]]: obj[8]?.value || [],
+                    'FUTURES': obj[6]?.value || [],
+                    'OIL': obj[7]?.value || [],
+                    'VIX': obj[8]?.value || [],
                 };
             }
 
@@ -574,7 +658,7 @@
     <script>
         "use strict";
         class Interval {
-            position_peak_pct = -100;
+            positions_peak_pct = -100;
             last = 0;
             last_pct = 0;
             constructor() { }
@@ -591,20 +675,26 @@
                     // console.log(account_positions);
 
                     //* CHARTS */
-                    CHART_HA_1.update(data[CONFIG.SYMBOL], 150, false, 'mixed');
-                    CHART_HA_2.update(data['SNDK'], 150, false, 'mixed');
-                    CHART_HA_3.update(data['DRAM'], 150, false, 'mixed');
-                    CHART_HA_4.update(data['SOXL'], 150, false, 'mixed');
-                    CHART.update(data[CONFIG.SYMBOL], 120);
-                    CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
-                    // CHART_1.update(data['ASML'], 200);
-                    // CHART_2.update(data['KLAC'], 200);
-                    CHART_FUTURES.update(data['FUTURES'], 100);
-                    CHART_OIL.update(data['OIL'], 100, true);
-                    CHART_VIX.update(data['VIX'], 100, true);
-                    CHART_ACCOUNT_HISTORY.update(account_history
-                        .filter((v) => v.hmm >= 925 && v.hmm <= 1605)
-                        .map((v) => { return { t: v.t, c: v.net } }), 120, true);
+                    const symbols = CONFIG.WATCH_LIST.split(',');
+                    CHART_HA_0.update(data[symbols[0]], 150, false, 'mixed');
+                    CHART_HA_1.update(data[symbols[1]], 150, false, 'mixed');
+                    CHART_HA_2.update(data[symbols[2]], 150, false, 'mixed');
+                    CHART_HA_3.update(data[symbols[3]], 150, false, 'mixed');
+                    CHART_HA_4.update(data[symbols[4]], 150, false, 'mixed');
+                    CHART_HA_5.update(data[symbols[5]], 150, false, 'mixed');
+                    CHART_HA_6.update(data[symbols[6]], 150, false, 'mixed');
+                    CHART_HA_7.update(data[symbols[7]], 150, false, 'mixed');
+                    CHART_HA_8.update(data[symbols[8]], 150, false, 'mixed');
+                    // CHART.update(data[CONFIG.SYMBOL], 120);
+                    // CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
+                    // // CHART_1.update(data['ASML'], 200);
+                    // // CHART_2.update(data['KLAC'], 200);
+                    // CHART_FUTURES.update(data['FUTURES'], 100);
+                    // CHART_OIL.update(data['OIL'], 100, true);
+                    // CHART_VIX.update(data['VIX'], 100, true);
+                    // CHART_ACCOUNT_HISTORY.update(account_history
+                    //     // .filter((v) => v.hmm >= 925 && v.hmm <= 1605)
+                    //     .map((v) => { return { t: v.t, c: v.net } }), 120, true);
 
                     //* LAST */
                     // const values = CHART.options.series[0].data.map((v)=>v.y);
@@ -615,46 +705,65 @@
                     // HELPERS.update_elem_text_colored('last-gain', round2(delta), '$', '');
                     // HELPERS.update_elem_text_colored('last-pct', round2(delta_pct), '', '%');
 
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach((v) => {
+                        document.getElementById(`title-ha-${v}`).innerText = symbols[v];
+                        document.getElementById(`title-ha-gain-${v}`).innerText = `$ ${eval(`CHART_HA_${v}`).options_candlestick.series[1].data[eval(`CHART_HA_${v}`).options_candlestick.series[1].data.length - 1].y}`;
+                    })
+                    // document.getElementById('title-ha-1').innerText = symbols[1];
+                    // document.getElementById('title-ha-2').innerText = symbols[2];
+                    // document.getElementById('title-ha-3').innerText = symbols[3];
+                    // document.getElementById('title-ha-4').innerText = symbols[4];
+                    // document.getElementById('title-ha-5').innerText = symbols[5];
+
                     const account_history_last = account_history_14d[account_history_14d.length - 1]
                     if (new Date(account_history_last.t).getDate() !== new Date().getDate()) {
                         account_history_14d.push({ e: Date.now(), t: new Date().toLocaleString(), hmm: HELPERS.getHMM(new Date()), net: account_detail.equity })
                     }
                     // _intraday
-                    const position_gain = account_positions[0].unrealized_pl;
-                    const position_gain_pct = account_positions[0].unrealized_plpc * 100;
-                    const spend = round(account_positions[0].cost_basis);
+                    const positions_gain = account_positions.map((p) => p.unrealized_intraday_pl).reduce((p, c) => p + c);
+                    const positions_gain_pct = account_positions.map((p) => p.unrealized_intraday_plpc).reduce((p, c) => p + c) * 100;
+                    const spend = round(account_positions.map((p) => p.cost_basis).reduce((p, c) => p + c));
 
                     const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
                     const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
 
                     //* LAST */
-                    HELPERS.update_elem_text_colored('last-gain', round2(this.last ? position_gain - this.last : 0), '$', '');
-                    HELPERS.update_elem_text_colored('last-pct', round2(this.last_pct ? position_gain_pct - this.last_pct : 0), '', '%');
+                    HELPERS.update_elem_text_colored('last-gain', round2(this.last ? positions_gain - this.last : 0), '$', '');
+                    HELPERS.update_elem_text_colored('last-pct', round2(this.last_pct ? positions_gain_pct - this.last_pct : 0), '', '%');
 
                     //* TABLE */
                     const seed = 43500; //** TODO: get from account activity **/
-                    // HELPERS.update_elem_text_colored('gain', round2(account_detail.equity - seed), '$', '');
-                    document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
-                    HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
+                    // // HELPERS.update_elem_text_colored('gain', round2(account_detail.equity - seed), '$', '');
+                    // document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
+                    // // HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
 
-                    HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
-                    HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
-                    HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
+                    // HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
+                    // HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
+                    // HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
 
-                    HELPERS.update_elem_text_colored('positions-gain', round2(position_gain), '$', '');
-                    HELPERS.update_elem_text_colored('positions-pct', round2(position_gain_pct), '', '%');
-                    HELPERS.update_elem_text_colored('today-gain', round2(today_gain), '$', '');
-                    // HELPERS.update_elem_text_colored('today-pct', round2(today_gain_pct), '', '%'); //* TOP FIELD */
-                    HELPERS.update_elem_text_colored('today-pct-2', round2(today_gain_pct), '', '%');
+                    HELPERS.update_elem_text_colored('positions-gain', round2(positions_gain), '$', '');
+                    HELPERS.update_elem_text_colored('positions-pct', round2(positions_gain_pct), '', '%');
+                    // HELPERS.update_elem_text_colored('today-gain', round2(today_gain), '$', '');
+                    // HELPERS.update_elem_text_colored('today-pct-2', round2(today_gain_pct), '', '%');
                     HELPERS.update_elem_text('invested', spend, '$', '');
-                    // HELPERS.update_elem_text('account-equity', round1(account_detail.equity / 1000), '$', 'K');
                     HELPERS.update_elem_text_colored('account-delta', round1(account_detail.equity - seed), '$', '');
                     HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity / seed * 100) - 100), '', '%');
                     HELPERS.update_elem_text('buying-power', round(account_detail.buying_power), '$', '');
 
-                    //* UPSDAT FIELDS FOR CHANGE CALCULATION */
-                    this.last = position_gain;
-                    this.last_pct = position_gain_pct;
+                    //* UPDATE POSITIONS */
+                    CONFIG.WATCH_LIST.split(',').forEach((s) => {
+                        const found = account_positions.find((v) => v.symbol === s);
+                        if (found) {
+                            HELPERS.update_elem_text_colored(`${s}-gain`, round2(found.unrealized_intraday_pl), '$', '');
+                            HELPERS.update_elem_text_colored(`${s}-pct`, round1(found.unrealized_intraday_plpc * 100), '', '%');
+                            // HELPERS.update_elem_text(`${s}-basis`, round(found.cost_basis), '$', '');
+                        }
+                    })
+
+
+                    //* UPDATE FIELDS FOR CHANGE CALCULATION */
+                    this.last = positions_gain;
+                    this.last_pct = positions_gain_pct;
 
                     //* STOP LOSS & TRAILING PERCENT CHECKS */
                     const pct = account_positions[0].unrealized_plpc;
@@ -662,9 +771,9 @@
                     if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
                         // ACCOUNT.sell();
                     }
-                    this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
-                    const trail_stop_pct = INTERVAL.position_peak_pct * (1 - (CONFIG.TRAIL_PCT));
-                    console.log(`%c${round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
+                    this.positions_peak_pct = positions_gain_pct > +(this.position_peak_pct) ? +(positions_gain_pct) : +(this.positions_peak_pct);
+                    const trail_stop_pct = INTERVAL.positions_peak_pct * (1 - (CONFIG.TRAIL_PCT));
+                    console.log(`%c${round4(INTERVAL.positions_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
                     // console.log(`%c${round2(INTERVAL.position_peak_pct)} | ${round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
                     // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
                     //     ACCOUNT.sell();
@@ -680,10 +789,17 @@
         //* INITIALIZE CLASSES
         const CONFIG = new Configuration();
         const HELPERS = new Helpers();
+        load_chart_cards();
+
+        const CHART_HA_0 = new Chart('chart-ha-0');
         const CHART_HA_1 = new Chart('chart-ha-1');
         const CHART_HA_2 = new Chart('chart-ha-2');
         const CHART_HA_3 = new Chart('chart-ha-3');
         const CHART_HA_4 = new Chart('chart-ha-4');
+        const CHART_HA_5 = new Chart('chart-ha-5');
+        const CHART_HA_6 = new Chart('chart-ha-6');
+        const CHART_HA_7 = new Chart('chart-ha-7');
+        const CHART_HA_8 = new Chart('chart-ha-8');
         const CHART = new Chart('chart');
         const CHART_ZOOM = new Chart('chart-zoom');
         const CHART_1 = new Chart('chart-1');
@@ -701,15 +817,15 @@
         }
 
         //* LOADF SYMBOL LIST */
-        html = '';
-        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort(), 'BTC-USD'].forEach((s) => {
-            const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
-                <i class="fa fa-tag"></i>&nbsp;
-            ${s}</a>
-            `;
-            html += template;
-        })
-        document.getElementById('symbols-list').innerHTML = html;
+        // html = '';
+        // ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort(), 'BTC-USD'].forEach((s) => {
+        //     const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
+        //         <i class="fa fa-tag"></i>&nbsp;
+        //     ${s}</a>
+        //     `;
+        //     html += template;
+        // })
+        // document.getElementById('symbols-list').innerHTML = html;
 
         //* INTERVAL */
         const INTERVAL = new Interval();
