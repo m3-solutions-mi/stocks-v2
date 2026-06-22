@@ -578,7 +578,7 @@ class Chart {
         } else
             if (type === 'mixed') {
                 const hmm_s = 400;
-                const hmm_e = 1030;
+                const hmm_e = 1630;
                 const last_n = 45;
                 const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';

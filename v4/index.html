@@ -720,8 +720,8 @@
                         account_history_14d.push({ e: Date.now(), t: new Date().toLocaleString(), hmm: HELPERS.getHMM(new Date()), net: account_detail.equity })
                     }
                     // _intraday
-                    const positions_gain = account_positions.map((p) => p.unrealized_intraday_pl).reduce((p, c) => p + c);
-                    const positions_gain_pct = account_positions.map((p) => p.unrealized_intraday_plpc).reduce((p, c) => p + c) * 100;
+                    const positions_gain = account_positions.map((p) => +(p.unrealized_intraday_pl)).reduce((p, c) => p + c);
+                    const positions_gain_pct = account_positions.map((p) => +(p.unrealized_intraday_plpc)).reduce((p, c) => p + c) * 100;
                     const spend = round(account_positions.map((p) => p.cost_basis).reduce((p, c) => p + c));
 
                     const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
@@ -756,6 +756,10 @@
                         if (found) {
                             HELPERS.update_elem_text_colored(`${s}-gain`, round2(found.unrealized_intraday_pl), '$', '');
                             HELPERS.update_elem_text_colored(`${s}-pct`, round1(found.unrealized_intraday_plpc * 100), '', '%');
+                            // HELPERS.update_elem_text(`${s}-basis`, round(found.cost_basis), '$', '');
+                        } else {                            
+                            HELPERS.update_elem_text_colored(`${s}-gain`, 0, '$', '');
+                            HELPERS.update_elem_text_colored(`${s}-pct`, 0, '', '%');
                             // HELPERS.update_elem_text(`${s}-basis`, round(found.cost_basis), '$', '');
                         }
                     })
