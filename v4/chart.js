@@ -578,8 +578,8 @@ class Chart {
         } else
             if (type === 'mixed') {
                 const hmm_s = 400;
-                const hmm_e = 1630;
-                const last_n = 45;
+                const hmm_e = 2000;
+                const last_n = 30;
                 const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';
                 series[0].data = ohlc_data
@@ -595,6 +595,7 @@ class Chart {
                     type: 'line',
                     color: colors.teal,
                     data: ohlc_data
+                        .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
                         .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
                         .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
                         .slice(-last_n)
