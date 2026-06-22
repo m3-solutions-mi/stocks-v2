@@ -643,7 +643,7 @@
                     const start_at = new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString();
                     const end_at = new Date().toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
-                    const url = `${CONFIG.API_URL}/${name}/15Min/${start_at}/${end_at}`;
+                    const url = `${CONFIG.API_URL}/${name}/5Min/${start_at}/${end_at}`;
 
                     const resp = await fetch(url, {
                         method: 'GET',

@@ -574,12 +574,13 @@ class Chart {
             // );
         } else
             if (type === 'mixed') {
-                const hmm_s = 900;
-                const hmm_e = 1030;
+                const hmm_s = 830;
+                const hmm_e = 1700;
                 const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';
                 series[0].data = ohlc_data
                     // .slice(-200)
+                    .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
                     .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
                     .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
                     .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
@@ -590,6 +591,7 @@ class Chart {
                     type: 'line',
                     color: colors.teal,
                     data: ohlc_data
+                        .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
                         .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
                         .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
                         .map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } })
@@ -599,7 +601,12 @@ class Chart {
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
+                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
+                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
+                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
+                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 0), null, colors.lightgrey));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
+                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.deeppink));
 
                 this.options_candlestick.stroke.width = [1, 2];
                 this.options_candlestick.yaxis = [

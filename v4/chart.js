@@ -342,7 +342,7 @@ class Chart {
                         },
                     ],
                 },
-                columnWidth: '80%',
+                columnWidth: '90%',
             },
         },
         annotations: {
@@ -579,9 +579,9 @@ class Chart {
             if (type === 'mixed') {
                 const hmm_s = 400;
                 const hmm_e = 2000;
-                const last_n = 30;
+                const last_n = 45;
                 const ohlc_data = calculateHeikinAshi(data);
-                series[0].type = 'bar';
+                series[0].type = 'column';
                 series[0].data = ohlc_data
                     // .slice(-200)
                     .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
@@ -607,6 +607,7 @@ class Chart {
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
+                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.deeppink));
 
                 this.options_candlestick.stroke.width = [1, 2];
                 this.options_candlestick.yaxis = [
