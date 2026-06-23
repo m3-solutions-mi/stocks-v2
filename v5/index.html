@@ -487,7 +487,7 @@
         function load_chart_cards() {
             let html = '';
             // CONFIG.WATCH_LIST
-            `${CONFIG.SYMBOL},MU,KLAC,SOXL,DRAM`
+            `${CONFIG.SYMBOL},MU,KLAC,DRAM,SOXL`
                 .split(',')
                 // .slice(0, 9)
                 .forEach((s, i) => {
@@ -533,7 +533,7 @@
             update_elem_text(id, v, prefix = '$', postfix = 'K') {
                 const elem = document.getElementById(id);
                 elem.innerHTML = `${prefix}&nbsp;${round2(v).toLocaleString()}&nbsp;${postfix}`;
-                // elem.style.color = 'grey';
+                elem.style.color = 'grey';
             }
 
             //* REPLACE ALL */
@@ -691,7 +691,7 @@
                     // console.log(account_positions);
 
                     //* CHARTS */
-                    const ha_symbols = `${CONFIG.SYMBOL},KLAC,SOXL,DRAM,MU`.split(',')
+                    const ha_symbols = `${CONFIG.SYMBOL},MU,KLAC,DRAM,SOXL`.split(',')
                     CHART_HA_1.update(data[ha_symbols[0]], 137, false, 'mixed');
                     CHART_HA_2.update(data[ha_symbols[1]], 137, false, 'mixed');
                     CHART_HA_3.update(data[ha_symbols[2]], 137, false, 'mixed');
