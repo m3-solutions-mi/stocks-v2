@@ -573,8 +573,8 @@ class Chart {
             // }).filter((v) => v.x >= 1000 && v.x <= 1200).map((v) => v.y)
             // );
         } else
-            if (type === 'mixed') {
-                const hmm_s = 830;
+            if (type === 'mixed') {const hmm = HELPERS.getHMM(new Date());
+                const hmm_s = hmm < 900 ? 400 : 800;
                 const hmm_e = 2000;
                 const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';

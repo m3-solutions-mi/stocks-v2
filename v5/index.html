@@ -727,12 +727,13 @@
                         if (position) {
                             HELPERS.update_elem_text_colored(`chart-card-gain-${n}`, round2(position.unrealized_pl), '$', '');
                             HELPERS.update_elem_text_colored(`chart-card-pct-${n}`, round1(position.unrealized_plpc * 100), '', '%');
-                            HELPERS.update_elem_text(`chart-card-seed-${n}`, round1(position.cost_basis), '$', '');
+                            HELPERS.update_elem_text(`chart-card-seed-${n}`, round1(+(position.cost_basis)), '$', '');
+                            HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis)) * 100), '$', '');
                         } else {
                             HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last), '$', '');
                             HELPERS.update_elem_text(`chart-card-pct-${n}`, round1(last / 1000 * 100), '', '%');
+                            HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2(last - last_minus_1), '$', '');
                         }
-                        HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2(last - last_minus_1), '$', '');
                         // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
                         HELPERS.update_elem_text_colored(`chart-card-peak-${n}`, round2(Math.max(...(chart_card_series.map((v) => v.y)))), '$', '');
                     });
@@ -745,7 +746,7 @@
                     // _intraday
                     const position_gain = account_positions[0].unrealized_pl;
                     const position_gain_pct = account_positions[0].unrealized_plpc * 100;
-                    const spend = round(account_positions[0].cost_basis);
+                    const spend = round(+(account_positions[0].cost_basis));
 
                     const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
                     const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
@@ -795,7 +796,12 @@
 
                     // check_positions();
                 }
-                document.getElementById('clock').innerText = dt.toLocaleTimeString().split(' ')[0];
+                const elem = document.getElementById('clock');
+                elem.innerText = dt.toLocaleTimeString().split(' ')[0];
+                if (dt.getSeconds() % 5 === 0) {
+                    elem.style.backgroundColor = 'white';
+                    setTimeout(() => elem.style.backgroundColor = '', 1000);
+                }
             }
         }
     </script>

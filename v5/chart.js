@@ -331,13 +331,13 @@ class Chart {
                 colors: {
                     ranges: [
                         {
-                            from: -100,
+                            from: -500,
                             to: 0,
                             color: '#F15B46',
                         },
                         {
                             from: 0,
-                            to: 100,
+                            to: 500,
                             color: '#04d462',
                         },
                     ],
@@ -456,8 +456,8 @@ class Chart {
                 seriesName: 'Units Sold',
                 alignZero: true,
                 opposite: true,
-                axisTicks: { show: true },
-                axisBorder: { show: true, color: '#00E396' },
+                axisTicks: { show: false },
+                axisBorder: { show: false, color: '#00E396' },
                 labels: { style: { colors: '#00E396' } },
                 title: { text: 'Units (positive only)', style: { color: '#00E396' } },
             },
@@ -574,13 +574,13 @@ class Chart {
             // );
         } else
             if (type === 'mixed') {
-                const hmm_s = 830;
+                const hmm = HELPERS.getHMM(new Date());
+                const hmm_s = hmm < 900 ? 400 : 800;
                 const hmm_e = 2000;
                 const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';
                 series[0].data = ohlc_data
                     // .slice(-200)
-                    .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
                     .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
                     .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
                     .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
