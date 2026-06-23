@@ -498,7 +498,7 @@
                     </div> -->
                     <div id="" class="w3-col s3 w3-border w3-margin-bottom w3-padding" style="height:155px;font-size:15px;">
                         <div id="" class="w3-large">
-                            <b>${s}</b>
+                            <b id="chart-card-symbol-${i}">${s}</b>
                             <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
                             <i id="" class="fa fa-credit-card w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(10000,'${s}')"></i>
                         </div>
@@ -520,6 +520,13 @@
                 const elem = document.getElementById(id);
                 elem.innerHTML = `${prefix}&nbsp;${round2(v).toLocaleString()}&nbsp;${postfix}`;
                 elem.style.color = v > 0 ? '#4CAF50' : (v === 0 ? 'grey' : '#e50000');
+            }
+
+            //* UPDATE TEXT STRING */
+            update_elem_text_string(id, v, prefix = '$', postfix = 'K') {
+                const elem = document.getElementById(id);
+                elem.innerHTML = `${prefix}&nbsp;${v}&nbsp;${postfix}`;
+                // elem.style.color = 'grey';
             }
 
             //* UPDATE TEXT */
@@ -716,6 +723,7 @@
                         const last = chart_card_series[chart_card_series.length - 1].y;
                         const last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
                         const position = account_positions.find((v) => v.symbol === ha_symbols[n]);
+                        HELPERS.update_elem_text_string(`chart-card-symbol-${n}`, ha_symbols[n], '', '');
                         if (position) {
                             HELPERS.update_elem_text_colored(`chart-card-gain-${n}`, round2(position.unrealized_pl), '$', '');
                             HELPERS.update_elem_text_colored(`chart-card-pct-${n}`, round1(position.unrealized_plpc * 100), '', '%');
