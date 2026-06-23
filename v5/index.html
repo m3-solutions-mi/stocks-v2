@@ -614,25 +614,35 @@
             constructor() { }
             // bars = null;
 
+            HA_SYMBOLS = [];
+
             //* GET SYMBOLS */
             async get_symbols() {
-                const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX', 'SNDK', 'DRAM', 'SOXL', 'KLAC', 'SOXL', 'DRAM', 'MU', /*'AMAT', 'ASML', 'KLAC'*/].map((s) => {
+                this.HA_SYMBOLS = [CONFIG.SYMBOL, ...CONFIG.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i).slice(0, 4), 'NQ=F', 'CL=F', '^VIX'];
+
+                // const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX', 'SNDK', 'DRAM', 'SOXL', 'KLAC', 'SOXL', 'DRAM', 'MU', /*'AMAT', 'ASML', 'KLAC'*/].map((s) => {
+                const promises = this.HA_SYMBOLS.map((s) => {
                     return this.get_data(s);
                 });
                 const obj = await Promise.allSettled(promises);
-                return {
-                    [CONFIG.SYMBOL]: obj[0].value,
-                    'FUTURES': obj[1].value,
-                    'OIL': obj[2].value,
-                    'VIX': obj[3].value,
-                    'SNDK': obj[4].value,
-                    'DRAM': obj[5].value,
-                    'SOXL': obj[6].value,
-                    'KLAC': obj[7].value,
-                    'SOXL': obj[8].value,
-                    'DRAM': obj[9].value,
-                    'MU': obj[10].value,
-                };
+                const result = {};
+                obj.forEach((v, i) => {
+                    result[this.HA_SYMBOLS[i]] = v.value;
+                })
+                return result;
+                // return {
+                //     [CONFIG.SYMBOL]: obj[0].value,
+                //     'FUTURES': obj[1].value,
+                //     'OIL': obj[2].value,
+                //     'VIX': obj[3].value,
+                //     'SNDK': obj[4].value,
+                //     'DRAM': obj[5].value,
+                //     'SOXL': obj[6].value,
+                //     'KLAC': obj[7].value,
+                //     // 'SOXL': obj[8].value,
+                //     // 'DRAM': obj[9].value,
+                //     // 'MU': obj[10].value,
+                // };
             }
 
             //* GET DATA */
@@ -692,19 +702,20 @@
                     // console.log(account_positions);
 
                     //* CHARTS */
-                    const ha_symbols = `${CONFIG.SYMBOL},MU,KLAC,DRAM,SOXL`.split(',')
-                    CHART_HA_1.update(data[ha_symbols[0]], 137, false, 'mixed');
-                    CHART_HA_2.update(data[ha_symbols[1]], 137, false, 'mixed');
-                    CHART_HA_3.update(data[ha_symbols[2]], 137, false, 'mixed');
-                    CHART_HA_4.update(data[ha_symbols[3]], 137, false, 'mixed');
-                    CHART_HA_5.update(data[ha_symbols[4]], 137, false, 'mixed');
+                    // const ha_symbols = `${CONFIG.SYMBOL},MU,KLAC,DRAM,SOXL`.split(',')
+                    const ha_symbols = [CONFIG.SYMBOL, ...CONFIG.SYMBOL_LIST.split(',').slice(0, 4)];
+                    CHART_HA_1.update(data[DATA.HA_SYMBOLS[0]], 137, false, 'mixed');
+                    CHART_HA_2.update(data[DATA.HA_SYMBOLS[1]], 137, false, 'mixed');
+                    CHART_HA_3.update(data[DATA.HA_SYMBOLS[2]], 137, false, 'mixed');
+                    CHART_HA_4.update(data[DATA.HA_SYMBOLS[3]], 137, false, 'mixed');
+                    CHART_HA_5.update(data[DATA.HA_SYMBOLS[4]], 137, false, 'mixed');
                     CHART.update(data[CONFIG.SYMBOL], 120);
                     CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
                     // CHART_1.update(data['ASML'], 200);
                     // CHART_2.update(data['KLAC'], 200);
-                    CHART_FUTURES.update(data['FUTURES'], 100);
-                    CHART_OIL.update(data['OIL'], 100, true);
-                    CHART_VIX.update(data['VIX'], 100, true);
+                    CHART_FUTURES.update(data['NQ=F'], 100);
+                    CHART_OIL.update(data['CL=F'], 100, true);
+                    CHART_VIX.update(data['^VIX'], 100, true);
                     CHART_ACCOUNT_HISTORY.update(account_history
                         .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
                         .map((v) => { return { t: v.t, c: v.net } }), 120, true);
