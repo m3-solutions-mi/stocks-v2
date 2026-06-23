@@ -680,6 +680,7 @@
             constructor() { }
             async update(now = false) {
                 const dt = new Date();
+                const hmm = HELPERS.getHMM(new Date());
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
                     const data = await DATA.get_symbols();
                     const account_history = await ACCOUNT.history();
@@ -705,7 +706,7 @@
                     CHART_OIL.update(data['OIL'], 100, true);
                     CHART_VIX.update(data['VIX'], 100, true);
                     CHART_ACCOUNT_HISTORY.update(account_history
-                        .filter((v) => v.hmm >= 925 && v.hmm <= 1605)
+                        .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
                         .map((v) => { return { t: v.t, c: v.net } }), 120, true);
 
                     //* LAST */
@@ -725,8 +726,8 @@
                         const position = account_positions.find((v) => v.symbol === ha_symbols[n]);
                         HELPERS.update_elem_text_string(`chart-card-symbol-${n}`, ha_symbols[n], '', '');
                         if (position) {
-                            HELPERS.update_elem_text_colored(`chart-card-gain-${n}`, round2(position.unrealized_pl), '$', '');
-                            HELPERS.update_elem_text_colored(`chart-card-pct-${n}`, round1(position.unrealized_plpc * 100), '', '%');
+                            HELPERS.update_elem_text_colored(`chart-card-gain-${n}`, round2(+(position.unrealized_pl)), '$', '');
+                            HELPERS.update_elem_text_colored(`chart-card-pct-${n}`, round1(+(position.unrealized_plpc) * 100), '', '%');
                             HELPERS.update_elem_text(`chart-card-seed-${n}`, round1(+(position.cost_basis)), '$', '');
                             HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis)) * 100), '$', '');
                         } else {
@@ -798,10 +799,10 @@
                 }
                 const elem = document.getElementById('clock');
                 elem.innerText = dt.toLocaleTimeString().split(' ')[0];
-                if (dt.getSeconds() % 5 === 0) {
-                    elem.style.backgroundColor = 'white';
-                    setTimeout(() => elem.style.backgroundColor = '', 1000);
-                }
+                // if (dt.getMinutes() % 5 === 0) {
+                //     elem.style.backgroundColor = 'white';
+                //     setTimeout(() => elem.style.backgroundColor = '', 1000);
+                // }
             }
         }
     </script>
