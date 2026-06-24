@@ -462,9 +462,9 @@
             ACCOUNT_URL = localStorage.getItem('m3-stocks-v3-account-url') || '';
             STOP_LOSS = +(localStorage.getItem('m3-stocks-v3-stop-loss')) || 'OFF';
             TRAIL_PCT = +(localStorage.getItem('m3-stocks-v3-trail-pct')) || 'OFF';
-            // UPDATE_AT = [0, 10, 20, 30, 40, 50];
-            UPDATE_AT = [0, 15, 30, 45];
-            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',').slice(0, 4), 'NQ=F', 'CL=F', '^VIX'].filter((v, i, a) => a.indexOf(v) === i);
+            UPDATE_AT = [0, 10, 20, 30, 40, 50];
+            // UPDATE_AT = [0, 15, 30, 45];
+            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',').slice(0, 4)/*, 'NQ=F', 'CL=F', '^VIX'*/].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
             COMPARISON_NUM_DAYS = () => {
@@ -501,8 +501,8 @@
                         <div id="" class="w3-center w3-large">
                             <b id="chart-card-symbol-${i}">${s}</b>
                             <br class="w3-hide-medium w3-hide-large" />
-                            <i id="" class="fa fa-credit-card _w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
-                            <i id="" class="fa fa-credit-card _w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(10000,'${s}')"></i>
+                            <i id="" class="fa fa-credit-card _w3-right w3-text-green w3-margin-left pointer" onclick="ACCOUNT.buy(10000,'${s}')"></i>
+                            <i id="" class="fa fa-credit-card _w3-right w3-text-red w3-margin-right pointer" onclick="ACCOUNT.sell('${s}')"></i>
                         </div>
                         <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right">-</span></b></div>
                         <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
@@ -721,9 +721,9 @@
                     // CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
                     // // CHART_1.update(data['ASML'], 200);
                     // // CHART_2.update(data['KLAC'], 200);
-                    CHART_FUTURES.update(data['NQ=F'], 100);
-                    CHART_OIL.update(data['CL=F'], 100, true);
-                    CHART_VIX.update(data['^VIX'], 100, true);
+                    // CHART_FUTURES.update(data['NQ=F'], 100);
+                    // CHART_OIL.update(data['CL=F'], 100, true);
+                    // CHART_VIX.update(data['^VIX'], 100, true);
                     CHART_ACCOUNT_HISTORY.update(account_history
                         .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
                         .map((v) => { return { t: v.t, c: v.net } }), 120, true);
@@ -748,7 +748,8 @@
                             HELPERS.update_elem_text_colored(`chart-card-gain-${n}`, round2(+(position.unrealized_pl)), '$', '');
                             HELPERS.update_elem_text_colored(`chart-card-pct-${n}`, round1(+(position.unrealized_plpc) * 100), '', '%');
                             HELPERS.update_elem_text(`chart-card-seed-${n}`, round1(+(position.cost_basis)), '$', '');
-                            HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis)) * 100), '$', '');
+                            HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1)), '$', '');
+                            // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
                         } else {
                             HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last), '$', '');
                             HELPERS.update_elem_text(`chart-card-pct-${n}`, round1(last / 1000 * 100), '', '%');
@@ -759,7 +760,7 @@
                     });
                     const account_today_gain = account_detail.equity - account_history_14d[account_history_14d.length - 1].net
                     HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
-                    HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain - 325) / 325 *100), '', '%');
+                    HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / 325 *100), '', '%');
 
 
                     const account_history_last = account_history_14d[account_history_14d.length - 1]
@@ -784,9 +785,9 @@
                     document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
                     // HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
 
-                    HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
-                    HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
-                    HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
+                    // HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
+                    // HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
+                    // HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
 
                     HELPERS.update_elem_text_colored('positions-gain', round2(position_gain), '$', '');
                     HELPERS.update_elem_text_colored('positions-pct', round2(position_gain_pct), '', '%');
