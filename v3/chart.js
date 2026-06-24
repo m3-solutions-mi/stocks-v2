@@ -456,10 +456,10 @@ class Chart {
                 seriesName: 'Units Sold',
                 alignZero: true,
                 opposite: true,
-                axisTicks: { show: true },
-                axisBorder: { show: true, color: '#00E396' },
-                labels: { style: { colors: '#00E396' } },
-                title: { text: 'Units (positive only)', style: { color: '#00E396' } },
+                axisTicks: { show: false },
+                axisBorder: { show: false, color: '#00E396' },
+                // labels: { style: { colors: '#00E396' } },
+                // title: { text: 'Units (positive only)', style: { color: '#00E396' } },
             },
             {
                 seriesName: 'Index',
@@ -518,6 +518,8 @@ class Chart {
 
     //@ SYMBOL CHART - 24H */
     update(data, height = 280, raw = false, type = null) {
+        data[data.length-1].e = data[data.length-2].e + (5*60*1000);
+
         // const raw = INDICATORS.indexOf(name) >= 0;
         let series = [
             { name: 'Close', type: 'area', data: [] },
@@ -622,8 +624,8 @@ class Chart {
                         seriesName: 'Close',
                         alignZero: true,
                         opposite: true,
-                        axisTicks: { show: true },
-                        axisBorder: { show: true, color: '#00E396' },
+                        axisTicks: { show: false },
+                        axisBorder: { show: false, color: '#00E396' },
                         labels: { style: { colors: '#00E396' } },
                         title: { text: 'Units (positive only)', style: { color: '#00E396' } },
                     },
@@ -657,7 +659,8 @@ class Chart {
                 // }).filter((v) => v.x >= 1000 && v.x <= 1200).map((v) => v.y)
                 // );
             } else {
-                series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
+                series[0].data = data
+                    .map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
 
                 // const bands = applyBands(data.map((v)=>{ return { c: v.c }}),4,1);
                 // series[1].data = bands.map((v, i) => { return { x: series[0].data[i].x, y: v.bands_c.sma * shares } });

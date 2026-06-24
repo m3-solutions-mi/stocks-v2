@@ -753,6 +753,7 @@
                         } else {
                             HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last), '$', '');
                             HELPERS.update_elem_text(`chart-card-pct-${n}`, round1(last / 1000 * 100), '', '%');
+                            HELPERS.update_elem_text_string(`chart-card-seed-${n}`, '-', '', '');
                             HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2(last - last_minus_1), '$', '');
                         }
                         // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
@@ -770,7 +771,7 @@
                     // _intraday
                     const position_gain = account_positions[0].unrealized_pl;
                     const position_gain_pct = account_positions[0].unrealized_plpc * 100;
-                    const spend = round(+(account_positions[0].cost_basis));
+                    const spend = round(account_positions.map((v)=>+(v.cost_basis)).reduce((p,c)=>p+c));
 
                     const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
                     const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
