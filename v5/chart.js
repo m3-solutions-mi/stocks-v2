@@ -518,6 +518,8 @@ class Chart {
 
     //@ SYMBOL CHART - 24H */
     update(data, height = 280, raw = false, type = null) {
+        data[data.length-1].e = data[data.length-2].e + (5*60*1000);
+        
         if (data && data.length > 0) {
             // const raw = INDICATORS.indexOf(name) >= 0;
             let series = [
