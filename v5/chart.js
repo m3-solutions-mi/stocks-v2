@@ -525,7 +525,7 @@ class Chart {
 
         if (data && data.length > 0) {
             const hmm = HELPERS.getHMM(new Date());
-            const hmm_s = hmm < 800 ? 400 : (hmm >= 1200 ? 900 : 630);
+            const hmm_s = hmm < 800 ? 400 : (hmm >= 1200 ? 900 : (hmm <= 900 ? 700 : 800));
             const hmm_e = 2000;
             data = data
                 .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(data[data.length - 1].e)))
