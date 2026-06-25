@@ -308,41 +308,6 @@
         round2 = (v) => { return Math.round(v * 100) / 100; };
         round3 = (v) => { return Math.round(v * 1000) / 1000; };
         round4 = (v) => { return Math.round(v * 10000) / 10000; };
-
-        console.chart = function (data, group = '-') {
-            // const cols = data.map((v, i)=>i+1)
-            // console.log(data);
-            cumulativeSumArray(data);
-
-            const max = Math.max(...data);
-            const min = Math.min(...data);
-            // data = data.map((v) => v / max * 100 / 10);
-            data = data.map((v) => round(v / (max + Math.abs(min)) * 100 / 10));
-            let msg = '%c';
-            msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-                .filter((v) => v <= Math.max(...data) + 3)
-                .map((v, i) => data.map((v2, i2) => v2 >= (i + 1) ? ' █' : '  ')
-                    .join(''))
-                .reverse()
-                .join('\n');
-            msg += '%c\n' + '─'.repeat(data.length * 2) + '\n%c';
-            msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-                .filter((v) => (v) <= Math.abs(Math.min(...data) - 3))
-                .map((v, i) => data.map((v2, i2) => v2 < 0 && Math.abs(v2) >= (i + 1) ? ' █' : '  ')
-                    .join(''))
-                .join('\n');
-            console.log(msg, 'color:lime; font-size:8px; line-height:8px;', 'color:white; font-size:8px; line-height:8px;', 'color:red; font-size:8px; line-height:8px;');
-        }
-
-        function cumulativeSumArray(arr = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]) {
-            const cumulativeSumArray = arr.reduce((accumulator, currentValue) => {
-                const lastSum = accumulator.length > 0 ? accumulator[accumulator.length - 1] : 0;
-                accumulator.push(lastSum + currentValue);
-                return accumulator;
-            }, []); // Initialize accumulator as an empty array
-
-            // console.log(cumulativeSumArray);
-        }
     </script>
 
     <!--@ SETTINGS -->
@@ -443,6 +408,41 @@
         class Helpers {
             constructor() { }
 
+
+            chart = function (data, group = '-') {
+                // const cols = data.map((v, i)=>i+1)
+                // console.log(data);
+                cumulativeSumArray(data);
+
+                const max = Math.max(...data);
+                const min = Math.min(...data);
+                // data = data.map((v) => v / max * 100 / 10);
+                data = data.map((v) => round(v / (max + Math.abs(min)) * 100 / 10));
+                let msg = '%c';
+                msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                    .filter((v) => v <= Math.max(...data) + 3)
+                    .map((v, i) => data.map((v2, i2) => v2 >= (i + 1) ? ' █' : '  ')
+                        .join(''))
+                    .reverse()
+                    .join('\n');
+                msg += '%c\n' + '─'.repeat(data.length * 2) + '\n%c';
+                msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                    .filter((v) => (v) <= Math.abs(Math.min(...data) - 3))
+                    .map((v, i) => data.map((v2, i2) => v2 < 0 && Math.abs(v2) >= (i + 1) ? ' █' : '  ')
+                        .join(''))
+                    .join('\n');
+                console.log(msg, 'color:lime; font-size:8px; line-height:8px;', 'color:white; font-size:8px; line-height:8px;', 'color:red; font-size:8px; line-height:8px;');
+            }
+
+            cumulativeSumArray(arr = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]) {
+                const cumulativeSumArray = arr.reduce((accumulator, currentValue) => {
+                    const lastSum = accumulator.length > 0 ? accumulator[accumulator.length - 1] : 0;
+                    accumulator.push(lastSum + currentValue);
+                    return accumulator;
+                }, []); // Initialize accumulator as an empty array
+
+                // console.log(cumulativeSumArray);
+            }
             //* UPDATE TEXT w/ COLOR */
             update_elem_text_colored(id, v, prefix = '$', postfix = 'K') {
                 const elem = document.getElementById(id);
@@ -553,7 +553,7 @@
             }
 
             //* GET DATA */
-            async get_data(name = CONFIG.SYMBOL) {
+            async get_data(name = CONFIG.SYMBOL, timeframe = '5Min') {
                 return new Promise(async (resolve, reject) => {
                     const dow = new Date().getDay();
                     const hmm = HELPERS.getHMM(new Date);
@@ -562,7 +562,7 @@
                     const start_at = new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString();
                     const end_at = new Date().toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
-                    const url = `${CONFIG.API_URL}/${name}/5Min/${start_at}/${end_at}`;
+                    const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
 
                     const resp = await fetch(url, {
                         method: 'GET',
@@ -617,7 +617,7 @@
                     CHART_OIL.update(data['OIL'], 100, true);
                     CHART_VIX.update(data['VIX'], 100, true);
                     CHART_ACCOUNT_HISTORY.update(account_history
-                        .filter((v) => v.hmm >= 925 && v.hmm <= 1605)
+                        // .filter((v) => v.hmm >= 925 && v.hmm <= 1605)
                         .map((v) => { return { t: v.t, c: v.net } }), 120, true);
 
                     //* LAST */

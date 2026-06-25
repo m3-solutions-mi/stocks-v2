@@ -517,10 +517,21 @@ class Chart {
     }
 
     //@ SYMBOL CHART - 24H */
-    update(data, height = 280, raw = false, type = null) {
-        data[data.length-1].e = data[data.length-2].e + (5*60*1000);
-        
+    update(data, height = 280, raw = false, type = null, timeframe = 1) {
+        if (timeframe === 5) {
+            data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
+        }
+
+
         if (data && data.length > 0) {
+            const hmm = HELPERS.getHMM(new Date());
+            const hmm_s = hmm < 900 ? 400 : 800;
+            const hmm_e = 2000;
+            data = data
+                .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(data[data.length - 1].e)))
+                .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
+                .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e);
+
             // const raw = INDICATORS.indexOf(name) >= 0;
             let series = [
                 { name: 'Close', type: 'area', data: [] },
@@ -583,10 +594,10 @@ class Chart {
                     const ohlc_data = calculateHeikinAshi(data);
                     series[0].type = 'bar';
                     series[0].data = ohlc_data
-                        // .slice(-200)
-                        .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                        .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                        .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
+                        // // .slice(-200)
+                        // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
+                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
+                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
                         .map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
                     let cumulative = 0;
                     series.push({
@@ -594,9 +605,9 @@ class Chart {
                         type: 'line',
                         color: colors.teal,
                         data: ohlc_data
-                            .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                            .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                            .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
+                            // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
+                            // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
+                            // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
                             .map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } })
                     })
                     const d3 = series[0].data[series[0].data.length - 1].x;
@@ -662,7 +673,14 @@ class Chart {
                     // }).filter((v) => v.x >= 1000 && v.x <= 1200).map((v) => v.y)
                     // );
                 } else {
-                    series[0].data = data.map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
+                    const hmm = HELPERS.getHMM(new Date());
+                    const hmm_s = hmm < 900 ? 400 : 800;
+                    const hmm_e = 2000;
+                    series[0].data = data
+                        .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(data[data.length - 1].e)))
+                        .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
+                        .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
+                        .map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
 
                     // const bands = applyBands(data.map((v)=>{ return { c: v.c }}),4,1);
                     // series[1].data = bands.map((v, i) => { return { x: series[0].data[i].x, y: v.bands_c.sma * shares } });

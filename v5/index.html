@@ -81,33 +81,33 @@
                 </div>
 
                 <!--@ SETTINGS -->
-                <div id="settings" class="w3-col s12 w3-xlarge w3-panel w3-border w3-white w3-margin-bottom w3-padding"
+                <div id="settings" class="w3-col s12 w3-large w3-panel w3-border w3-white w3-margin-bottom w3-padding"
                     style="display:none;">
                     <div class="w3-row-padding">
                         <div class="w3-col s12 w3-wide"><i class="fa fa-close w3-right w3-margin-top pointer"
                                 onclick="document.getElementById('settings').style.display = 'none'"></i><b>Settings</b>
                         </div>
-                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">
+                        <div class="w3-col s12 m2 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             SYMBOL
                             <input id="symbol" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">
+                        <div class="w3-col s12 m10 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             SYMBOL LIST
                             <input id="symbol-list" style="width:100%;" value="QQQ" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">API KEY
+                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">API KEY
                             <input id="api-key" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">API SECRET
+                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">API SECRET
                             <input id="api-secret" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">API URL
+                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">API URL
                             <input id="api-url" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-text-grey w3-margin-top w3-margin-left">ACCOUNT URL
+                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">ACCOUNT URL
                             <input id="account-url" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-margin-top w3-margin-left">
+                        <div class="w3-col s12 w3-padding w3-margin-top _w3-margin-left">
                             <span class="w3-text-grey">Stop Loss</span>
                             <!-- <i class="fa fa-toggle-off w3-right w3-margin-right"> 0.25</i>
                             <i class="fa fa-toggle-on w3-right w3-margin-right"> 0.5</i>
@@ -126,7 +126,7 @@
                                 <label>0.75 %</label>
                             </div>
                         </div>
-                        <div class="w3-col s12 w3-padding w3-margin-left w3-margin-bottom">
+                        <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
                             <span class="w3-text-grey">Trail Percent</span>
                             <div class="w3-right w3-large">
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="OFF">
@@ -464,7 +464,7 @@
             TRAIL_PCT = +(localStorage.getItem('m3-stocks-v3-trail-pct')) || 'OFF';
             UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
-            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',').slice(0, 4)/*, 'NQ=F', 'CL=F', '^VIX'*/].filter((v, i, a) => a.indexOf(v) === i);
+            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',').slice(0, 4), 'NQ=F', 'CL=F', '^VIX'].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
             COMPARISON_NUM_DAYS = () => {
@@ -497,7 +497,7 @@
                         GAIN: <b style="margin-right:25px;">$ 37.82</b>
                         PCT: <b style="margin-right:25px;">3.7 %</b>
                     </div> -->
-                    <div id="" class="w3-col s4 w3-border w3-margin-bottom w3-padding" style="height:155px;font-size:15px;">
+                    <div id="" class="w3-col s4 w3-border w3-margin-bottom w3-padding" style="height:154px;font-size:15px;">
                         <div id="" class="w3-center w3-large">
                             <b id="chart-card-symbol-${i}">${s}</b>
                             <br class="w3-hide-medium w3-hide-large" />
@@ -510,7 +510,10 @@
                         <div class="w3-text-grey w3-hide-small">PEAK<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
                         <div class="w3-text-grey w3-hide-small">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
                     </div>
-                    <div id="chart-ha-${i}" class="w3-col s8 w3-border w3-margin-bottom w3-padding" style="height:155px;"></div>`;
+                    <div class="w3-col s8">
+                        <div id="chart-ha-${i}" class="w3-col s12 w3-border _w3-margin-bottom w3-padding" style="height:77px;"></div>
+                        <div id="chart-ha-2-${i}" class="w3-col s12 w3-border w3-margin-bottom w3-padding" style="height:77px;"></div>
+                    </div>`;
                     });
                 document.getElementById('output-charts').innerHTML = html;
             }
@@ -612,6 +615,45 @@
             sleep(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
+            /**
+             * Reduces 1Min OHLCV data into 5Min OHLCV data
+             * @param {Array} data - Array of 1Min candle objects { time, open, high, low, close, volume }
+             * @returns {Array} - Array of 5Min candle objects
+             */
+            reduce1MinTo5Min(data) {
+                const aggregated = new Map();
+
+                for (const candle of data) {
+                    // Round down the timestamp to the nearest 5-minute interval (in milliseconds)
+                    const coeff = 5 * 60 * 1000;
+                    const bucketTime = Math.floor(candle.e / coeff) * coeff;
+
+                    if (!aggregated.has(bucketTime)) {
+                        // Initialize a new 5Min candle
+                        const d = new Date(bucketTime);
+                        aggregated.set(bucketTime, {
+                            e: bucketTime,
+                            t: d.toISOString(),
+                            tl: d.toLocaleString(),
+                            hmm: HELPERS.getHMM(d),
+                            o: candle.o,
+                            h: candle.h,
+                            l: candle.l,
+                            c: candle.c,
+                            v: candle.v || 0
+                        });
+                    } else {
+                        // Update existing 5Min candle
+                        const current = aggregated.get(bucketTime);
+                        current.h = Math.max(current.h, candle.h);
+                        current.l = Math.min(current.l, candle.l);
+                        current.c = candle.c; // Always update with the latest in the 5M block
+                        current.v += (candle.v || 0);
+                    }
+                }
+
+                return Array.from(aggregated.values());
+            }
 
         };
     </script>
@@ -623,10 +665,10 @@
             // bars = null;
 
             //* GET SYMBOLS */
-            async get_symbols() {
+            async get_symbols(timeframe = 5) {
                 // const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX', 'SNDK', 'DRAM', 'SOXL', 'KLAC', 'SOXL', 'DRAM', 'MU', /*'AMAT', 'ASML', 'KLAC'*/].map((s) => {
                 const promises = CONFIG.HA_SYMBOLS.map((s) => {
-                    return this.get_data(s);
+                    return this.get_data(s, timeframe);
                 });
                 const obj = await Promise.allSettled(promises);
                 const result = {};
@@ -650,7 +692,7 @@
             }
 
             //* GET DATA */
-            async get_data(name = CONFIG.SYMBOL) {
+            async get_data(name = CONFIG.SYMBOL, timeframe = 5) {
                 return new Promise(async (resolve, reject) => {
                     const dow = new Date().getDay();
                     const hmm = HELPERS.getHMM(new Date);
@@ -660,7 +702,7 @@
                     const end_at = new Date().toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
-                    const url = `${CONFIG.API_URL}/${name}/5Min/${start_at}/${end_at}`;
+                    const url = `${CONFIG.API_URL}/${name}/${timeframe}Min/${start_at}/${end_at}`;
                     // const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=5Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
 
 
@@ -691,6 +733,7 @@
         //     }
         // }
         class Interval {
+            'use striict'
             position_peak_pct = -100;
             last = 0;
             last_pct = 0;
@@ -699,7 +742,8 @@
                 const dt = new Date();
                 const hmm = HELPERS.getHMM(new Date());
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
-                    const data = await DATA.get_symbols();
+                    const data = await DATA.get_symbols(1);
+                    // const data_m = await DATA.get_symbols(1);
                     const account_history = await ACCOUNT.history();
                     const account_history_14d = await ACCOUNT.history('14D', '1D');
                     const account_detail = await ACCOUNT.detail();
@@ -712,21 +756,29 @@
                     // const ha_symbols = `${CONFIG.SYMBOL},MU,KLAC,DRAM,SOXL`.split(',')
                     // const ha_symbols = [CONFIG.SYMBOL, ...CONFIG.SYMBOL_LIST.split(',').slice(0, 4)];
                     const ha_symbols = CONFIG.HA_SYMBOLS;
-                    CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 137, false, 'mixed');
-                    CHART_HA_2.update(data[CONFIG.HA_SYMBOLS[1]], 137, false, 'mixed');
-                    CHART_HA_3.update(data[CONFIG.HA_SYMBOLS[2]], 137, false, 'mixed');
-                    CHART_HA_4.update(data[CONFIG.HA_SYMBOLS[3]], 137, false, 'mixed');
-                    CHART_HA_5.update(data[CONFIG.HA_SYMBOLS[4]], 137, false, 'mixed');
+                    // CHART_HA_1.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]), 70, false, 'mixed', 5);
+                    // console.log(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]));
+                    CHART_HA_1.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]), 70, false, 'mixed', 5);
+                    CHART_HA_2.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[1]]), 70, false, 'mixed', 5);
+                    CHART_HA_3.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[2]]), 70, false, 'mixed', 5);
+                    CHART_HA_4.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[3]]), 70, false, 'mixed', 5);
+                    CHART_HA_5.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[4]]), 70, false, 'mixed', 5);
+
+                    CHART_HA_2_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false);
+                    CHART_HA_2_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false);
+                    CHART_HA_2_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false);
+                    CHART_HA_2_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false);
+                    CHART_HA_2_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false);
                     // CHART.update(data[CONFIG.SYMBOL], 120);
                     // CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
                     // // CHART_1.update(data['ASML'], 200);
                     // // CHART_2.update(data['KLAC'], 200);
-                    // CHART_FUTURES.update(data['NQ=F'], 100);
-                    // CHART_OIL.update(data['CL=F'], 100, true);
-                    // CHART_VIX.update(data['^VIX'], 100, true);
+                    CHART_FUTURES.update(data['NQ=F'], 100);
+                    CHART_OIL.update(data['CL=F'], 100, true);
+                    CHART_VIX.update(data['^VIX'], 100, true);
                     CHART_ACCOUNT_HISTORY.update(account_history
-                        .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
-                        .map((v) => { return { t: v.t, c: v.net } }), 120, true);
+                        // .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
+                        .map((v) => { return { e: new Date(v.t).getTime(), t: v.t, c: v.net } }), 120, true);
 
                     //* LAST */
                     // const values = CHART.options.series[0].data.map((v)=>v.y);
@@ -761,7 +813,7 @@
                     });
                     const account_today_gain = account_detail.equity - account_history_14d[account_history_14d.length - 1].net
                     HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
-                    HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / 325 *100), '', '%');
+                    HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / 325 * 100), '', '%');
 
 
                     const account_history_last = account_history_14d[account_history_14d.length - 1]
@@ -771,7 +823,7 @@
                     // _intraday
                     const position_gain = account_positions[0].unrealized_pl;
                     const position_gain_pct = account_positions[0].unrealized_plpc * 100;
-                    const spend = round(account_positions.map((v)=>+(v.cost_basis)).reduce((p,c)=>p+c));
+                    const spend = round(account_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c));
 
                     const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
                     const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
@@ -812,7 +864,7 @@
                         // ACCOUNT.sell();
                     }
                     this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
-                    const trail_stop_pct = INTERVAL.position_peak_pct * (1 - (CONFIG.TRAIL_PCT));
+                    const trail_stop_pct = INTERVAL.position_peak_pct * (1 + (CONFIG.TRAIL_PCT));
                     console.log(`%c${round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
                     // console.log(`%c${round2(INTERVAL.position_peak_pct)} | ${round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
                     // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
@@ -844,6 +896,11 @@
         const CHART_HA_3 = new Chart('chart-ha-2');
         const CHART_HA_4 = new Chart('chart-ha-3');
         const CHART_HA_5 = new Chart('chart-ha-4');
+        const CHART_HA_2_1 = new Chart('chart-ha-2-0');
+        const CHART_HA_2_2 = new Chart('chart-ha-2-1');
+        const CHART_HA_2_3 = new Chart('chart-ha-2-2');
+        const CHART_HA_2_4 = new Chart('chart-ha-2-3');
+        const CHART_HA_2_5 = new Chart('chart-ha-2-4');
         const CHART = new Chart('chart');
         const CHART_ZOOM = new Chart('chart-zoom');
         const CHART_1 = new Chart('chart-1');
@@ -858,7 +915,7 @@
             document.getElementById('table').classList.replace('w3-large', 'w3-xlarge');
         }
 
-        //* LOADF SYMBOL LIST */
+        //* LOAD SYMBOL LIST */
         html = '';
         ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort(), 'BTC-USD'].forEach((s) => {
             const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
