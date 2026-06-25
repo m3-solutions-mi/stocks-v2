@@ -525,7 +525,7 @@ class Chart {
 
         if (data && data.length > 0) {
             const hmm = HELPERS.getHMM(new Date());
-            const hmm_s = hmm < 900 ? 400 : 800;
+            const hmm_s = hmm < 800 ? 400 : (hmm >= 1200 ? 900 : 700);
             const hmm_e = 2000;
             data = data
                 .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(data[data.length - 1].e)))
@@ -644,8 +644,8 @@ class Chart {
                             title: { text: 'Units (positive only)', style: { color: '#00E396' } },
                         },
                     ];
-                    // this.options_candlestick.yaxis[0].min = -10;
-                    // this.options_candlestick.yaxis[1].min = -10;
+                    // this.options_candlestick.yaxis[0].min = -30;
+                    // this.options_candlestick.yaxis[1].min = -70;
 
                     // this.options_candlestick.annotations.points = []
                     // let count = 0;
