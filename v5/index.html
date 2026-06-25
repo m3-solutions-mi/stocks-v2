@@ -520,7 +520,7 @@
 
                             <br class="w3-hide-medium w3-hide-large" />
                             <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
-                            <i id="" class="fa fa-credit-card w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(10000,'${s}')"></i>
+                            <i id="" class="fa fa-credit-card w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(7500,'${s}')"></i>
                         </div>
                         <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right">-</span></b></div>
                         <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
@@ -760,8 +760,8 @@
                 const dt = new Date();
                 const hmm = HELPERS.getHMM(new Date());
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
-                    const data = await DATA.get_symbols(1);
-                    // const data_m = await DATA.get_symbols(1);
+                    const data = await DATA.get_symbols(5);
+                    const data_m = await DATA.get_symbols(1);
                     const account_history = await ACCOUNT.history();
                     const account_history_14d = await ACCOUNT.history('14D', '1D');
                     const account_detail = await ACCOUNT.detail();
@@ -776,11 +776,17 @@
                     const ha_symbols = CONFIG.HA_SYMBOLS;
                     // CHART_HA_1.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]), 70, false, 'mixed', 5);
                     // console.log(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]));
-                    CHART_HA_1.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]), 70, false, 'mixed', 5);
-                    CHART_HA_2.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[1]]), 70, false, 'mixed', 5);
-                    CHART_HA_3.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[2]]), 70, false, 'mixed', 5);
-                    CHART_HA_4.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[3]]), 70, false, 'mixed', 5);
-                    CHART_HA_5.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[4]]), 70, false, 'mixed', 5);
+
+                    // CHART_HA_1.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]), 70, false, 'mixed', 5);
+                    // CHART_HA_2.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[1]]), 70, false, 'mixed', 5);
+                    // CHART_HA_3.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[2]]), 70, false, 'mixed', 5);
+                    // CHART_HA_4.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[3]]), 70, false, 'mixed', 5);
+                    // CHART_HA_5.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[4]]), 70, false, 'mixed', 5);
+                    CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false, 'mixed', 5);
+                    CHART_HA_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false, 'mixed', 5);
+                    CHART_HA_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false, 'mixed', 5);
+                    CHART_HA_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false, 'mixed', 5);
+                    CHART_HA_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false, 'mixed', 5);
 
                     CHART_HA_2_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false);
                     CHART_HA_2_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false);
