@@ -171,8 +171,9 @@
                     <span class="w3-right"><b><span id="invested" class="w3-wide w3-text-blue">-</span></b></span>
                     <b><span id="account-today-gain" class="">-</span> | <span id="account-today-pct"
                             class="">-</span></b>
-                    &nbsp;|&nbsp;<b><span id="account-delta" class="">-</span></b>
-                    &nbsp;|&nbsp;<b><span id="account-pct" class="w3-wide">-</span></b>&nbsp;|&nbsp;&nbsp;
+                    <!-- <span class="w3-hide">&nbsp;|&nbsp;<b><span id="account-delta" class="">-</span></b></span>
+                    <span class="w3-hide">&nbsp;|&nbsp;<b><span id="account-pct" class="">-</span></b> -->
+                    &nbsp;|&nbsp;&nbsp;
                 </span>
                 <div class="w3-dropdown-hover w3-white w3-wide">
                     <div class="w3-xlarge" _style="min-width:350px;">
@@ -498,11 +499,28 @@
                         PCT: <b style="margin-right:25px;">3.7 %</b>
                     </div> -->
                     <div id="" class="w3-col s4 w3-border w3-margin-bottom w3-padding" style="height:154px;font-size:15px;">
-                        <div id="" class="w3-center w3-large">
+                        <div id="" class="w3-large">
                             <b id="chart-card-symbol-${i}">${s}</b>
+                            <!-- SYMBOL SELECTION -->
+                            <div class="w3-dropdown-hover w3-white w3-wide">
+                                <div class="w3-xlarge" _style="min-width:350px;">
+                                    <div><span id="symbol-name-${i}" class="">-</span></span>&nbsp;&nbsp;<span
+                                            class="w3-right w3-text-grey">▼</span></div>
+                                    <div class="w3-right w3-text-green w3-dropdown-content w3-bar-block w3-card w3-large"
+                                        style="width:100%;min-width:450px;">
+                                        <span id="symbols-list-${i}"></span>
+                                        
+                                        <a onclick="select_symbol('QQQ')" class="w3-padding w3-bar-item w3-button"><i
+                                            class="fa fa-tag"></i> QQQ</a>
+                                        <a onclick="select_symbol('APH')" class="w3-padding w3-bar-item w3-button"><i
+                                            class="fa fa-tag"></i> APH</a>
+                                    </div>
+                                </div>
+                            </div>
+
                             <br class="w3-hide-medium w3-hide-large" />
-                            <i id="" class="fa fa-credit-card _w3-right w3-text-green w3-margin-left pointer" onclick="ACCOUNT.buy(10000,'${s}')"></i>
-                            <i id="" class="fa fa-credit-card _w3-right w3-text-red w3-margin-right pointer" onclick="ACCOUNT.sell('${s}')"></i>
+                            <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
+                            <i id="" class="fa fa-credit-card w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(10000,'${s}')"></i>
                         </div>
                         <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right">-</span></b></div>
                         <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
@@ -917,7 +935,7 @@
 
         //* LOAD SYMBOL LIST */
         html = '';
-        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort(), 'BTC-USD'].forEach((s) => {
+        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').filter((v,i,a)=>a.indexOf(v) === i).sort(), 'BTC-USD'].forEach((s) => {
             const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
                 <i class="fa fa-tag"></i>&nbsp;
             ${s}</a>
