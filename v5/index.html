@@ -809,7 +809,8 @@
 
                     //* CHART CARDS */
                     [0, 1, 2, 3, 4].forEach((n) => {
-                        const chart_card_series = eval(`CHART_HA_${n + 1}`).options_candlestick.series[1].data;
+                        // const chart_card_series = eval(`CHART_HA_${n + 1}`).options_candlestick.series[1].data;
+                        const chart_card_series = eval(`CHART_HA_2_${n + 1}`).options.series[0].data;
                         const last = chart_card_series[chart_card_series.length - 1].y;
                         const last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
                         const position = account_positions.find((v) => v.symbol === ha_symbols[n]);
@@ -821,13 +822,13 @@
                             HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1)), '$', '');
                             // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
                         } else {
-                            HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last), '$', '');
-                            HELPERS.update_elem_text(`chart-card-pct-${n}`, round1(last / 1000 * 100), '', '%');
+                            HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last-1000), '$', '');
+                            HELPERS.update_elem_text(`chart-card-pct-${n}`, round1((last-1000) / 1000 * 100), '', '%');
                             HELPERS.update_elem_text_string(`chart-card-seed-${n}`, '-', '', '');
                             HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2(last - last_minus_1), '$', '');
                         }
                         // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
-                        HELPERS.update_elem_text_colored(`chart-card-peak-${n}`, round2(Math.max(...(chart_card_series.map((v) => v.y)))), '$', '');
+                        HELPERS.update_elem_text_colored(`chart-card-peak-${n}`, round2(Math.max(...(chart_card_series.map((v) => v.y-1000)))), '$', '');
                     });
                     const account_today_gain = account_detail.equity - account_history_14d[account_history_14d.length - 1].net
                     HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
