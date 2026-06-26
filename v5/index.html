@@ -782,17 +782,23 @@
                     // CHART_HA_3.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[2]]), 70, false, 'mixed', 5);
                     // CHART_HA_4.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[3]]), 70, false, 'mixed', 5);
                     // CHART_HA_5.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[4]]), 70, false, 'mixed', 5);
-                    CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false, 'mixed', 5);
-                    CHART_HA_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false, 'mixed', 5);
-                    CHART_HA_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false, 'mixed', 5);
-                    CHART_HA_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false, 'mixed', 5);
-                    CHART_HA_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false, 'mixed', 5);
+                    [0, 1, 2, 3, 4].forEach((i) => {
+                        const s = CONFIG.HA_SYMBOLS[i];
+                        eval(`CHART_HA_${i + 1}`).update(s, data[s], 70, false, 'mixed', 5);
+                        eval(`CHART_HA_2_${i + 1}`).update(s, data_m[s], 70, false);
+                    })
+                    // CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false, 'mixed', 5);
+                    // CHART_HA_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false, 'mixed', 5);
+                    // CHART_HA_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false, 'mixed', 5);
+                    // CHART_HA_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false, 'mixed', 5);
+                    // CHART_HA_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false, 'mixed', 5);
 
-                    CHART_HA_2_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false);
-                    CHART_HA_2_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false);
-                    CHART_HA_2_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false);
-                    CHART_HA_2_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false);
-                    CHART_HA_2_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false);
+                    // CHART_HA_2_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false);
+                    // CHART_HA_2_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false);
+                    // CHART_HA_2_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false);
+                    // CHART_HA_2_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false);
+                    // CHART_HA_2_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false);
+
                     // CHART.update(data[CONFIG.SYMBOL], 120);
                     // CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
                     // // CHART_1.update(data['ASML'], 200);
@@ -828,13 +834,13 @@
                             HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1)), '$', '');
                             // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
                         } else {
-                            HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last-1000), '$', '');
-                            HELPERS.update_elem_text(`chart-card-pct-${n}`, round1((last-1000) / 1000 * 100), '', '%');
+                            HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last - 1000), '$', '');
+                            HELPERS.update_elem_text(`chart-card-pct-${n}`, round1((last - 1000) / 1000 * 100), '', '%');
                             HELPERS.update_elem_text_string(`chart-card-seed-${n}`, '-', '', '');
                             HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2(last - last_minus_1), '$', '');
                         }
                         // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
-                        HELPERS.update_elem_text_colored(`chart-card-peak-${n}`, round2(Math.max(...(chart_card_series.map((v) => v.y-1000)))), '$', '');
+                        HELPERS.update_elem_text_colored(`chart-card-peak-${n}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
                     });
                     const account_today_gain = account_detail.equity - account_history_14d[account_history_14d.length - 1].net
                     HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
@@ -942,7 +948,7 @@
 
         //* LOAD SYMBOL LIST */
         html = '';
-        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').filter((v,i,a)=>a.indexOf(v) === i).sort(), 'BTC-USD'].forEach((s) => {
+        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i).sort(), 'BTC-USD'].forEach((s) => {
             const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
                 <i class="fa fa-tag"></i>&nbsp;
             ${s}</a>
