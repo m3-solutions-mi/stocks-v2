@@ -535,7 +535,7 @@ class Chart {
                 ? new Date(yesterday).setHours(19, 30)
                 : (
                     hmm >= 1200
-                        ? new Date(today).setHours(900)
+                        ? new Date(today).setHours(9,0)
                         : (hmm <= 900
                             ? new Date(today).setHours(7, 0)
                             : new Date(today).setHours(8, 0)
