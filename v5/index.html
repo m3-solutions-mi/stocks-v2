@@ -468,13 +468,14 @@
             HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',').slice(0, 4), 'NQ=F', 'CL=F', '^VIX'].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
-            COMPARISON_NUM_DAYS = () => {
+            COMPARISON_NUM_DAYS = (symbol = null) => {
+                const is_crypto = symbol ? symbol.indexOf('-USD') > 0 : false;
                 const dow = new Date().getDay();
                 const hmm = HELPERS.getHMM(new Date());
                 const mo = market_open();
                 const lmo = last_market_open();
                 const now = HELPERS.getYMD(new Date());
-                const diff = Math.abs(round2((new Date(lmo + 'T04:00:00') - new Date(now)) / 24 / 60 / 60 / 1000));
+                const diff = Math.abs(round2((new Date(lmo + 'T04:00:00').getTime() - new Date(now).getTime()) / 24 / 60 / 60 / 1000));
                 // console.log(
                 //     `%c${last_market_open()} %c | %c${mo} | ${lmo} | ${now} | ${diff}`
                 //     , 'color:orange'
@@ -482,7 +483,7 @@
                 // );
 
                 // console.log(new Date(HELPERS.getYMD(new Date())).getTime() - new Date(last_market_open()).getTime() / 60 / 60 / 1000);
-                return diff;
+                return /*is_crypto ? 2 :*/ diff;
                 // return dow === 0 ? 3 : (dow === 6 ? 1.25 : (hmm <= 900 ? 1 : (hmm < 1600 ? 4 / 24 : 6.5 / 24)));
             }
 
@@ -500,7 +501,7 @@
                     </div> -->
                     <div id="" class="w3-col s4 w3-border w3-margin-bottom w3-padding" style="height:154px;font-size:15px;">
                         <div id="" class="w3-large">
-                            <b id="chart-card-symbol-${i}">${s}</b>
+                            <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
                             <!-- SYMBOL SELECTION -->
                             <!--<div class="w3-dropdown-hover w3-white w3-wide">
                                 <div class="w3-xlarge" _style="min-width:350px;">
@@ -716,7 +717,10 @@
                     const hmm = HELPERS.getHMM(new Date);
                     // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
                     // const start_at = new Date(Date.now() - ((hmm > 1200 ? 1.25 : 0.5) * 24 * 60 * 60 * 1000)).toISOString();
-                    const start_at = new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString();
+                    // const start_at = new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString();
+                    const start_at = name.indexOf('-USD') < 0 
+                        ? new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString()
+                        : new Date(Date.now() -  (12 * 60 * 60 * 1000)).toISOString();
                     const end_at = new Date().toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
@@ -803,9 +807,9 @@
                     // CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
                     // // CHART_1.update(data['ASML'], 200);
                     // // CHART_2.update(data['KLAC'], 200);
-                    CHART_FUTURES.update(data['NQ=F'], 100);
-                    CHART_OIL.update(data['CL=F'], 100, true);
-                    CHART_VIX.update(data['^VIX'], 100, true);
+                    // CHART_FUTURES.update(data['NQ=F'], 100);
+                    // CHART_OIL.update(data['CL=F'], 100, true);
+                    // CHART_VIX.update(data['^VIX'], 100, true);
                     CHART_ACCOUNT_HISTORY.update(account_history
                         // .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
                         .map((v) => { return { e: new Date(v.t).getTime(), t: v.t, c: v.net } }), 120, true);
@@ -948,7 +952,7 @@
 
         //* LOAD SYMBOL LIST */
         html = '';
-        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i).sort(), 'BTC-USD'].forEach((s) => {
+        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i).sort(), ...'BTC-USD,ETH-USD'.split(',')].forEach((s) => {
             const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
                 <i class="fa fa-tag"></i>&nbsp;
             ${s}</a>

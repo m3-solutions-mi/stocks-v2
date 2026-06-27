@@ -337,12 +337,17 @@ class Chart {
                         },
                         {
                             from: 0,
+                            to: 1.5,
+                            color: '#FF9800',
+                        },
+                        {
+                            from: 1.5,
                             to: 500,
                             color: '#04d462',
                         },
                     ],
                 },
-                columnWidth: '80%',
+                columnWidth: '130%',
             },
         },
         annotations: {
@@ -518,8 +523,11 @@ class Chart {
 
     //@ SYMBOL CHART - 24H */
     update(symbol, data, height = 280, raw = false, type = null, timeframe = 1) {
+        const is_crypto = symbol.indexOf('-USD') < 0;
         if (timeframe === 5) {
             data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
+        } else if (timeframe === 15) {
+            data[data.length - 1].e = data[data.length - 2].e + (15 * 60 * 1000);
         }
 
 
@@ -531,20 +539,25 @@ class Chart {
             const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(19, 50)));
             // console.log(symbol, last_eod.c, round3(1000 / last_eod.c), round2(last_eod.c * (1000 / last_eod.c)));
 
-            const s = hmm < 800
-                ? new Date(yesterday).setHours(19, 30)
-                : (
-                    hmm >= 1200
-                        ? new Date(today).setHours(9,0)
-                        : (hmm <= 900
-                            ? new Date(today).setHours(7, 0)
-                            : new Date(today).setHours(8, 0)
-                        )
-                );
-            const e = new Date(today).setHours(20, 0);
+            let s = yesterday;
+            if (is_crypto) {
+                const s = hmm < 800
+                    ? new Date(yesterday).setHours(19, 30)
+                    : (
+                        hmm >= 1200
+                            ? new Date(today).setHours(9, 0)
+                            : (hmm <= 900
+                                ? new Date(today).setHours(7, 0)
+                                : new Date(today).setHours(8, 0)
+                            )
+                    );
+            } else {
+                s = new Date(yesterday).setHours(0, 0);
+            }
+            const e = new Date(today).setHours(23, 59);
             data = data
                 .filter((v) => v.e >= s)
-                .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
 
             // const hmm_s = hmm < 900 ? 400 : (hmm >= 1200 ? 900 : (hmm <= 900 ? 700 : 800));
             // const hmm_e = 2000;
@@ -715,9 +728,9 @@ class Chart {
                 // add_shade(new Date(d3).setHours(9, 30), 0.1);
                 // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.gray));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.teal));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.teal));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
@@ -725,9 +738,21 @@ class Chart {
                 // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 30), null, colors.lightgrey));
                 // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 30), null, colors.lightgrey));
                 // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.teal));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.deeppink));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(20, 0), null, colors.lightgrey));
 
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(1, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 0), null, colors.teal));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(3, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(5, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(6, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(7, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(8, 0), null, colors.lightgrey));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 0), null, colors.lightgrey));
+                
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey));
 
@@ -749,7 +774,7 @@ class Chart {
                 this._render();
             }
         } else {
-            console.log('NO DATA');
+            // console.log('NO DATA');
         }
     }
 }
