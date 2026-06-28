@@ -548,8 +548,8 @@ class Chart {
             const last_eod = data.find((v) => v.e >= (new Date(today).setHours(2, 10)));
 
             //* FILTERED DATA */
-            // const s = Date.now() - (4 * 60 * 60 * 1000);
-            const s = new Date(today).setHours(2, 0);
+            const s = Date.now() - (3 * 60 * 60 * 1000);
+            // const s = new Date(today).setHours(2, 0);
             const e = new Date(today).setHours(23, 59);
             data = data
                 .filter((v) => v.e >= s)
