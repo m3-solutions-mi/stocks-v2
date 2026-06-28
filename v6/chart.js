@@ -332,18 +332,23 @@ class Chart {
                     ranges: [
                         {
                             from: -500,
+                            to: -1.5,
+                            color: '#d80000',
+                        },
+                        {
+                            from: -1.5,
                             to: 0,
-                            color: '#F15B46',
+                            color: '#e46d5d',
                         },
                         {
                             from: 0,
                             to: 1.5,
-                            color: '#FF9800',
+                            color: '#68d69a',
                         },
                         {
                             from: 1.5,
                             to: 500,
-                            color: '#04d462',
+                            color: '#008f40',
                         },
                     ],
                 },
@@ -539,21 +544,22 @@ class Chart {
             const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(19, 50)));
             // console.log(symbol, last_eod.c, round3(1000 / last_eod.c), round2(last_eod.c * (1000 / last_eod.c)));
 
-            let s = yesterday;
-            if (is_crypto) {
-                const s = hmm < 800
-                    ? new Date(yesterday).setHours(19, 30)
-                    : (
-                        hmm >= 1200
-                            ? new Date(today).setHours(9, 0)
-                            : (hmm <= 900
-                                ? new Date(today).setHours(7, 0)
-                                : new Date(today).setHours(8, 0)
-                            )
-                    );
-            } else {
-                s = new Date(yesterday).setHours(0, 0);
-            }
+            // let s = yesterday;
+            // if (!is_crypto) {
+            //     const s = hmm < 800
+            //         ? new Date(yesterday).setHours(19, 30)
+            //         : (
+            //             hmm >= 1200
+            //                 ? new Date(today).setHours(9, 0)
+            //                 : (hmm <= 900
+            //                     ? new Date(today).setHours(7, 0)
+            //                     : new Date(today).setHours(8, 0)
+            //                 )
+            //         );
+            // } else {
+            //     s = new Date(yesterday).setHours(0, 0);
+            // }
+            const s = Date.now() - (4*60*60*1000);
             const e = new Date(today).setHours(23, 59);
             data = data
                 .filter((v) => v.e >= s)
