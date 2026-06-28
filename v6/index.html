@@ -499,8 +499,8 @@
                     </div> -->
 
                     <div id="" class="w3-col s4 w3-border w3-margin-bottom w3-padding" style="height:154px;font-size:15px;">
-                        <div id="" class="${IS_SMALL ? 'w3-medium' : 'w3-large'}">
-                            <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
+                        <div id="" class="${IS_SMALL ? 'w3-center w3-medium' : 'w3-large'}">
+                            <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${IS_SMALL ? s.replace('-USD','') : s}</b>
                             
                             <!-- SYMBOL SELECTION -->
                             <!--<div class="w3-dropdown-hover w3-white w3-wide">
@@ -519,16 +519,16 @@
                                 </div>
                             </div>-->
 
-                            <span class="${IS_SMALL ? '' : ''}">
-                                <br class="w3-hide-medium w3-hide-large" />
+                            <span class="${IS_SMALL ? 'w3-col s12' : ''}">
                                 <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
                                 <i id="" class="fa fa-credit-card w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(7500,'${s}')"></i>
+                                <br class="w3-hide-medium w3-hide-large" />
                             </span>
                         </div>
                         <span class="${IS_SMALL ? 'w3-small' : ''}">
-                            <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">${IS_SMALL ? 'G' : 'GAIN'}<b><span id="chart-card-gain-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">${IS_SMALL ? 'P' : 'PCT'}<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">${IS_SMALL ? 'C' : 'CHG'}<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
                             <div class="w3-text-grey w3-hide-small">PEAK<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
                             <div class="w3-text-grey w3-hide-small">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
                         </span>
@@ -838,7 +838,7 @@
                         const last = chart_card_series[chart_card_series.length - 1].y;
                         const last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
                         const position = account_positions.find((v) => v.symbol === ha_symbols[n]);
-                        HELPERS.update_elem_text_string(`chart-card-symbol-${n}`, ha_symbols[n], '', '');
+                        // HELPERS.update_elem_text_string(`chart-card-symbol-${n}`, ha_symbols[n], '', '');
                         if (position) {
                             HELPERS.update_elem_text_colored(`chart-card-gain-${n}`, round2(+(position.unrealized_pl)), '$', '');
                             HELPERS.update_elem_text_colored(`chart-card-pct-${n}`, round1(+(position.unrealized_plpc) * 100), '', '%');
