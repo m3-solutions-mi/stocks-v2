@@ -352,7 +352,7 @@ class Chart {
                         },
                     ],
                 },
-                columnWidth: '130%',
+                _columnWidth: '130%',
             },
         },
         annotations: {
@@ -535,44 +535,29 @@ class Chart {
             data[data.length - 1].e = data[data.length - 2].e + (15 * 60 * 1000);
         }
 
-
+        let point_xs = [];
         if (data && data.length > 0) {
+
+            //* TIME WINDOW VARS */
             const today = Date.now();
             const yesterday = today - (24 * 60 * 60 * 1000);
             const hmm = HELPERS.getHMM(new Date());
 
-            const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(19, 50)));
-            // console.log(symbol, last_eod.c, round3(1000 / last_eod.c), round2(last_eod.c * (1000 / last_eod.c)));
+            //* REFERENCE VALUE */
+            // const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(20, 0)));
+            const last_eod = data.find((v) => v.e >= (new Date(today).setHours(2, 10)));
 
-            // let s = yesterday;
-            // if (!is_crypto) {
-            //     const s = hmm < 800
-            //         ? new Date(yesterday).setHours(19, 30)
-            //         : (
-            //             hmm >= 1200
-            //                 ? new Date(today).setHours(9, 0)
-            //                 : (hmm <= 900
-            //                     ? new Date(today).setHours(7, 0)
-            //                     : new Date(today).setHours(8, 0)
-            //                 )
-            //         );
-            // } else {
-            //     s = new Date(yesterday).setHours(0, 0);
-            // }
-            const s = Date.now() - (4*60*60*1000);
+            //* FILTERED DATA */
+            // const s = Date.now() - (4 * 60 * 60 * 1000);
+            const s = new Date(today).setHours(2, 0);
             const e = new Date(today).setHours(23, 59);
             data = data
                 .filter((v) => v.e >= s)
                 // .filter((v) => v.e <= e);
 
-            // const hmm_s = hmm < 900 ? 400 : (hmm >= 1200 ? 900 : (hmm <= 900 ? 700 : 800));
-            // const hmm_e = 2000;
-            // data = data
-            //     .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(data[data.length - 1].e)))
-            //     .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-            //     .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e);
+            //* HEIKEN-ASHI DATA */
+            const ohlc_data = calculateHeikinAshi(data);
 
-            // const raw = INDICATORS.indexOf(name) >= 0;
             let series = [
                 { name: 'Close', type: 'area', data: [] },
                 // { name: 'Bollinger', type: 'line', data: [] },
@@ -580,61 +565,11 @@ class Chart {
             let start = last_eod.c;//data[0].c;
             let shares = 1000 / start;
 
-            // if (type === 'ohlc') {
-            //     const ohlc_data = calculateHeikinAshi(data);
-            //     series[0].type = 'candlestick';
-            //     series[0].data = ohlc_data
-            //         // .filter((v) => v.e >= s)
-            //         // .filter((v) => v.e <= e);
-            //     // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-            //     // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= 930)
-            //     // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= 1600)
-            //     // .map((v, i) => { return { x: v.e, y: [round2(v.o * shares), round2(v.h * shares), round2(v.l * shares), round2(v.c * shares)] } });
-
-            //     // series.push({
-            //     //     name: 'Close',
-            //     //     type: 'bar',
-            //     //     data: ohlc_data
-            //     //         .filter((v) => HELPERS.getHMM(new Date(v.e)) >= 930)
-            //     //         .filter((v) => HELPERS.getHMM(new Date(v.e)) <= 1600)
-            //     //         .map((v, i) => { return { x: v.e, y: round2(v.d * shares * 100) } })
-            //     // })
-            //     const d3 = series[0].data[series[0].data.length - 1].x;
-            //     this.options_candlestick.annotations.xaxis = [];
-            //     this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
-            //     this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
-            //     this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
-
-            //     // this.options_candlestick.annotations.points = []
-            //     // let count = 0;
-            //     // let is_up = true;
-            //     // series[0].data.forEach((v) => {
-            //     //     count += v.y[3] < v.y[0] ? 1 : 0;
-            //     //     if (count >= 5) {
-            //     //         this.options_candlestick.annotations.points.push(this.add_annotation_point(v.x, v.y[3], 1.5, colors.deepskyblue));
-            //     //         count = 0;
-            //     //         is_up = false;
-            //     //     }is_up = true
-            //     // })
-
-            //     this.options_candlestick.chart.type = 'line';
-            //     this.options_candlestick.chart.height = height;
-            //     this.options_candlestick.series = series;
-            //     this._render(this.options_candlestick);
-
-            //     // console.chart(ohlc_data.map((v) => {
-            //     //     return {
-            //     //         x: HELPERS.getHMM(new Date(v.e)),
-            //     //         y: round2(v.d * shares * 10)
-            //     //     }
-            //     // }).filter((v) => v.x >= 1000 && v.x <= 1200).map((v) => v.y)
-            //     // );
-            // } else
             if (type === 'mixed') {
                 const hmm = HELPERS.getHMM(new Date());
                 const hmm_s = hmm < 900 ? 400 : 800;
                 const hmm_e = 2000;
-                const ohlc_data = calculateHeikinAshi(data);
+                // const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';
                 series[0].data = ohlc_data
                     // // .slice(-200)
@@ -653,8 +588,17 @@ class Chart {
                         // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
                         .map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } })
                 })
+
+                // series[0].data.forEach((v)=>{
+                //     if (v.y >= 1.5) {
+                //         this.options_candlestick.annotations.points.push(this.add_annotation_point(v.x, v.y, 1, colors.deeppink));
+                //         point_xs.push(v.x);
+                //     }
+                // })
+
                 const d3 = series[0].data[series[0].data.length - 1].x;
                 this.options_candlestick.annotations.xaxis = [];
+                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 15), null, colors.teal));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
                 this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
@@ -717,7 +661,7 @@ class Chart {
                 // );
             } else {
                 series[0].data = data
-                    .map((v, i) => { return { x: new Date(v.t).getTime(), y: (v.c) * (raw ? 1 : shares) } });
+                    .map((v, i) => { return { x: new Date(v.t).getTime(), y: v.c * shares } });
 
                 this.options.tooltip.enabledOnSeries = [0, 1];
                 this.options.stroke.width = [0.75, 2];
@@ -733,7 +677,23 @@ class Chart {
                 // }
                 // add_shade(new Date(d3).setHours(9, 30), 0.1);
                 // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.gray));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
+
+                // let was_below = true;
+                // HELPERS.reduce1MinToNMin(ohlc_data, 5).forEach((v) => {
+                //     const y = v.d * shares;
+                //     if (y >= 1.5) {
+                //         this.options.annotations.points.push(this.add_annotation_point(v.e, y, 1));
+                //         was_below = false
+                //     }
+
+                //     // if (was_below && y >= 1.5) {
+                //     //     this.options.annotations.points.push(this.add_annotation_point(v.e, y, 1));
+                //     //     was_below = false
+                //     // } else if (!was_below && y < 1.5) {
+                //     //     was_below = true;
+                //     // }
+                // });
+
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.teal));
@@ -749,7 +709,7 @@ class Chart {
 
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(1, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 0), null, colors.teal));
+                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 15), null, colors.teal));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(3, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(5, 0), null, colors.lightgrey));
@@ -757,7 +717,7 @@ class Chart {
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(7, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(8, 0), null, colors.lightgrey));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 0), null, colors.lightgrey));
-                
+
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
                 this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey));
@@ -783,5 +743,6 @@ class Chart {
         } else {
             // console.log('NO DATA');
         }
+        return point_xs;
     }
 }

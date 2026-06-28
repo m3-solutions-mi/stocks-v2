@@ -181,7 +181,7 @@
                         </span>
                     </span>
 
-                    <span class="w3-xlarge" style="margin-bottom:10px;">
+                    <span class="w3-hide-small w3-xlarge" style="margin-bottom:10px;">
                         <b><span id="account-delta" class="">-</span></b>
                         &nbsp;|&nbsp;
                         <b><span id="account-pct" class="w3-wide">-</span></b>
@@ -451,6 +451,7 @@
         class Configuration {
             get_key = (name) => `m3-stocks-v6-${name}`;
             constructor() { }
+            DAY_TARGET_DOLLARS = 750;
             SYMBOL = localStorage.getItem(this.get_key('symbol')) || 'QQQ';
             SYMBOL_LIST = localStorage.getItem(this.get_key('symbol-list')) || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
             API_KEY = localStorage.getItem(this.get_key('api-key')) || '';
@@ -490,14 +491,17 @@
                     // .split(',')
                     .slice(0, 5)
                     .forEach((s, i) => {
-                        html += `<!-- <div id="" class="w3-col s12">
+                        html += `
+                    <!-- <div id="" class="w3-col s12">
                         <b class="w3-large" style="margin-right:25px;">QQQ</b>
                         GAIN: <b style="margin-right:25px;">$ 37.82</b>
                         PCT: <b style="margin-right:25px;">3.7 %</b>
                     </div> -->
+
                     <div id="" class="w3-col s4 w3-border w3-margin-bottom w3-padding" style="height:154px;font-size:15px;">
-                        <div id="" class="w3-large">
+                        <div id="" class="${IS_SMALL ? 'w3-medium' : 'w3-large'}">
                             <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
+                            
                             <!-- SYMBOL SELECTION -->
                             <!--<div class="w3-dropdown-hover w3-white w3-wide">
                                 <div class="w3-xlarge" _style="min-width:350px;">
@@ -515,15 +519,19 @@
                                 </div>
                             </div>-->
 
-                            <br class="w3-hide-medium w3-hide-large" />
-                            <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
-                            <i id="" class="fa fa-credit-card w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(7500,'${s}')"></i>
+                            <span class="${IS_SMALL ? '' : ''}">
+                                <br class="w3-hide-medium w3-hide-large" />
+                                <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')"></i>
+                                <i id="" class="fa fa-credit-card w3-right w3-text-green w3-margin-right pointer" onclick="ACCOUNT.buy(7500,'${s}')"></i>
+                            </span>
                         </div>
-                        <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right">-</span></b></div>
-                        <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
-                        <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
-                        <div class="w3-text-grey w3-hide-small">PEAK<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
-                        <div class="w3-text-grey w3-hide-small">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
+                        <span class="${IS_SMALL ? 'w3-small' : ''}">
+                            <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey w3-hide-small">PEAK<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey w3-hide-small">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
+                        </span>
                     </div>
                     <div class="w3-col s8">
                         <div id="chart-ha-${i}" class="w3-col s12 w3-border _w3-margin-bottom w3-padding" style="height:77px;"></div>
@@ -651,6 +659,7 @@
                             t: d.toISOString(),
                             tl: d.toLocaleString(),
                             hmm: HELPERS.getHMM(d),
+                            d: candle.d,
                             o: candle.o,
                             h: candle.h,
                             l: candle.l,
@@ -847,7 +856,7 @@
                     });
                     const account_today_gain = account_detail.equity - account_history_14d[account_history_14d.length - 1].net
                     HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
-                    HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / 325 * 100), '', '%');
+                    HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
 
                     const account_history_last = account_history_14d[account_history_14d.length - 1]
