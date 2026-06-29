@@ -783,7 +783,7 @@
                         const s = CONFIG.HA_SYMBOLS[i];
                         // eval(`CHART_HA_${i + 1}`).update(s, data[s], 70, false, 'mixed', 5);
                         
-                        eval(`CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_MEDIUM ? 125 : 70);
+                        eval(`CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 62));
                         // eval(`CHART_HA_2_${i + 1}`).update(s, data_m[s], 70, false);
                     })
                     // CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false, 'mixed', 5);
