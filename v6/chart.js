@@ -652,7 +652,7 @@ class Chart {
             const last_eod = data.find((v) => v.e >= (new Date(today).setHours(2, 10)));
 
             //@ FILTERED DATA */
-            const s = Date.now() - ((IS_SMALL ? 2 : 8) * 60 * 60 * 1000);
+            const s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 4 : 2)) * 60 * 60 * 1000);
             // const s = new Date(today).setHours(2, 0);
             const e = new Date(today).setHours(23, 59);
             data = data
@@ -744,6 +744,7 @@ class Chart {
             //@                        SUMMARIES                             */
             //@ ------------------------------------------------------------ */
             const account_detail = await ACCOUNT.detail();
+            const account_history_5d = await ACCOUNT.history('5D', '1D');
             const account_positions = await ACCOUNT.positions();
 
             const chart_card_series = eval(`CHART_V6_${index}`).options.series[0].data;
@@ -767,6 +768,11 @@ class Chart {
                 // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
                 HELPERS.update_elem_text_colored(`chart-card-peak-${index}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
             });
+            
+            const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
+            HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
+            HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
+
             return;
 
             //@ ===================================================================================
