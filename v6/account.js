@@ -9,13 +9,14 @@ class Account {
         }
     };
     buy(amount, symbol = CONFIG.SYMBOL) {
+        symbol=symbol.replace('-','/');
         const spend = +(prompt(`BUY | ${symbol}`, amount));
         console.log(symbol, spend);
         if (spend > 10) {
             const payload = {
                 side: 'buy',
                 type: 'market',
-                time_in_force: 'day',
+                time_in_force: 'gtc',
                 symbol: symbol,
                 notional: round2(spend).toString(),
             };
@@ -34,6 +35,7 @@ class Account {
         }
     };
     sell(symbol = CONFIG.SYMBOL) {
+        symbol=symbol.replace('-','/');
         if (confirm(`SELL SHARES | ${symbol}`)) {
             console.log('confirmed');
             const options = {

@@ -749,7 +749,7 @@ class Chart {
             const account_positions = await ACCOUNT.positions();
 
             const chart_card_series = eval(`CHART_V6_${index}`).options.series[0].data;
-            const position = account_positions.find((v) => v.symbol === symbol);
+            const position = await account_positions.find((v) => v.symbol === symbol.replace('-',''));
             const _last = chart_card_series[chart_card_series.length - 1].y;
             const _last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
 
