@@ -713,7 +713,7 @@ class Chart {
             //* FINISH UP */
             delete this.options_candlestick.tooltip.custom;
             this.options_candlestick.chart.type = 'line';
-            this.options_candlestick.chart.height = height;
+            this.options_candlestick.chart.height = height + 25;
             this.options_candlestick.series = series;
             this._render(this.options_candlestick);
 
@@ -736,7 +736,7 @@ class Chart {
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
-            this.options.chart.height = height;
+            this.options.chart.height = height - 25;
             this.options.series = series;
             this._render_m(this.options);
 
@@ -750,21 +750,23 @@ class Chart {
             const position = account_positions.find((v) => v.symbol === symbol);
             const _last = chart_card_series[chart_card_series.length - 1].y;
             const _last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
-            
-            if (position) {
-                HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(+(position.unrealized_pl)), '$', '');
-                HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(+(position.unrealized_plpc) * 100), '', '%');
-                HELPERS.update_elem_text(`chart-card-seed-${index}`, round1(+(position.cost_basis)), '$', '');
-                HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2((_last - _last_minus_1)), '$', '');
-                // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
-            } else {
-                HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - 1000), '$', '');
-                HELPERS.update_elem_text(`chart-card-pct-${index}`, round1((_last - 1000) / 1000 * 100), '', '%');
-                HELPERS.update_elem_text_string(`chart-card-seed-${index}`, '-', '', '');
-                HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '$', '');
-            }
-            // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
-            HELPERS.update_elem_text_colored(`chart-card-peak-${index}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
+
+            ['', '-s'].forEach((p) => {
+                if (position) {
+                    HELPERS.update_elem_text_colored(`chart-card-gain-${index}${p}`, round2(+(position.unrealized_pl)), '$', '');
+                    HELPERS.update_elem_text_colored(`chart-card-pct-${index}${p}`, round1(+(position.unrealized_plpc) * 100), '', '%');
+                    HELPERS.update_elem_text(`chart-card-seed-${index}${p}`, round1(+(position.cost_basis)), '$', '');
+                    HELPERS.update_elem_text_colored(`chart-card-chg-${index}${p}`, round2((_last - _last_minus_1)), '$', '');
+                    // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
+                } else {
+                    HELPERS.update_elem_text(`chart-card-gain-${index}${p}`, round2(_last - 1000), '$', '');
+                    HELPERS.update_elem_text(`chart-card-pct-${index}${p}`, round1((_last - 1000) / 1000 * 100), '', '%');
+                    HELPERS.update_elem_text_string(`chart-card-seed-${index}${p}`, '-', '', '');
+                    HELPERS.update_elem_text_colored(`chart-card-chg-${index}${p}`, round2(_last - _last_minus_1), '$', '');
+                }
+                // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
+                HELPERS.update_elem_text_colored(`chart-card-peak-${index}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
+            });
             return;
 
             //@ ===================================================================================

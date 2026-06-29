@@ -493,13 +493,7 @@
                     .slice(0, 5)
                     .forEach((s, i) => {
                         html += `
-                    <!-- <div id="" class="w3-col s12">
-                        <b class="w3-large" style="margin-right:25px;">QQQ</b>
-                        GAIN: <b style="margin-right:25px;">$ 37.82</b>
-                        PCT: <b style="margin-right:25px;">3.7 %</b>
-                    </div> -->
-
-                    <div id="" class="w3-col s4 w3-border w3-margin-bottom w3-padding" style="height:154px;font-size:15px;">
+                    <div id="" class="w3-col s4 w3-border-top w3-margin-bottom w3-padding" style="height:154px;font-size:15px;">
                         <div id="" class="${IS_SMALL ? 'w3-center w3-medium' : 'w3-center w3-large'}">
                             <span class="w3-col s12"></span>
                             <span class="w3-col s12 w3-center">
@@ -508,17 +502,24 @@
                                 <i id="" class="fa fa-credit-card ${IS_SMALL ? '' : 'w3-left'} w3-text-green pointer" onclick="ACCOUNT.buy(10000,'${s}')" style="padding-top:3px;"></i>
                             </span>
                         </div>
-                        <span class="${IS_SMALL ? 'w3-small' : ''}">
-                            <div class="w3-text-grey">${IS_SMALL ? 'G' : 'GAIN'}<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
-                            <div class="w3-text-grey">${IS_SMALL ? 'P' : 'PCT'}<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">${IS_SMALL ? 'C' : 'CHG'}<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">${IS_SMALL ? 'M' : 'MAX'}<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">${IS_SMALL ? 'S' : 'SEED'}<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
+                        <span class="w3-small w3-hide-medium w3-hide-large">
+                            <div class="w3-text-grey">G<b><span id="chart-card-gain-${i}-s" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">P<b><span id="chart-card-pct-${i}-s" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">C<b><span id="chart-card-chg-${i}-s" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">M<b><span id="chart-card-peak-${i}-s" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">S<b><span id="chart-card-seed-${i}-s" class="w3-right">-</span></b></div>
+                        </span>
+                        <span class="w3-hide-small">
+                            <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
+                            <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">MAX<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
+                            <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
                         </span>
                     </div>
                     <div class="w3-col s8">
-                        <div id="chart-ha-${i}-1" class="w3-col s12 w3-border _w3-margin-bottom w3-padding" style="height:77px;"></div>
-                        <div id="chart-ha-${i}-2" class="w3-col s12 w3-border w3-margin-bottom w3-padding" style="height:77px;"></div>
+                        <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:77px;"></div>
+                        <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:77px;"></div>
                     </div>`;
                     });
                 document.getElementById('output-charts').innerHTML = html;
@@ -782,7 +783,7 @@
                         const s = CONFIG.HA_SYMBOLS[i];
                         // eval(`CHART_HA_${i + 1}`).update(s, data[s], 70, false, 'mixed', 5);
                         
-                        eval(`CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, 70);
+                        eval(`CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_MEDIUM ? 125 : 70);
                         // eval(`CHART_HA_2_${i + 1}`).update(s, data_m[s], 70, false);
                     })
                     // CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false, 'mixed', 5);
