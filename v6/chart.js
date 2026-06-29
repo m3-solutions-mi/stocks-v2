@@ -653,8 +653,8 @@ class Chart {
             const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
 
             //@ FILTERED DATA */
-            const s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 4 : 3)) * 60 * 60 * 1000);
-            // const s = new Date(today).setHours(2, 0);
+            const s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 8 : 3)) * 60 * 60 * 1000);
+            // const s = new Date(today).setHours(8, 0);
             const e = new Date(today).setHours(23, 59);
             data = data
                 .filter((v) => v.e >= s)
@@ -756,7 +756,7 @@ class Chart {
             ['', '-s'].forEach((p) => {
                 if (position) {
                     HELPERS.update_elem_text_colored(`chart-card-gain-${index}${p}`, round2(+(position.unrealized_pl)), '$', '');
-                    HELPERS.update_elem_text_colored(`chart-card-pct-${index}${p}`, round1(+(position.unrealized_plpc) * 100), '', '%');
+                    HELPERS.update_elem_text_colored(`chart-card-pct-${index}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
                     HELPERS.update_elem_text(`chart-card-seed-${index}${p}`, round1(+(position.cost_basis)), '$', '');
                     HELPERS.update_elem_text_colored(`chart-card-chg-${index}${p}`, round2((_last - _last_minus_1)), '$', '');
                     // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
