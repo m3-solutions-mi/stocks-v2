@@ -649,7 +649,7 @@ class Chart {
 
             //@ REFERENCE VALUE */
             // const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(20, 0)));
-            const last_eod = data.find((v) => v.e >= (new Date(today).setHours(2, 10)));
+            const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
 
             //@ FILTERED DATA */
             const s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 4 : 2)) * 60 * 60 * 1000);
