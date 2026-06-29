@@ -593,6 +593,7 @@ class Chart {
             this.options.annotations = { xaxis: [], yaxis: [], points: [] };
             const annotations_x = () => {
                 const d = last.e;
+                const d_minus_1 = last.e;
                 return [
                     this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
                     this.add_annotation_x(new Date(d).setHours(9, 30), null, colors.deeppink),
@@ -652,7 +653,7 @@ class Chart {
             const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
 
             //@ FILTERED DATA */
-            const s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 4 : 2)) * 60 * 60 * 1000);
+            const s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 4 : 3)) * 60 * 60 * 1000);
             // const s = new Date(today).setHours(2, 0);
             const e = new Date(today).setHours(23, 59);
             data = data
