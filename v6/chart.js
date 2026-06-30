@@ -658,7 +658,7 @@ class Chart {
             
             //@ FILTERED DATA */
             // s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 13 : 4)) * 60 * 60 * 1000);
-            s = new Date(today).setHours(8, 0);
+            s = new Date(today).setHours(hmm < 900 ? 4 : 8, 0);
             // s = new Date(today).setHours(12, 0);
             const e = new Date(today).setHours(23, 59);
             ohlc_data = ohlc_data.filter((v) => v.e >= s);
