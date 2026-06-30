@@ -666,7 +666,7 @@ class Chart {
             // if (hmm < 900) { hour = 16 }
             // s = new Date(hmm < 900 ? yesterday : today).setHours(hour, 0, 0, 0);
             // // const e = new Date(today).setHours(23, 59);
-            s = hmm < 1200 ? new Date(today).setHours(4, 0, 0, 0) : new Date(today).setHours(9, 30, 0, 0);
+            s = hmm < 900 ? new Date(today).setHours(4, 0, 0, 0) : new Date(today).setHours(8, 0, 0, 0);
             ohlc_data = ohlc_data.filter((v) => v.e >= s);
             data = data
                 .filter((v) => v.e >= s)
@@ -795,7 +795,7 @@ class Chart {
                 });
             
             const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length-1].y;
-            const color = v < 0.25 ? 'red' : 'green';
+            const color = v < 0.25 ? 'red' : '#6dc573';
             document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `5px solid ${color}`;
             // console.log(`%c${symbol}`, 'color:yellow');
             // console.table(entries);
