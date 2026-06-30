@@ -793,6 +793,10 @@ class Chart {
                 .forEach((v, i) => {
                     entries.push({ i, x: HELPERS.getHMM(new Date(v.x)), y: v.y });
                 });
+            
+            const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length-1].y;
+            const color = v < 0.25 ? 'red' : 'green';
+            document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `5px solid ${color}`;
             // console.log(`%c${symbol}`, 'color:yellow');
             // console.table(entries);
 

@@ -494,9 +494,9 @@
                     .forEach((s, i) => {
                         html += `
                     <div id="" class="w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
-                        <div id="" class="w3-center w3-xlarge" style="margin-bottom:5px;">
+                        <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
                             <span class="w3-col s12"></span>
-                            <span id="chart-card-banner" class="w3-col s12 w3-center">
+                            <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                 <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                                 <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
                                 <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10*1000},'${s}')" style="padding-top:3px;"></i>
@@ -509,7 +509,7 @@
                             <div class="w3-text-grey">M<b><span id="chart-card-peak-${i}-s" class="w3-right">-</span></b></div>
                             <div class="w3-text-grey">S<b><span id="chart-card-seed-${i}-s" class="w3-right">-</span></b></div>
                         </span>
-                        <span class="w3-large _w3-hide-small">
+                        <span class="w3-large w3-margin-top">
                             <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
                             <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
                             <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
