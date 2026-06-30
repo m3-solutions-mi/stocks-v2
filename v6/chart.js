@@ -649,21 +649,23 @@ class Chart {
             const hmm = HELPERS.getHMM(new Date());
 
             //@ REFERENCE VALUE */
-            // const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(20, 0)));
-            const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
-
-            //@ FILTERED DATA */
-            const s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 6 : 4)) * 60 * 60 * 1000);
-            // const s = new Date(today).setHours(8, 0);
-            // const s = new Date(today).setHours(12, 0);
-            const e = new Date(today).setHours(23, 59);
-            data = data
-                .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+            const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(20, 0)));
+            // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
 
             //@ HEIKEN-ASHI DATA */
-            const ohlc_data = calculateHeikinAshi(data);
-
+            let s = new Date(yesterday).setHours(20, 0);
+            let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
+            
+            //@ FILTERED DATA */
+            // s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 13 : 4)) * 60 * 60 * 1000);
+            s = new Date(today).setHours(8, 0);
+            // s = new Date(today).setHours(12, 0);
+            const e = new Date(today).setHours(23, 59);
+            ohlc_data = ohlc_data.filter((v) => v.e >= s);
+            data = data
+            .filter((v) => v.e >= s)
+            // .filter((v) => v.e <= e);
+            
             //@ LAST & PREVIOUS */
             const last = data[data.length - 1];
             const previous = data[data.length - 2];
