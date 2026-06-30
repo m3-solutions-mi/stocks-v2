@@ -653,6 +653,8 @@ class Chart {
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
 
             //@ HEIKEN-ASHI DATA */
+            //@ MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
+            //@ Viewed data is filtered below - after this calculation! */
             let s = new Date(yesterday).setHours(20, 0);
             let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
             
