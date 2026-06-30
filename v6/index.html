@@ -493,10 +493,10 @@
                     .slice(0, 5)
                     .forEach((s, i) => {
                         html += `
-                    <div id="" class="w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="_height:154px;font-size:15px;">
-                        <div id="" class="w3-center w3-xlarge">
+                    <div id="" class="w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
+                        <div id="" class="w3-center w3-xlarge" style="margin-bottom:5px;">
                             <span class="w3-col s12"></span>
-                            <span class="w3-col s12 w3-center">
+                            <span id="chart-card-banner" class="w3-col s12 w3-center">
                                 <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                                 <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
                                 <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10*1000},'${s}')" style="padding-top:3px;"></i>
@@ -783,7 +783,7 @@
                         const s = CONFIG.HA_SYMBOLS[i];
                         // eval(`CHART_HA_${i + 1}`).update(s, data[s], 70, false, 'mixed', 5);
                         
-                        eval(`CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 145));
+                        eval(`CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155));
                         // eval(`CHART_HA_2_${i + 1}`).update(s, data_m[s], 70, false);
                     })
                     // CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false, 'mixed', 5);

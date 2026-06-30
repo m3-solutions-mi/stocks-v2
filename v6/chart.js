@@ -592,16 +592,19 @@ class Chart {
             this.options_candlestick.annotations = { xaxis: [], yaxis: [], points: [] };
             this.options.annotations = { xaxis: [], yaxis: [], points: [] };
             const annotations_x = () => {
-                const d = last.e;
-                const d_minus_1 = last.e;
+                const d = data[data.length - 1].e;
+                const d2 = last.e - (24 * 60 * 60 * 1000);
                 return [
-                    this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
+                    this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey),
+
+                    // this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
                     this.add_annotation_x(new Date(d).setHours(9, 30), null, colors.deeppink),
                     this.add_annotation_x(new Date(d).setHours(16, 0), null, colors.deeppink),
 
-                    this.add_annotation_x(new Date(d).setHours(0, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(1, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(3, 0), null, colors.lightgrey),
+                    // this.add_annotation_x(new Date(d).setHours(0, 0), null, colors.lightgrey),
+                    // this.add_annotation_x(new Date(d).setHours(1, 0), null, colors.lightgrey),
+                    // this.add_annotation_x(new Date(d).setHours(2, 0), null, colors.lightgrey),
+                    // this.add_annotation_x(new Date(d).setHours(3, 0), null, colors.lightgrey),
                     this.add_annotation_x(new Date(d).setHours(4, 0), null, colors.lightgrey),
                     this.add_annotation_x(new Date(d).setHours(5, 0), null, colors.lightgrey),
                     this.add_annotation_x(new Date(d).setHours(6, 0), null, colors.lightgrey),
@@ -657,17 +660,18 @@ class Chart {
             //@ Viewed data is filtered below - after this calculation! */
             let s = new Date(yesterday).setHours(20, 0);
             let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
-            
+
             //@ FILTERED DATA */
-            // s = Date.now() - ((IS_LARGE ? 6 : (IS_MEDIUM ? 13 : 4)) * 60 * 60 * 1000);
-            s = new Date(today).setHours(hmm < 900 ? 4 : 8, 0);
-            // s = new Date(today).setHours(12, 0);
-            const e = new Date(today).setHours(23, 59);
+            // let hour = 6;
+            // if (hmm < 900) { hour = 16 }
+            // s = new Date(hmm < 900 ? yesterday : today).setHours(hour, 0, 0, 0);
+            // // const e = new Date(today).setHours(23, 59);
+            s = hmm < 1200 ? new Date(today).setHours(4, 0, 0, 0) : new Date(today).setHours(9, 30, 0, 0);
             ohlc_data = ohlc_data.filter((v) => v.e >= s);
             data = data
-            .filter((v) => v.e >= s)
+                .filter((v) => v.e >= s)
             // .filter((v) => v.e <= e);
-            
+
             //@ LAST & PREVIOUS */
             const last = data[data.length - 1];
             const previous = data[data.length - 2];
@@ -754,7 +758,7 @@ class Chart {
             const account_positions = await ACCOUNT.positions();
 
             const chart_card_series = eval(`CHART_V6_${index}`).options.series[0].data;
-            const position = await account_positions.find((v) => v.symbol === symbol.replace('-',''));
+            const position = await account_positions.find((v) => v.symbol === symbol.replace('-', ''));
             const _last = chart_card_series[chart_card_series.length - 1].y;
             const _last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
 
@@ -774,13 +778,26 @@ class Chart {
                 // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
                 HELPERS.update_elem_text_colored(`chart-card-peak-${index}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
             });
-            
+
             const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
             HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
             HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
-            return;
+            //@ ------------------------------------------------------------ */
+            //@                      BUY | SELL INICATION                    */
+            //@ ------------------------------------------------------------ */
+            const threshold = 1;
+            const entries = [];
+            this.options_candlestick.series[0].data
+                .filter((v) => v.y >= threshold)
+                .forEach((v, i) => {
+                    entries.push({ i, x: HELPERS.getHMM(new Date(v.x)), y: v.y });
+                });
+            // console.log(`%c${symbol}`, 'color:yellow');
+            // console.table(entries);
 
+
+            return;
             //@ ===================================================================================
 
 
