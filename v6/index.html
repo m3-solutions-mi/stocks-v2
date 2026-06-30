@@ -171,7 +171,7 @@
                     <!-- <span class="w3-right w3-xlarge">&nbsp;|&nbsp;<b><span id="_invested"
                                 class="w3-wide w3-text-blue">-</span></b></span> -->
 
-                    <span class="w3-right w3-xlarge">
+                    <span class="w3-right w3-large">
                         <span>
                             <b><span id="account-today-gain">-</span></b>
                             &nbsp;|&nbsp;
@@ -877,7 +877,7 @@
                     HELPERS.update_elem_text_colored('today-gain', round2(today_gain), '$', '');
                     // HELPERS.update_elem_text_colored('today-pct', round2(today_gain_pct), '', '%'); //* TOP FIELD */
                     HELPERS.update_elem_text_colored('today-pct-2', round2(today_gain_pct), '', '%');
-                    HELPERS.update_elem_text('invested', spend, '$', '');
+                    HELPERS.update_elem_text('invested', spend/1000, '$', 'K');
                     // HELPERS.update_elem_text('account-equity', round1(account_detail.equity / 1000), '$', 'K');
                     HELPERS.update_elem_text_colored('account-delta', round1(account_detail.equity - seed), '$', '');
                     HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity / seed * 100) - 100), '', '%');
@@ -895,7 +895,7 @@
                     }
                     this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
                     const trail_stop_pct = INTERVAL.position_peak_pct * (1 + (CONFIG.TRAIL_PCT));
-                    console.log(`%c${round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
+                    // console.log(`%c${round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
                     // console.log(`%c${round2(INTERVAL.position_peak_pct)} | ${round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
                     // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
                     //     ACCOUNT.sell();

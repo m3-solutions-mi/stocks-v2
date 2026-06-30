@@ -16,7 +16,7 @@ class Account {
             const payload = {
                 side: 'buy',
                 type: 'market',
-                time_in_force: 'gtc',
+                time_in_force: 'day',
                 symbol: symbol,
                 notional: round2(spend).toString(),
             };
