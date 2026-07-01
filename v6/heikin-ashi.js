@@ -1,4 +1,28 @@
 /**
+ * Converts standard OHLC data to Heikin - CLOSE Ashi format.
+ * @param {Array} data - Array of objects containing {open, high, low, close}.
+ * @returns {Array} - Array of Heikin Ashi - CLOSE objects.
+ */
+function calculateHeikinAshiClose(data) {
+    if (!data || data.length === 0) return [];
+
+    const haData = [];
+    
+    for (let i = 0; i < data.length; i++) {
+        const current = data[i];
+
+        // 1. Calculate HA Close (Average of current bar)
+        const haClose = (current.o + current.h + current.l + current.c) / 4;
+        haData.push({
+            e: current.e,
+            c: haClose,
+            d: i > 0 ? haClose - haData[i-1].c : 0,
+        })
+    }
+    return haData;
+}
+
+/**
  * Converts standard OHLC data to Heikin Ashi format.
  * @param {Array} data - Array of objects containing {open, high, low, close}.
  * @returns {Array} - Array of Heikin Ashi objects.
