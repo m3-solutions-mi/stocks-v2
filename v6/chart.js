@@ -666,7 +666,7 @@ class Chart {
             // if (hmm < 900) { hour = 16 }
             // s = new Date(hmm < 900 ? yesterday : today).setHours(hour, 0, 0, 0);
             // // const e = new Date(today).setHours(23, 59);
-            s = hmm < 900 ? new Date(today).setHours(4, 0, 0, 0) : new Date(today).setHours(8, 0, 0, 0);
+            s = hmm < 1100 ? new Date(today).setHours(4, 0, 0, 0) : new Date(today).setHours(8, 0, 0, 0);
             ohlc_data = ohlc_data.filter((v) => v.e >= s);
             data = data
                 .filter((v) => v.e >= s)
@@ -762,7 +762,7 @@ class Chart {
             const _last = chart_card_series[chart_card_series.length - 1].y;
             const _last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
 
-            ['', '-s'].forEach((p) => {
+            [''/*, '-s'*/].forEach((p) => {
                 if (position) {
                     HELPERS.update_elem_text_colored(`chart-card-gain-${index}${p}`, round2(+(position.unrealized_pl)), '$', '');
                     HELPERS.update_elem_text_colored(`chart-card-pct-${index}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
