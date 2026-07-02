@@ -37,6 +37,7 @@
     <script src="./colors.js"></script>
     <script src="./account.js"></script>
     <script src="./calendar.js"></script>
+    <script src="./market.js"></script>
     <script src="./gemini.js"></script>
 
     <!--@ PAGE CONTENT -->
@@ -465,25 +466,25 @@
             HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',').slice(0, 4)].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
-            COMPARISON_NUM_DAYS = (symbol = null) => {
-                // const is_crypto = symbol ? symbol.indexOf('-USD') > 0 : false;
-                // const dow = new Date().getDay();
-                // const hmm = HELPERS.getHMM(new Date());
-                // const mo = market_open();
-                // const lmo = last_market_open();
-                // const now = HELPERS.getYMD(new Date());
-                // const diff = Math.abs(round2((new Date(lmo + 'T04:00:00').getTime() - new Date(now).getTime()) / 24 / 60 / 60 / 1000));
-                // // console.log(
-                // //     `%c${last_market_open()} %c | %c${mo} | ${lmo} | ${now} | ${diff}`
-                // //     , 'color:orange'
-                // //     , 'color:grey', 'color:lightblue'
-                // // );
+            // COMPARISON_NUM_DAYS = (symbol = null) => {
+            //     // const is_crypto = symbol ? symbol.indexOf('-USD') > 0 : false;
+            //     // const dow = new Date().getDay();
+            //     // const hmm = HELPERS.getHMM(new Date());
+            //     // const mo = market_open();
+            //     // const lmo = last_market_open();
+            //     // const now = HELPERS.getYMD(new Date());
+            //     // const diff = Math.abs(round2((new Date(lmo + 'T04:00:00').getTime() - new Date(now).getTime()) / 24 / 60 / 60 / 1000));
+            //     // // console.log(
+            //     // //     `%c${last_market_open()} %c | %c${mo} | ${lmo} | ${now} | ${diff}`
+            //     // //     , 'color:orange'
+            //     // //     , 'color:grey', 'color:lightblue'
+            //     // // );
 
-                // // console.log(new Date(HELPERS.getYMD(new Date())).getTime() - new Date(last_market_open()).getTime() / 60 / 60 / 1000);
-                // return /*is_crypto ? 2 :*/ diff;
-                // // return dow === 0 ? 3 : (dow === 6 ? 1.25 : (hmm <= 900 ? 1 : (hmm < 1600 ? 4 / 24 : 6.5 / 24)));
-                return 2;
-            }
+            //     // // console.log(new Date(HELPERS.getYMD(new Date())).getTime() - new Date(last_market_open()).getTime() / 60 / 60 / 1000);
+            //     // return /*is_crypto ? 2 :*/ diff;
+            //     // // return dow === 0 ? 3 : (dow === 6 ? 1.25 : (hmm <= 900 ? 1 : (hmm < 1600 ? 4 / 24 : 6.5 / 24)));
+            //     return 2;
+            // }
 
             load_chart_cards() {
                 let html = '';
@@ -492,34 +493,34 @@
                     // .split(',')
                     .slice(0, 5)
                     .forEach((s, i) => {
-                    //     html += `
-                    // <div id="" class="w3-col s12 m12 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
-                    //     <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
-                    //         <span class="w3-col s12"></span>
-                    //         <span id="chart-card-banner-${i}" class="w3-col s4 w3-center">
-                    //             <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
-                    //             <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
-                    //             <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10 * 1000},'${s}')" style="padding-top:3px;"></i>
-                    //         </span>
-                    //         <span id="chart-card-banner-${i}" class="w3-col s8 w3-left">
-                    //             123
-                    //         </span>
-                    //     </div>
+                        //     html += `
+                        // <div id="" class="w3-col s12 m12 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
+                        //     <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
+                        //         <span class="w3-col s12"></span>
+                        //         <span id="chart-card-banner-${i}" class="w3-col s4 w3-center">
+                        //             <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
+                        //             <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
+                        //             <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10 * 1000},'${s}')" style="padding-top:3px;"></i>
+                        //         </span>
+                        //         <span id="chart-card-banner-${i}" class="w3-col s8 w3-left">
+                        //             123
+                        //         </span>
+                        //     </div>
 
-                    //     <span class="w3-large w3-margin-top">
-                    //         <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
-                    //         <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
-                    //         <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
-                    //         <div class="w3-text-grey">MAX<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
-                    //         <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
-                    //     </span>
-                    // </div>
-                    // <div class="w3-col s12 m12">
-                    //     <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:77px;"></div>
-                    //     <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:77px;"></div>
-                    // </div>`;
+                        //     <span class="w3-large w3-margin-top">
+                        //         <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
+                        //         <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
+                        //         <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
+                        //         <div class="w3-text-grey">MAX<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
+                        //         <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
+                        //     </span>
+                        // </div>
+                        // <div class="w3-col s12 m12">
+                        //     <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:77px;"></div>
+                        //     <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:77px;"></div>
+                        // </div>`;
 
-                    html += `
+                        html += `
                     <div id="" class="w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
                         <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
                             <span class="w3-col s12"></span>
@@ -743,7 +744,7 @@
                     const end_at = new Date().toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
-                    const url = `${CONFIG.API_URL}/${name}/${timeframe}Min/${start_at}/${end_at}`;
+                    const url = `${CONFIG.API_URL}/symbol/${name}/${timeframe}Min/${start_at}/${end_at}`;
                     // const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=5Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
 
 
@@ -794,6 +795,21 @@
                     // console.log(account_history);
                     // console.log(account_positions);
 
+                    //* CHECK POSITIONS */
+                    function check_positions() {
+                        if (account_positions.length > 0) {
+                            let total = account_positions.map((v) => v.gain).reduce((p, c) => p + c);
+                            let total_pct = account_positions.map((v) => v.gain_pct).reduce((p, c) => p + c);
+                            console.log('POSITIONS TOTAL $', total, ' | ', total_pct, '%');
+                            account_positions.forEach((v) => {
+                                if (v.gain_pct <= TRAIL_PCT) {
+                                    //* SELL */
+                                    // sell(v.name);
+                                }
+                            });
+                        }
+                    }
+
                     //* CHARTS */
                     // const ha_symbols = `${CONFIG.SYMBOL},MU,KLAC,DRAM,SOXL`.split(',')
                     // const ha_symbols = [CONFIG.SYMBOL, ...CONFIG.SYMBOL_LIST.split(',').slice(0, 4)];
@@ -807,7 +823,7 @@
                     // CHART_HA_4.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[3]]), 70, false, 'mixed', 5);
                     // CHART_HA_5.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[4]]), 70, false, 'mixed', 5);
                     // [0, 1, 2/*, 3, 4*/].forEach((i) => {
-                    for await (const i of [0, 1, 2/*, 3, 4*/]) {
+                    for await (const i of [0, 1, 2, 3, 4]) {
                         const s = CONFIG.HA_SYMBOLS[i];
                         // eval(`CHART_HA_${i + 1}`).update(s, data[s], 70, false, 'mixed', 5);
 
@@ -952,6 +968,8 @@
         const CHART_V6_0 = new Chart('chart-ha-0-1', 'chart-ha-0-2');
         const CHART_V6_1 = new Chart('chart-ha-1-1', 'chart-ha-1-2');
         const CHART_V6_2 = new Chart('chart-ha-2-1', 'chart-ha-2-2');
+        const CHART_V6_3 = new Chart('chart-ha-3-1', 'chart-ha-3-2');
+        const CHART_V6_4 = new Chart('chart-ha-4-1', 'chart-ha-4-2');
 
         // const CHART_HA_1 = new Chart('chart-ha-0');
         // const CHART_HA_2 = new Chart('chart-ha-1');
