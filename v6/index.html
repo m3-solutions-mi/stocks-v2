@@ -744,7 +744,8 @@
                     const end_at = new Date().toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
-                    const url = `${CONFIG.API_URL}/symbol/${name}/${timeframe}Min/${start_at}/${end_at}`;
+                    const url = `${CONFIG.API_URL}/${name}/${timeframe}Min/${start_at}/${end_at}`;
+                    // const url = `${CONFIG.API_URL}/symbol/${name}/${timeframe}Min/${start_at}/${end_at}`;
                     // const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=5Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
 
 
