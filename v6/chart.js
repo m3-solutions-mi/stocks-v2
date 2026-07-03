@@ -689,7 +689,7 @@ class Chart {
             const previous_m = data_m[data_m.length - 2];
 
 
-            let start = last_eod.c;//data[0].c;
+            let start = last_eod ? last_eod.c : 0;//data[0].c;
             let shares = 1000 / start;
 
             //@ ------------------------------------------------------------ */
