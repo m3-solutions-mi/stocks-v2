@@ -31,6 +31,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/apexstock"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script> -->
     <!-- <script src="./index.js"></script> -->
+    <script src="./widgets.js"></script>
     <script src="./chart.js"></script>
     <script src="./bollinger-bands.js"></script>
     <script src="./heikin-ashi.js"></script>
@@ -58,10 +59,10 @@
                         </div>
 
                         <!-- COMPANY NAME -->
-                        <div class="w3-hide-small w3-col s7 w3-padding _w3-xxlarge w3-bold w3-text-black">
-                            <div class="_w3-container w3-center w3-text-black">
+                        <div class="w3-hide-small w3-center w3-col s7 w3-padding _w3-xxlarge w3-bold w3-text-black">
+                            <div class="_w3-container w3-text-black">
                                 <h1 style="margin-top:10px;">
-                                    <b class="">M3&nbsp;Solutions&nbsp;MI</b>
+                                    <b class="" style="margin-left:80px;">M3&nbsp;Solutions&nbsp;MI</b>
                                 </h1>
                             </div>
                         </div>
@@ -189,7 +190,7 @@
                     </span>
                 </span>
 
-                <div class="w3-dropdown-hover w3-white w3-wide  w3-hide" style="_margin-bottom:10px;">
+                <!-- <div class="w3-dropdown-hover w3-white w3-wide  w3-hide" style="_margin-bottom:10px;">
                     <div class="w3-xlarge" _style="min-width:350px;">
                         <div><span id="symbol-name" class="w3-hide">-</span></span>&nbsp;&nbsp;<span
                                 class="w3-right w3-text-grey  w3-hide">▼</span></div>
@@ -198,7 +199,7 @@
                             <span id="symbols-list"></span>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="w3-medium" style="margin-top:10px;">
                     <!-- <span id="symbol-name" class="w3-wide">-</span> ▼ -->
@@ -242,40 +243,40 @@
                             </div>
                         </div> -->
                     </span>
-                    <div id="chart" class="w3-col s8 m10 w3-border w3-margin-bottom w3-padding" style=""></div>
-                    <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding" style=""></div>
-                    <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom w3-padding" style="">
-                    </div>
+                    <!-- <div id="chart" class="w3-col s8 m10 w3-border w3-margin-bottom w3-padding" style=""></div> -->
+                    <!-- <div id="chart-zoom" class="w3-col s4 m2 w3-border w3-margin-bottom w3-padding" style=""></div> -->
+                    <!-- <div id="chart-account-history" class="w3-col s12 w3-border w3-margin-bottom w3-padding" style="">
+                    </div> -->
                     <!-- <div id="chart-1" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
                     <!-- <div id="chart-2" class="w3-col s4 w3-border w3-margin-bottom" style="min-height:325px;"></div> -->
-                    <div class="w3-hide w3-xlarge"><span class="w3-wide">TODAY&nbsp;&nbsp;<span
+                    <!-- <div class="w3-hide w3-xlarge"><span class="w3-wide">TODAY&nbsp;&nbsp;<span
                                 class="w3-text-grey">▼</span></span>
                         <span class="w3-right "><b><span id="today-gain" class="">
                                     -</span></b> | <b><span id="today-pct-2" class="w3-wide">-</span></b></span>
-                    </div>
+                    </div> -->
                 </div>
                 <!-- <div class="w3-hide-small w3-xlarge w3-wide">FUTURES | OIL | VIX</div> -->
 
 
-                <div class="w3-hide-small w3-col s4">
+                <!-- <div class="w3-hide-small w3-col s4">
                     <span id="futures-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">FUTURES</div>
                     <div id="chart-futures" class="w3-border w3-margin-top" style="">
                     </div>
-                </div>
-                <div class="w3-hide-small w3-col s4">
+                </div> -->
+                <!-- <div class="w3-hide-small w3-col s4">
                     <span id="oil-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">OIL</div>
                     <div id="chart-oil" class="w3-border w3-margin-top" style=""></div>
-                </div>
-                <div class="w3-hide-small w3-col s4">
+                </div> -->
+                <!-- <div class="w3-hide-small w3-col s4">
                     <span id="vix-last-value" class="w3-xlarge w3-right w3-text-blue">-</span>
                     <div class="w3-wide">VIX</div>
                     <div id="chart-vix" class="w3-border w3-margin-top" style=""></div>
-                </div>
+                </div> -->
 
                 <!--@ TABLE -->
-                <div class="w3-medium">
+                <!-- <div class="w3-medium">
                     <table id="table" class="w3-large w3-col s12 w3-table w3-bordered w3-margin-top w3-margin-bottom">
                         <tr>
                         </tr>
@@ -329,8 +330,7 @@
                             </td>
                         </tr>
                     </table>
-                    <!-- &nbsp; -->
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
@@ -415,12 +415,6 @@
         }
 
         function import_settings() {
-            // "m3-stocks-v3-api-key": "AKDV4UB3BEGGTXCDQV4RGKS33J",
-            // "m3-stocks-v3-api-secret": "sCgSMbJRZkBjoH1Lm9zRGEP8KK7EUDPAJcfayyHZxfx",
-            // "m3-stocks-v3-symbol": "QQQ",
-            // "m3-stocks-v3-account-url": "https://api.alpaca.markets",
-            // "m3-stocks-v3-api-url": "https://m3-solutions-mi.com",
-            // "m3-stocks-v3-stop-loss": "-0.5"
 
             const input = prompt('settings', '');
             console.log(input);
@@ -546,8 +540,8 @@
                         </span>
                     </div>
                     <div class="w3-col s12 m8">
-                        <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:77px;"></div>
-                        <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:77px;"></div>
+                        <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
+                        <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                     </div>`;
                     });
                 document.getElementById('output-charts').innerHTML = html;
@@ -740,7 +734,10 @@
                     // const start_at = name.indexOf('-USD') < 0
                     //     ? new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString()
                     //     : new Date(Date.now() - (12 * 60 * 60 * 1000)).toISOString();
-                    const start_at = new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString()
+                    // const start_at = new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString();
+                    const start_at = name.indexOf('-USD') > 0 
+                        ? new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString()
+                        : new Date(calendar[calendar.map((v)=>v.date).findIndex((v)=>v > HELPERS.getYMD(new Date())) - 1].date).toISOString();
                     const end_at = new Date().toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
@@ -904,29 +901,29 @@
                     const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
 
                     //* LAST */
-                    HELPERS.update_elem_text_colored('last-gain', round2(this.last ? position_gain - this.last : 0), '$', '');
-                    HELPERS.update_elem_text_colored('last-pct', round2(this.last_pct ? position_gain_pct - this.last_pct : 0), '', '%');
+                    // HELPERS.update_elem_text_colored('last-gain', round2(this.last ? position_gain - this.last : 0), '$', '');
+                    // HELPERS.update_elem_text_colored('last-pct', round2(this.last_pct ? position_gain_pct - this.last_pct : 0), '', '%');
 
                     //* TABLE */
                     const seed = 43500; //** TODO: get from account activity **/
                     // // HELPERS.update_elem_text_colored('gain', round2(account_detail.equity - seed), '$', '');
-                    document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
+                    // document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
                     // HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
 
                     // HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
                     // HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
                     // HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
 
-                    HELPERS.update_elem_text_colored('positions-gain', round2(position_gain), '$', '');
-                    HELPERS.update_elem_text_colored('positions-pct', round2(position_gain_pct), '', '%');
-                    HELPERS.update_elem_text_colored('today-gain', round2(today_gain), '$', '');
-                    // HELPERS.update_elem_text_colored('today-pct', round2(today_gain_pct), '', '%'); //* TOP FIELD */
-                    HELPERS.update_elem_text_colored('today-pct-2', round2(today_gain_pct), '', '%');
-                    HELPERS.update_elem_text('invested', spend / 1000, '$', 'K');
-                    // HELPERS.update_elem_text('account-equity', round1(account_detail.equity / 1000), '$', 'K');
-                    HELPERS.update_elem_text_colored('account-delta', round1(account_detail.equity - seed), '$', '');
-                    HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity / seed * 100) - 100), '', '%');
-                    HELPERS.update_elem_text('buying-power', round(account_detail.buying_power), '$', '');
+                    // HELPERS.update_elem_text_colored('positions-gain', round2(position_gain), '$', '');
+                    // HELPERS.update_elem_text_colored('positions-pct', round2(position_gain_pct), '', '%');
+                    // HELPERS.update_elem_text_colored('today-gain', round2(today_gain), '$', '');
+                    // // HELPERS.update_elem_text_colored('today-pct', round2(today_gain_pct), '', '%'); //* TOP FIELD */
+                    // HELPERS.update_elem_text_colored('today-pct-2', round2(today_gain_pct), '', '%');
+                    // HELPERS.update_elem_text('invested', spend / 1000, '$', 'K');
+                    // // HELPERS.update_elem_text('account-equity', round1(account_detail.equity / 1000), '$', 'K');
+                    // HELPERS.update_elem_text_colored('account-delta', round1(account_detail.equity - seed), '$', '');
+                    // HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity / seed * 100) - 100), '', '%');
+                    // HELPERS.update_elem_text('buying-power', round(account_detail.buying_power), '$', '');
 
                     //* UPSDAT FIELDS FOR CHANGE CALCULATION */
                     this.last = position_gain;
@@ -992,20 +989,20 @@
         const CHART_ACCOUNT_HISTORY = new Chart('chart-account-history');
 
         //* ADJUST BASED ON VIEW */
-        if (IS_MEDIUM || IS_LARGE) {
-            document.getElementById('table').classList.replace('w3-large', 'w3-xlarge');
-        }
+        // if (IS_MEDIUM || IS_LARGE) {
+        //     document.getElementById('table').classList.replace('w3-large', 'w3-xlarge');
+        // }
 
         //* LOAD SYMBOL LIST */
-        html = '';
-        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i).sort(), ...'BTC-USD,ETH-USD'.split(',')].forEach((s) => {
-            const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
-                <i class="fa fa-tag"></i>&nbsp;
-            ${s}</a>
-            `;
-            html += template;
-        })
-        document.getElementById('symbols-list').innerHTML = html;
+        // html = '';
+        // ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i).sort(), ...'BTC-USD,ETH-USD'.split(',')].forEach((s) => {
+        //     const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
+        //         <i class="fa fa-tag"></i>&nbsp;
+        //     ${s}</a>
+        //     `;
+        //     html += template;
+        // })
+        // document.getElementById('symbols-list').innerHTML = html;
 
         //* INTERVAL */
         const INTERVAL = new Interval();

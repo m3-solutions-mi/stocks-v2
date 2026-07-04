@@ -80,12 +80,12 @@ class Chart {
                     text: 'Series A',
                 },
             },
-            {
-                opposite: true,
-                title: {
-                    text: 'Series B',
-                },
-            },
+            // {
+            //     opposite: true,
+            //     title: {
+            //         text: 'Series B',
+            //     },
+            // },
         ],
         tooltip: {
             shared: true,
@@ -190,6 +190,9 @@ class Chart {
         },
         tooltip: {
             shared: true,
+            style: {
+                fontSize: '16px',
+            },
             x: {
                 show: true,
                 format: 'dd MMM | h:mm tt',
@@ -207,7 +210,7 @@ class Chart {
                     var c = w.globals.seriesCandleC[seriesIndex][dataPointIndex].toLocaleString();
                     return (
                         '<div class="apexcharts-tooltip-candlestick">' +
-                        '<div style="border-bottom:1px solid;"><b><span class="w3-wide">' +
+                        '<div style="border-bottom:1px solid;"><b><span class="w3-xlarge w3-wide">' +
                         hmm +
                         '</span></b></div>' +
                         '<div>Open: <span class="value">' +
@@ -643,58 +646,60 @@ class Chart {
                 ]
             }
 
-            //@ MOVE HA last timestamp to end of 5 minutes */
+            //* MOVE HA last timestamp to end of 5 minutes */
             data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
 
-            //@ TIME WINDOW VARS */
-            const today = Date.now();
-            const yesterday = today - (24 * 60 * 60 * 1000);
+            //* TIME WINDOW VARIABLES */
+            const is_crypto = symbol.indexOf('-USD') > 0;
+            const dow = new Date().getDay();
+            // const today = Date.now();
+            // const yesterday = today - (24 * 60 * 60 * 1000);
+            const current_day = data[data.length-1].e;                                  //* accounts for when market is closed */
+            const previous_day = current_day - (24 * 60 * 60 * 1000);
             const hmm = HELPERS.getHMM(new Date());
 
-            //@ REFERENCE VALUE */
-            const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(20, 0)));
+            //* REFERENCE VALUE */
+            const last_eod = data.find((v) => v.e >= (new Date(previous_day).setHours(20, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
-            let s = new Date(yesterday).setHours(20, 0);
+            let s = new Date(previous_day).setHours(20, 0);
+            let start = last_eod ? last_eod.c : 0;//data[0].c;
+            let shares = 1000 / start;
 
-            //@ HEIKEN-ASHI DATA */
-            //@ MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
-            //@ Viewed data is filtered below - after this calculation! */
+            //* HEIKEN-ASHI DATA */
+            //* MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
+            //* Viewed data is filtered below - after this calculation! */
             // let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
-            
-            //@ HEIKEN-ASHI CLOSE VALUE
+
+            //* HEIKEN-ASHI CLOSE VALUE
             let ohlc_data = calculateHeikinAshiClose(data.filter((v) => v.e >= s));
 
-            //@ FILTERED DATA */
+            //#region FILTERED DATA */
             // let hour = 6;
             // if (hmm < 900) { hour = 16 }
             // s = new Date(hmm < 900 ? yesterday : today).setHours(hour, 0, 0, 0);
             // // const e = new Date(today).setHours(23, 59);
             s = hmm < 900
-                ? new Date(today).setHours(4, 0, 0, 0)
+                ? new Date(current_day).setHours(4, 0, 0, 0)
                 : (
                     hmm < 1100
-                    ? new Date(today).setHours(7, 0, 0, 0)
-                    : new Date(today).setHours(9, 0, 0, 0)
+                        ? new Date(current_day).setHours(7, 0, 0, 0)
+                        : new Date(current_day).setHours(9, 0, 0, 0)
                 )
                 ;
             ohlc_data = ohlc_data.filter((v) => v.e >= s);
             data = data
                 .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
+            //#endregion
 
-            //@ LAST & PREVIOUS */
+            //#region LAST & PREVIOUS */
             const last = data[data.length - 1];
             const previous = data[data.length - 2];
             const last_m = data_m[data_m.length - 1];
             const previous_m = data_m[data_m.length - 2];
+            //#endregion
 
-
-            let start = last_eod ? last_eod.c : 0;//data[0].c;
-            let shares = 1000 / start;
-
-            //@ ------------------------------------------------------------ */
-            //@                       MIXED | HA CHART                       */
-            //@ ------------------------------------------------------------ */
+            //#region MIXED | HA 
             let series = [];
             series.push({ name: 'HA Close', type: 'bar', data: [] });
             series.push({ name: 'Gain', type: 'line', color: colors.teal, data: [] });
@@ -736,15 +741,18 @@ class Chart {
             this.options_candlestick.chart.height = height + 25;
             this.options_candlestick.series = series;
             this._render(this.options_candlestick);
+            //#endregion
 
-            //@ ------------------------------------------------------------ */
-            //@                      MINUTES CHART                           */
-            //@ ------------------------------------------------------------ */
+            //#region MINUTES CHART
             series = [];
             series.push({ name: 'Close', type: 'area', data: [] });
+            series.push({ name: '0.5 %', type: 'line', data: [] });
 
             //* DATA */
             series[0].data = data.map((v, i) => { return { x: v.e, y: v.c * shares } });
+            let add = 1000 * 0.005 / 24;
+            let increment = series[0].data[0].y;
+            series[1].data = data.map((v, i) => { increment += add; return { x: v.e, y: increment } });
 
             //* ANNOTATIONS */
             this.options.annotations.xaxis = annotations_x();
@@ -752,17 +760,16 @@ class Chart {
             this.options.annotations.yaxis.push(this.add_annotation_y(last_m.c * shares * 1.005, colors.violet));
 
             //* OTHER OPTIONS */
-            this.options.stroke.width = null;
+            this.options.stroke.width = [1, 2];
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
             this.options.chart.height = height - 25;
             this.options.series = series;
             this._render_m(this.options);
+            //#endregion
 
-            //@ ------------------------------------------------------------ */
-            //@                        SUMMARIES                             */
-            //@ ------------------------------------------------------------ */
+            //#region SUMMARIES
             const account_detail = await ACCOUNT.detail();
             const account_history_5d = await ACCOUNT.history('5D', '1D');
             const account_positions = await ACCOUNT.positions();
@@ -792,10 +799,9 @@ class Chart {
             const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
             HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
             HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
+            //#endregion
 
-            //@ ------------------------------------------------------------ */
-            //@                      BUY | SELL INICATION                    */
-            //@ ------------------------------------------------------------ */
+            //#region BUY | SELL INICATION
             const threshold = 1;
             const entries = [];
             this.options_candlestick.series[0].data
@@ -810,194 +816,10 @@ class Chart {
             // console.log(`%c${symbol}`, 'color:yellow');
             // console.table(entries);
 
+            //#endregion
 
             return;
-            //@ ===================================================================================
 
-
-
-            // let series = [
-            //     { name: 'Close', type: 'area', data: [] },
-            //     // { name: 'Bollinger', type: 'line', data: [] },
-            // ];
-            // let start = last_eod.c;//data[0].c;
-            // let shares = 1000 / start;
-
-            if (type === 'mixed') {
-                const hmm = HELPERS.getHMM(new Date());
-                const hmm_s = hmm < 900 ? 400 : 800;
-                const hmm_e = 2000;
-                // const ohlc_data = calculateHeikinAshi(data);
-                series[0].type = 'bar';
-                series[0].data = ohlc_data
-                    // // .slice(-200)
-                    // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                    // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                    // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
-                    .map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
-                let cumulative = 0;
-                series.push({
-                    name: 'Gain',
-                    type: 'line',
-                    color: colors.teal,
-                    data: ohlc_data
-                        // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
-                        .map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } })
-                })
-
-                // series[0].data.forEach((v)=>{
-                //     if (v.y >= 1.5) {
-                //         this.options_candlestick.annotations.points.push(this.add_annotation_point(v.x, v.y, 1, colors.deeppink));
-                //         point_xs.push(v.x);
-                //     }
-                // })
-
-                const d3 = series[0].data[series[0].data.length - 1].x;
-                this.options_candlestick.annotations.xaxis = [];
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 15), null, colors.teal));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.deeppink));
-
-                // this.options_candlestick.annotations.yaxis.push(this.add_annotation_y(series[1].data[series[1].data.length - 1].y, colors.lightgrey));
-
-                this.options_candlestick.stroke.width = [1, 2];
-                this.options_candlestick.yaxis = [
-                    {
-                        seriesName: 'Gain',
-                        alignZero: true,
-                        axisTicks: { show: true },
-                        axisBorder: { show: true, color: '#008FFB' },
-                        labels: { style: { colors: '#008FFB' } },
-                        title: { text: 'Profit (mixed +/-)', style: { color: '#008FFB' } },
-                    },
-                    {
-                        seriesName: 'Close',
-                        alignZero: true,
-                        opposite: true,
-                        axisTicks: { show: false },
-                        axisBorder: { show: false, color: '#00E396' },
-                        labels: { style: { colors: '#00E396' } },
-                        title: { text: 'Units (positive only)', style: { color: '#00E396' } },
-                    },
-                ];
-                // this.options_candlestick.yaxis[0].min = -30;
-                // this.options_candlestick.yaxis[1].min = -70;
-
-                // this.options_candlestick.annotations.points = []
-                // let count = 0;
-                // let is_up = true;
-                // series[0].data.forEach((v) => {
-                //     count += v.y[3] < v.y[0] ? 1 : 0;
-                //     if (count >= 5) {
-                //         this.options_candlestick.annotations.points.push(this.add_annotation_point(v.x, v.y[3], 1.5, colors.deepskyblue));
-                //         count = 0;
-                //         is_up = false;
-                //     }is_up = true
-                // })
-
-                delete this.options_candlestick.tooltip.custom;
-                this.options_candlestick.chart.type = 'line';
-                this.options_candlestick.chart.height = height;
-                this.options_candlestick.series = series;
-                this._render(this.options_candlestick);
-
-                // console.chart(ohlc_data.map((v) => {
-                //     return {
-                //         x: HELPERS.getHMM(new Date(v.e)),
-                //         y: round2(v.d * shares * 10)
-                //     }
-                // }).filter((v) => v.x >= 1000 && v.x <= 1200).map((v) => v.y)
-                // );
-            } else {
-                series[0].data = data
-                    .map((v, i) => { return { x: new Date(v.t).getTime(), y: v.c * shares } });
-
-                this.options.tooltip.enabledOnSeries = [0, 1];
-                this.options.stroke.width = [0.75, 2];
-                this.options.annotations.xaxis = [];
-                this.options.annotations.yaxis = [];
-
-                const d3 = series[0].data[series[0].data.length - 1].x;
-                const d2 = d3 - (24 * 60 * 60 * 1000);
-                // const d1 = d3 - (2 * 24 * 60 * 60 * 1000);
-                // const add_shade = (e, o = 0.25) => {
-                //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].x2 = e;
-                //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].opacity = o;
-                // }
-                // add_shade(new Date(d3).setHours(9, 30), 0.1);
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.gray));
-
-                // let was_below = true;
-                // HELPERS.reduce1MinToNMin(ohlc_data, 5).forEach((v) => {
-                //     const y = v.d * shares;
-                //     if (y >= 1.5) {
-                //         this.options.annotations.points.push(this.add_annotation_point(v.e, y, 1));
-                //         was_below = false
-                //     }
-
-                //     // if (was_below && y >= 1.5) {
-                //     //     this.options.annotations.points.push(this.add_annotation_point(v.e, y, 1));
-                //     //     was_below = false
-                //     // } else if (!was_below && y < 1.5) {
-                //     //     was_below = true;
-                //     // }
-                // });
-
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 0), null, colors.lightgrey));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 30), null, colors.lightgrey));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 30), null, colors.lightgrey));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.deeppink));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(20, 0), null, colors.lightgrey));
-
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(1, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 15), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(3, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(5, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(6, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(7, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(8, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 0), null, colors.lightgrey));
-
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(22, 0), null, colors.lightgrey));
-
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(4, 0), null, colors.darkgray));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.deeppink));
-
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(4, 0), null, colors.darkgray));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(9, 30), null, colors.lightgrey));
-                this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y * 1.005, colors.violet));
-                this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y, colors.grey));
-
-                //* LAST EOD */
-                // this.options.annotations.yaxis.push(this.add_annotation_y(1000, colors.teal));
-                // this.options.annotations.points.push(this.add_annotation_point(series[0].data[0].x, series[0].data[0].y, 4.5, colors.violet, `${round(series[0].data[0].y - 1000)}`, '12px', 15, 15));
-
-                this.options.chart.height = height;
-                this.options.series = series;
-                this._render();
-            }
         } else {
             // console.log('NO DATA');
         }
