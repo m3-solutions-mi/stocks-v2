@@ -349,14 +349,14 @@ class Chart {
                 colorScale: {
                     ranges: [
                         {
-                            from: -100,
+                            from: -5,
                             to: 0,
                             color: '#CD363A',
                         },
                         {
                             from: 0,
-                            to: 100,
-                            color: '#52B12C',
+                            to: 5,
+                            color: '#6dc573',
                         },
                     ],
                 },
@@ -889,7 +889,7 @@ class Chart {
 
                 //#region POSITIONS TREEMAP CHART
                 series = [{ name: 'Gain %', type: 'treemap', data: [] }];
-                series[0].data = account_positions.map((v, i) => { return { x: v.symbol, y: v.unrealized_plpc } });
+                series[0].data = account_positions.map((v, i) => { return { x: v.symbol, y: round1(+(v.unrealized_plpc) * 100) } });
                 this.options_treemap.chart.type = 'treemap';
                 this.options_treemap.chart.height = 300;
                 // CHART_POSITIONS_TODAY.options.dataLabels.enabled = true;
