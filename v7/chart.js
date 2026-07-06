@@ -1,8 +1,10 @@
 class Chart {
     chart_instance = null;
     chart_instance_m = null;
+    chart_instance_t = null;
     chart_id = null;
     chart_id_m = null;
+    chart_id_t = null;
     data = null;
 
     options = {
@@ -306,9 +308,65 @@ class Chart {
         tooltip: { shared: true, intersect: false },
         legend: { horizontalAlign: 'left' },
     }
-    constructor(id, id_m = null) {
+    options_treemap = {
+        series: [
+            {
+                data: [
+                    {
+                        x: 'INTC',
+                        y: 1.2,
+                    },
+                ],
+            },
+        ],
+        legend: {
+            show: false,
+        },
+        chart: {
+            height: 350,
+            type: 'treemap',
+            animations: { enabled: false, },
+            toolbar: { show: false, },
+        },
+        _title: {
+            text: 'Treemap with Color scale',
+        },
+        dataLabels: {
+            enabled: true,
+            style: {
+                fontSize: '12px',
+            },
+            formatter: function (text, op) {
+                return [text, op.value]
+            },
+            offsetY: -4,
+        },
+        plotOptions: {
+            treemap: {
+                enableShades: true,
+                shadeIntensity: 0.5,
+                reverseNegativeShade: true,
+                colorScale: {
+                    ranges: [
+                        {
+                            from: -100,
+                            to: 0,
+                            color: '#CD363A',
+                        },
+                        {
+                            from: 0,
+                            to: 100,
+                            color: '#52B12C',
+                        },
+                    ],
+                },
+            },
+        },
+    }
+    constructor(id, id_m = null, id_t = null) {
         this.chart_id = id;
         this.chart_id_m = id_m;
+        this.chart_id_t = id_t;
     }
     _render(o = this.options_candlestick) {
         if (this.chart_instance) {
@@ -326,6 +384,15 @@ class Chart {
         }
         this.chart_instance_m = new ApexCharts(document.querySelector(`#${this.chart_id_m}`), o);
         this.chart_instance_m.render();
+        // console.log(this.chart_id, this.options);
+    }
+    _render_t(o = this.options_treemap) {
+        if (this.chart_instance_t) {
+            // console.log(this.chart_id);
+            this.chart_instance_t.destroy();
+        }
+        this.chart_instance_t = new ApexCharts(document.querySelector(`#${this.chart_id_t}`), o);
+        this.chart_instance_t.render();
         // console.log(this.chart_id, this.options);
     }
 
@@ -581,7 +648,7 @@ class Chart {
 
 
     //@ SYMBOL CHART *** 2 *** - 24H */
-    async update_2(symbol, data, data_m, index, height = 280) {
+    async update_2(symbol, data, data_m, index, height = 280, summarize = false) {
         // const is_crypto = symbol.indexOf('-USD') < 0;
         // if (timeframe === 5) {
         //     data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
@@ -595,39 +662,43 @@ class Chart {
             this.options_candlestick.annotations = { xaxis: [], yaxis: [], points: [] };
             this.options.annotations = { xaxis: [], yaxis: [], points: [] };
             const annotations_x = () => {
-                const d = data[data.length - 1].e;
-                const d2 = last.e - (24 * 60 * 60 * 1000);
-                return [
-                    this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey),
+                if (CONFIG.TIMEFRAME === 'minute') {
+                    const d = data[data.length - 1].e;
+                    const d2 = last.e - (24 * 60 * 60 * 1000);
+                    return [
+                        this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey),
 
-                    // this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
-                    this.add_annotation_x(new Date(d).setHours(9, 30), null, colors.deeppink),
-                    this.add_annotation_x(new Date(d).setHours(16, 0), null, colors.deeppink),
+                        // this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
+                        this.add_annotation_x(new Date(d).setHours(9, 30), null, colors.deeppink),
+                        this.add_annotation_x(new Date(d).setHours(16, 0), null, colors.deeppink),
 
-                    // this.add_annotation_x(new Date(d).setHours(0, 0), null, colors.lightgrey),
-                    // this.add_annotation_x(new Date(d).setHours(1, 0), null, colors.lightgrey),
-                    // this.add_annotation_x(new Date(d).setHours(2, 0), null, colors.lightgrey),
-                    // this.add_annotation_x(new Date(d).setHours(3, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(4, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(5, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(6, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(7, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(8, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(9, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(10, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(11, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(12, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(13, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(14, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(15, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(17, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(18, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(19, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(20, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(21, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(22, 0), null, colors.lightgrey),
-                    this.add_annotation_x(new Date(d).setHours(23, 0), null, colors.lightgrey),
-                ]
+                        // this.add_annotation_x(new Date(d).setHours(0, 0), null, colors.lightgrey),
+                        // this.add_annotation_x(new Date(d).setHours(1, 0), null, colors.lightgrey),
+                        // this.add_annotation_x(new Date(d).setHours(2, 0), null, colors.lightgrey),
+                        // this.add_annotation_x(new Date(d).setHours(3, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(4, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(5, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(6, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(7, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(8, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(9, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(10, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(11, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(12, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(13, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(14, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(15, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(17, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(18, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(19, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(20, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(21, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(22, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d).setHours(23, 0), null, colors.lightgrey),
+                    ]
+                } else {
+                    return [];
+                }
             }
             const annotations_y = () => {
                 const d = last.e;
@@ -647,22 +718,24 @@ class Chart {
             }
 
             //* MOVE HA last timestamp to end of 5 minutes */
-            data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
+            if (CONFIG.TIMEFRAME === 'minute') {
+                data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
+            }
 
             //* TIME WINDOW VARIABLES */
             const is_crypto = symbol.indexOf('-USD') > 0;
             const dow = new Date().getDay();
             // const today = Date.now();
             // const yesterday = today - (24 * 60 * 60 * 1000);
-            const current_day = data[data.length-1].e;                                  //* accounts for when market is closed */
+            const current_day = data[data.length - 1].e;                                  //* accounts for when market is closed */
             const previous_day = current_day - (24 * 60 * 60 * 1000);
             const hmm = HELPERS.getHMM(new Date());
 
             //* REFERENCE VALUE */
             const last_eod = data.find((v) => v.e >= (new Date(previous_day).setHours(20, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
-            let s = new Date(previous_day).setHours(20, 0);
-            let start = last_eod ? last_eod.c : 0;//data[0].c;
+            let s = data[0].e; //new Date(previous_day).setHours(20, 0);
+            let start = data[0].c; //last_eod ? last_eod.c : 0;
             let shares = 1000 / start;
 
             //* HEIKEN-ASHI DATA */
@@ -671,25 +744,28 @@ class Chart {
             // let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
 
             //* HEIKEN-ASHI CLOSE VALUE
-            let ohlc_data = calculateHeikinAshiClose(data.filter((v) => v.e >= s));
+            let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
 
             //#region FILTERED DATA */
-            // let hour = 6;
-            // if (hmm < 900) { hour = 16 }
-            // s = new Date(hmm < 900 ? yesterday : today).setHours(hour, 0, 0, 0);
-            // // const e = new Date(today).setHours(23, 59);
-            s = hmm < 900
-                ? new Date(current_day).setHours(4, 0, 0, 0)
-                : (
-                    hmm < 1100
-                        ? new Date(current_day).setHours(7, 0, 0, 0)
-                        : new Date(current_day).setHours(9, 0, 0, 0)
-                )
-                ;
+            // // let hour = 6;
+            // // if (hmm < 900) { hour = 16 }
+            // // s = new Date(hmm < 900 ? yesterday : today).setHours(hour, 0, 0, 0);
+            // // // const e = new Date(today).setHours(23, 59);
+            // s = hmm < 900
+            //     ? new Date(current_day).setHours(4, 0, 0, 0)
+            //     : (
+            //         hmm < 1100
+            //             ? new Date(current_day).setHours(7, 0, 0, 0)
+            //             : new Date(current_day).setHours(9, 0, 0, 0)
+            //     )
+            //     ;
             ohlc_data = ohlc_data.filter((v) => v.e >= s);
             data = data
                 .filter((v) => v.e >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
+            data_m = data_m
+                .filter((v) => v.e >= s)
+            // .filter((v) => v.e <= e);
             //#endregion
 
             //#region LAST & PREVIOUS */
@@ -702,7 +778,7 @@ class Chart {
             //#region MIXED | HA 
             let series = [];
             series.push({ name: 'HA Close', type: 'bar', data: [] });
-            series.push({ name: 'Gain', type: 'line', color: colors.teal, data: [] });
+            series.push({ name: 'Gain', type: 'line', color: colors.orange, data: [] });
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
@@ -714,7 +790,7 @@ class Chart {
 
 
             //* OTHER OPTIONS */
-            this.options_candlestick.stroke.width = [1, 2];
+            this.options_candlestick.stroke.width = [5, 3];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
@@ -746,13 +822,13 @@ class Chart {
             //#region MINUTES CHART
             series = [];
             series.push({ name: 'Close', type: 'area', data: [] });
-            series.push({ name: '0.5 %', type: 'line', data: [] });
+            // series.push({ name: '0.5 %', type: 'line', data: [] });
 
             //* DATA */
-            series[0].data = data.map((v, i) => { return { x: v.e, y: v.c * shares } });
+            series[0].data = data_m.map((v, i) => { return { x: v.e, y: v.c * shares } });
             let add = 1000 * 0.005 / 24;
             let increment = series[0].data[0].y;
-            series[1].data = data.map((v, i) => { increment += add; return { x: v.e, y: increment } });
+            // series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
 
             //* ANNOTATIONS */
             this.options.annotations.xaxis = annotations_x();
@@ -770,35 +846,61 @@ class Chart {
             //#endregion
 
             //#region SUMMARIES
-            const account_detail = await ACCOUNT.detail();
-            const account_history_5d = await ACCOUNT.history('5D', '1D');
-            const account_positions = await ACCOUNT.positions();
-
-            const chart_card_series = eval(`CHART_V6_${index}`).options.series[0].data;
-            const position = await account_positions.find((v) => v.symbol === symbol.replace('-', ''));
+            const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
             const _last = chart_card_series[chart_card_series.length - 1].y;
             const _last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - 1000), '$', '');
+            HELPERS.update_elem_text(`chart-card-pct-${index}`, round1((_last - 1000) / 1000 * 100), '', '%');
 
-            [''/*, '-s'*/].forEach((p) => {
-                if (position) {
-                    HELPERS.update_elem_text_colored(`chart-card-gain-${index}${p}`, round2(+(position.unrealized_pl)), '$', '');
-                    HELPERS.update_elem_text_colored(`chart-card-pct-${index}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
-                    HELPERS.update_elem_text(`chart-card-seed-${index}${p}`, round1(+(position.cost_basis)), '$', '');
-                    HELPERS.update_elem_text_colored(`chart-card-chg-${index}${p}`, round2((_last - _last_minus_1)), '$', '');
-                    // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
-                } else {
-                    HELPERS.update_elem_text(`chart-card-gain-${index}${p}`, round2(_last - 1000), '$', '');
-                    HELPERS.update_elem_text(`chart-card-pct-${index}${p}`, round1((_last - 1000) / 1000 * 100), '', '%');
-                    HELPERS.update_elem_text_string(`chart-card-seed-${index}${p}`, '-', '', '');
-                    HELPERS.update_elem_text_colored(`chart-card-chg-${index}${p}`, round2(_last - _last_minus_1), '$', '');
-                }
-                // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
-                HELPERS.update_elem_text_colored(`chart-card-peak-${index}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
-            });
+            if (summarize) {
+                const account_detail = await ACCOUNT.detail();
+                const account_history_5d = await ACCOUNT.history('5D', '1D');
+                const account_positions = await ACCOUNT.positions();
 
-            const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
-            HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
-            HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
+                CONFIG.HA_SYMBOLS.forEach((s, i) => {
+                    const p = ''
+                    const position = account_positions.find((v) => v.symbol === s.replace('-', ''));
+                    if (position) {
+                        HELPERS.update_elem_text_colored(`chart-card-gain-${i}${p}`, round2(+(position.unrealized_pl)), '$', '');
+                        HELPERS.update_elem_text_colored(`chart-card-pct-${i}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
+                        HELPERS.update_elem_text(`chart-card-seed-${i}${p}`, round1(+(position.cost_basis / 1000)), '$', 'K');
+                        HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2((_last - _last_minus_1)), '$', '');
+                        // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
+                    } else {
+                        HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
+                        HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2(_last - _last_minus_1), '$', '');
+                    }
+                    // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
+                    HELPERS.update_elem_text_colored(`chart-card-peak-${i}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
+                });
+
+                const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
+                HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
+                HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
+
+                HELPERS.update_elem_text_colored('mobile-card-gain', round2(account_today_gain), '$', '');
+                HELPERS.update_elem_text_colored('mobile-card-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
+
+                HELPERS.update_elem_text('account-equity', round(account_detail.equity), '$', '');
+                HELPERS.update_elem_text('invested', round(account_detail.buying_power), '$', '');
+                HELPERS.update_elem_text_colored('account-delta', round(account_detail.equity - 43500), '$', '');
+                HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity - 43500) / 43500 * 100), '', '%');
+
+
+                //#region POSITIONS TREEMAP CHART
+                series = [{ name: 'Gain %', type: 'treemap', data: [] }];
+                series[0].data = account_positions.map((v, i) => { return { x: v.symbol, y: v.unrealized_plpc } });
+                this.options_treemap.chart.type = 'treemap';
+                this.options_treemap.chart.height = 300;
+                // CHART_POSITIONS_TODAY.options.dataLabels.enabled = true;
+                // this.options_treemap.xaxis.type = 'category';
+                this.options_treemap.dataLabels.formatter = function (text, op) {
+                    return [text, op.value]
+                };
+                this.options_treemap.series = series;
+                this._render_t();
+                //#endregion
+            }
             //#endregion
 
             //#region BUY | SELL INICATION

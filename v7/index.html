@@ -42,7 +42,7 @@
     <script src="./gemini.js"></script>
 
     <!--@ PAGE CONTENT -->
-    <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:1024px;"> <!-- 1450 -->
+    <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:1280px;"> <!-- 1450 -->
 
         <div class="w3-row-padding w3-white">
             <span class="">
@@ -54,7 +54,7 @@
                     <div class="w3-large w3-container w3-card" style="background-color:#6dc573;">
                         <div class="w3-hide-small w3-col s2 w3-center">
                             <img class="w3-padding" src="https://offsite-ryan.github.io/m3-trader/favicon-black.png"
-                                style="width:100%" alt="M3 Solutions"
+                                style="width:55%" alt="M3 Solutions"
                                 onclick="document.getElementById('settings').style.display = 'block'">
                         </div>
 
@@ -85,17 +85,38 @@
                 <!--@ SETTINGS -->
                 <div id="settings" class="w3-col s12 w3-large w3-panel w3-border w3-white w3-margin-bottom w3-padding"
                     style="display:none;">
-                    <div class="w3-row-padding">
-                        <div class="w3-col s12 w3-wide"><i class="fa fa-close w3-right w3-margin-top pointer"
+                    <div class="w3-row-padding w3-wide">
+                        <div class="w3-col s12 w3-wide w3-xlarge"><i class="fa fa-close w3-right w3-margin-top pointer"
                                 onclick="document.getElementById('settings').style.display = 'none'"></i><b>Settings</b>
                         </div>
-                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                        <div class="w3-hide w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             SYMBOL
                             <input id="symbol" style="width:100%;" value="" />
                         </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
+                            INDICATOR LIST
+                            <input id="indicator-list" style="width:100%;" value="QQQ,NDAQ,NQ=F,CL=F,^VIX" />
+                        </div>
+                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                            <i class="fa fa-toggle-on w3-text-green w3-xlarge w3-margin-right"></i>
                             SYMBOL LIST
                             <input id="symbol-list" style="width:100%;" value="QQQ" />
+                        </div>
+                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
+                            AI+ LIST
+                            <input id="symbol-list-ai" style="width:100%;" value="MU,UMC,SNDK,STX" />
+                        </div>
+                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
+                            ENERGY LIST
+                            <input id="symbol-list-energy" style="width:100%;" value="BE,CAT,GNRC,GE,GEV,NBIS" />
+                        </div>
+                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
+                            CRYPTO
+                            <input id="crypto-list" style="width:100%;" value="BTC-USD,ETH-USD,LTC-USD,SOL-USD" />
                         </div>
                         <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">API KEY
                             <input id="api-key" style="width:100%;" value="" />
@@ -128,7 +149,7 @@
                                 <label>0.75 %</label>
                             </div>
                         </div>
-                        <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
+                        <div class="w3-col s12 w3-padding">
                             <span class="w3-text-grey">Trail Percent</span>
                             <div class="w3-right w3-large">
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="OFF">
@@ -141,6 +162,17 @@
                                 <label>0.5 %</label>
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.75%">
                                 <label>0.75 %</label>
+                            </div>
+                        </div>
+                        <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
+                            <span class="w3-text-grey">Timeframe</span>
+                            <div class="w3-right w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="minute">
+                                <label>Minute</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="day">
+                                <label>Days</label>
+                                <!-- <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="0.25%">
+                                <label>0.25 %</label> -->
                             </div>
                         </div>
                         <div class="w3-button w3-border w3-wide w3-right pointer" style="width:180px;"
@@ -165,7 +197,7 @@
                 <!--@ SYMBOL SELECTION-->
                 <div class="w3-hide w3-xlarge w3-right w3-text-blue"><span id="symbol-last-value"></div>
 
-                <span class="_w3-right" style="margin-bottom:20px;">
+                <span class="w3-hide-small _w3-right" style="margin-bottom:20px;">
                     <div class="w3-right w3-text-pink" style="cursor:pointer;font-size:22px;padding-top:3px;"
                         onclick="ACCOUNT.liquidate()">
                         <i class="fa fa-ban"></i>
@@ -173,7 +205,7 @@
                     <!-- <span class="w3-right w3-xlarge">&nbsp;|&nbsp;<b><span id="_invested"
                                 class="w3-wide w3-text-blue">-</span></b></span> -->
 
-                    <span class="w3-right w3-large">
+                    <span class="w3-right w3-xlarge">
                         <span>
                             <b><span id="account-today-gain">-</span></b>
                             &nbsp;|&nbsp;
@@ -184,9 +216,11 @@
                     </span>
 
                     <span class="w3-hide-small w3-xlarge" style="margin-bottom:10px;">
+                        <b><span id="account-equity" class="">-</span></b>
+                        &nbsp;|&nbsp;
                         <b><span id="account-delta" class="">-</span></b>
                         &nbsp;|&nbsp;
-                        <b><span id="account-pct" class="w3-wide">-</span></b>
+                        <b><span id="account-pct" class="">-</span></b>
                     </span>
                 </span>
 
@@ -394,14 +428,17 @@
         function set_item(name, value) {
             localStorage.setItem(`m3-stocks-v6-${name}`, value);
         }
-        const settings_fields = 'symbol,symbol-list,api-key,api-secret,api-url,account-url,stop-loss,trail-pct'.split(',');
+        const settings_fields = 'symbol,symbol-list,api-key,api-secret,api-url,account-url,stop-loss,trail-pct,timeframe'.split(',');
         settings_fields.forEach((v) => {
-            if (v !== 'stop-loss' && v !== 'trail-pct') {
+            if (v !== 'stop-loss' && v !== 'trail-pct' && v !== 'timeframe') {
                 document.getElementById(v).value = get_item(v);
+            } else if (v === 'timeframe') {
+                const value = (get_item(v) || 'minute');
+                Array.from(document.getElementsByName(v)).filter((v) => v.value === value)[0].checked = true;
             } else {
                 const value = (get_item(v) || 'OFF');
                 const stop_loss = value === 'OFF' ? 'OFF' : -value + '%';
-                Array.from(document.getElementsByName(v)).filter((v) => v.value === stop_loss)[0].checked = true;
+                Array.from(document.getElementsByName(v)).filter((v) => v.value === value)[0].checked = true;
             }
         });
 
@@ -426,8 +463,11 @@
         }
         function save_settings() {
             settings_fields.forEach((v) => {
-                if (v !== 'stop-loss' && v !== 'trail-pct') {
+                if (v !== 'stop-loss' && v !== 'trail-pct' && v !== 'timeframe') {
                     set_item(v, document.getElementById(v).value);
+                } else if (v === 'timeframe') {
+                    const value = Array.from(document.getElementsByName(v)).filter((v) => v.checked)[0].value
+                    set_item(v, value);
                 } else {
                     const value = -(+(Array.from(document.getElementsByName(v)).filter((v) => v.checked)[0].value.replace('%', '')))
                     set_item(v, isNaN(value) ? 'OFF' : value);
@@ -455,9 +495,10 @@
             ACCOUNT_URL = localStorage.getItem(this.get_key('account-url')) || '';
             STOP_LOSS = +(localStorage.getItem(this.get_key('stop-loss'))) || 'OFF';
             TRAIL_PCT = +(localStorage.getItem(this.get_key('trail-pct'))) || 'OFF';
+            TIMEFRAME = localStorage.getItem(this.get_key('timeframe')) || 'minute';
             UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
-            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',').slice(0, 4)].filter((v, i, a) => a.indexOf(v) === i);
+            HA_SYMBOLS = [/*this.SYMBOL,*/ ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
             // COMPARISON_NUM_DAYS = (symbol = null) => {
@@ -482,25 +523,43 @@
 
             load_chart_cards() {
                 let html = '';
+                let html_table = `
+                    <span class="_w3-hide-medium _w3-hide-large w3-col s12 w3-xlarge _w3-margin w3-padding">
+                        <span class="w3-center w3-border w3-col s12 w3-padding" style="min-height:150px;">
+                            <div class="">TODAY</div>
+                            <b><div id="mobile-card-gain" class="w3-xxxlarge w3-wide"></div></b>
+                            <div id="mobile-card-pct" class="w3-wide"></div>
+                        </span>
+                        <span id="mobile-card-treemap" class="w3-center w3-border w3-col s12 w3-padding w3-margin-top" style="min-height:250px;"></span>
+                        <span>
+                            <table id="mobile-card-table-rows">
+                            </table>
+                        </span>
+                    </span>`;
+
                 // CONFIG.WATCH_LIST
                 this.HA_SYMBOLS
                     // .split(',')
-                    .slice(0, 5)
+                    // .slice(0, 6)
                     .forEach((s, i) => {
-                        //     html += `
-                        // <div id="" class="w3-col s12 m12 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
+
+                        // html += `
+                        // <!-- <span class="w3-col s12 w3-xlarge">123</span> -->
+                        // <div id="" class="w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
                         //     <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
-                        //         <span class="w3-col s12"></span>
-                        //         <span id="chart-card-banner-${i}" class="w3-col s4 w3-center">
+                        //         <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                         //             <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                         //             <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
-                        //             <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10 * 1000},'${s}')" style="padding-top:3px;"></i>
-                        //         </span>
-                        //         <span id="chart-card-banner-${i}" class="w3-col s8 w3-left">
-                        //             123
+                        //             <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
                         //         </span>
                         //     </div>
-
+                        //     <!-- <span class="w3-small w3-hide w3-hide-medium w3-hide-large">
+                        //         <div class="w3-text-grey">G<b><span id="chart-card-gain-${i}-s" class="w3-right">-</span></b></div>
+                        //         <div class="w3-text-grey">P<b><span id="chart-card-pct-${i}-s" class="w3-right">-</span></b></div>
+                        //         <div class="w3-text-grey">C<b><span id="chart-card-chg-${i}-s" class="w3-right">-</span></b></div>
+                        //         <div class="w3-text-grey">M<b><span id="chart-card-peak-${i}-s" class="w3-right">-</span></b></div>
+                        //         <div class="w3-text-grey">S<b><span id="chart-card-seed-${i}-s" class="w3-right">-</span></b></div>
+                        //     </span> -->
                         //     <span class="w3-large w3-margin-top">
                         //         <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
                         //         <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
@@ -509,42 +568,57 @@
                         //         <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
                         //     </span>
                         // </div>
-                        // <div class="w3-col s12 m12">
-                        //     <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:77px;"></div>
-                        //     <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:77px;"></div>
+                        // <div class="w3-col s12 m8">
+                        //     <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
+                        //     <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                         // </div>`;
 
+                        // html_table += `
+                        // `;
+
                         html += `
-                    <div id="" class="w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
-                        <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
-                            <span class="w3-col s12"></span>
-                            <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
-                                <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
-                                <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
-                                <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
-                            </span>
-                        </div>
-                        <!-- <span class="w3-small w3-hide w3-hide-medium w3-hide-large">
-                            <div class="w3-text-grey">G<b><span id="chart-card-gain-${i}-s" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">P<b><span id="chart-card-pct-${i}-s" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">C<b><span id="chart-card-chg-${i}-s" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">M<b><span id="chart-card-peak-${i}-s" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">S<b><span id="chart-card-seed-${i}-s" class="w3-right">-</span></b></div>
-                        </span> -->
-                        <span class="w3-large w3-margin-top">
-                            <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
-                            <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">MAX<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
-                            <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
-                        </span>
-                    </div>
-                    <div class="w3-col s12 m8">
-                        <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
-                        <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
-                    </div>`;
+                        <span class="w3-hide-small w3-col s6 w3-xlarge">
+                            <div class="w3-col s5 w3-padding">
+                                <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
+                                    <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
+                                    <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
+                                    <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
+                                </span>
+                            </div>
+                            <div class="w3-col s7 w3-padding" style="font-size:18px;">
+                                <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
+                                    <!-- <i class="fa fa-toggle-on w3-text-grey w3-left w3-xlarge"></i> -->
+                                    <span id="chart-card-seed-${i}" class="w3-right w3-text-blue">$ - K</span>
+                                    <span class="w3-right w3-text-grey">&nbsp;|&nbsp;</span>
+                                    <span id="chart-card-pct-${i}" class="w3-right">-</span>
+                                    <span class="w3-right w3-text-grey">&nbsp;|&nbsp;</span>
+                                    <span id="chart-card-gain-${i}" class="w3-right ">-</span>
+                                </span>
+                            </div>
+                            <div id="" class="w3-hide w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
+                                <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
+                                    <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
+                                        <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
+                                        <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
+                                        <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
+                                    </span>
+                                </div>
+                                <span class="w3-large w3-margin-top">
+                                    <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
+                                    <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
+                                    <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
+                                    <div class="w3-text-grey">MAX<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
+                                    <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
+                                </span>
+                            </div>
+                            <div class="w3-col s12 m12">
+                                <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
+                            </div>
+                        </span>`;
                     });
-                document.getElementById('output-charts').innerHTML = html;
+
+                document.getElementById('output-charts').innerHTML = html_table + html;
             }
         }
     </script>
@@ -697,7 +771,7 @@
             // bars = null;
 
             //* GET SYMBOLS */
-            async get_symbols(timeframe = 5) {
+            async get_symbols(timeframe = '5Min') {
                 // const promises = [CONFIG.SYMBOL, 'NQ=F', 'CL=F', '^VIX', 'SNDK', 'DRAM', 'SOXL', 'KLAC', 'SOXL', 'DRAM', 'MU', /*'AMAT', 'ASML', 'KLAC'*/].map((s) => {
                 const promises = CONFIG.HA_SYMBOLS.map((s) => {
                     return this.get_data(s, timeframe);
@@ -735,13 +809,16 @@
                     //     ? new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString()
                     //     : new Date(Date.now() - (12 * 60 * 60 * 1000)).toISOString();
                     // const start_at = new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString();
-                    const start_at = name.indexOf('-USD') > 0 
-                        ? new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString()
-                        : new Date(calendar[calendar.map((v)=>v.date).findIndex((v)=>v > HELPERS.getYMD(new Date())) - 1].date).toISOString();
-                    const end_at = new Date().toISOString();
+                    const start_at = timeframe === '1D'
+                        ? new Date(Date.now() - (60 * 24 * 60 * 60 * 1000)).toISOString()
+                        : name.indexOf('-USD') > 0
+                            ? new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString()
+                            : new Date(calendar[calendar.map((v) => v.date).findIndex((v) => v > HELPERS.getYMD(new Date())) - 1].date).toISOString()
+                        ;
+                    const end_at = new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
-                    const url = `${CONFIG.API_URL}/${name}/${timeframe}Min/${start_at}/${end_at}`;
+                    const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
                     // const url = `${CONFIG.API_URL}/symbol/${name}/${timeframe}Min/${start_at}/${end_at}`;
                     // const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=5Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
 
@@ -783,13 +860,17 @@
                 const hmm = HELPERS.getHMM(new Date());
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
                     // const data_m = await DATA.get_symbols(1);
-                    const data = await DATA.get_symbols(5);
-                    const data_m = await DATA.get_symbols(1);
-                    const account_history = await ACCOUNT.history();
-                    const account_history_14d = await ACCOUNT.history('14D', '1D');
-                    const account_detail = await ACCOUNT.detail();
-                    const account_positions = await ACCOUNT.positions();
+                    const data = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols('5Min') : [];
+                    const data_m = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols('1Min') : [];
+                    const data_d = CONFIG.TIMEFRAME !== 'minute' ? await DATA.get_symbols('1D') : [];
+                    // const account_history = await ACCOUNT.history();
+                    // const account_history_14d = await ACCOUNT.history('14D', '1D');
+                    // const account_detail = await ACCOUNT.detail();
+                    // const account_positions = await ACCOUNT.positions();
+
                     // console.log(data);
+                    // console.log(data_m);
+                    // console.log(data_d);
                     // console.log(account_history);
                     // console.log(account_positions);
 
@@ -808,149 +889,58 @@
                         }
                     }
 
-                    //* CHARTS */
-                    // const ha_symbols = `${CONFIG.SYMBOL},MU,KLAC,DRAM,SOXL`.split(',')
-                    // const ha_symbols = [CONFIG.SYMBOL, ...CONFIG.SYMBOL_LIST.split(',').slice(0, 4)];
-                    const ha_symbols = CONFIG.HA_SYMBOLS;
-                    // CHART_HA_1.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]), 70, false, 'mixed', 5);
-                    // console.log(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]));
-
-                    // CHART_HA_1.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[0]]), 70, false, 'mixed', 5);
-                    // CHART_HA_2.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[1]]), 70, false, 'mixed', 5);
-                    // CHART_HA_3.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[2]]), 70, false, 'mixed', 5);
-                    // CHART_HA_4.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[3]]), 70, false, 'mixed', 5);
-                    // CHART_HA_5.update(HELPERS.reduce1MinTo5Min(data[CONFIG.HA_SYMBOLS[4]]), 70, false, 'mixed', 5);
-                    // [0, 1, 2/*, 3, 4*/].forEach((i) => {
-                    for await (const i of [0, 1, 2, 3, 4]) {
-                        const s = CONFIG.HA_SYMBOLS[i];
-                        // eval(`CHART_HA_${i + 1}`).update(s, data[s], 70, false, 'mixed', 5);
-
-                        eval(`CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155));
-                        // eval(`CHART_HA_2_${i + 1}`).update(s, data_m[s], 70, false);
-                    }
-                    // CHART_HA_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false, 'mixed', 5);
-                    // CHART_HA_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false, 'mixed', 5);
-                    // CHART_HA_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false, 'mixed', 5);
-                    // CHART_HA_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false, 'mixed', 5);
-                    // CHART_HA_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false, 'mixed', 5);
-
-                    // CHART_HA_2_1.update(data[CONFIG.HA_SYMBOLS[0]], 70, false);
-                    // CHART_HA_2_2.update(data[CONFIG.HA_SYMBOLS[1]], 70, false);
-                    // CHART_HA_2_3.update(data[CONFIG.HA_SYMBOLS[2]], 70, false);
-                    // CHART_HA_2_4.update(data[CONFIG.HA_SYMBOLS[3]], 70, false);
-                    // CHART_HA_2_5.update(data[CONFIG.HA_SYMBOLS[4]], 70, false);
-
-                    // CHART.update(data[CONFIG.SYMBOL], 120);
-                    // CHART_ZOOM.update(data[CONFIG.SYMBOL].slice(-10), 120);
-                    // // CHART_1.update(data['ASML'], 200);
-                    // // CHART_2.update(data['KLAC'], 200);
-                    // CHART_FUTURES.update(data['NQ=F'], 100);
-                    // CHART_OIL.update(data['CL=F'], 100, true);
-                    // CHART_VIX.update(data['^VIX'], 100, true);
-                    CHART_ACCOUNT_HISTORY.update(account_history
-                        // .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
-                        .map((v) => { return { e: new Date(v.t).getTime(), t: v.t, c: v.net } }), 120, true);
-
-                    //* LAST */
-                    // const values = CHART.options.series[0].data.map((v)=>v.y);
-                    // const current = values[values.length-1];
-                    // const previous = values[values.length-2];
-                    // const delta = round2(current - previous);
-                    // const delta_pct = round2((current - previous) / previous * 100);
-                    // HELPERS.update_elem_text_colored('last-gain', round2(delta), '$', '');
-                    // HELPERS.update_elem_text_colored('last-pct', round2(delta_pct), '', '%');
-
-                    // //* CHART CARDS */
-                    [0, 1, 2/*, 3, 4*/].forEach((n) => {
-                        // const chart_card_series = eval(`CHART_HA_${n + 1}`).options_candlestick.series[1].data;
-                        // const chart_card_series = eval(`CHART_V6_${n}`).options.series[0].data;
-                        // const last = chart_card_series[chart_card_series.length - 1].y;
-                        // const last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
-                        // const position = account_positions.find((v) => v.symbol === ha_symbols[n]);
-                        // // HELPERS.update_elem_text_string(`chart-card-symbol-${n}`, ha_symbols[n], '', '');
-                        // if (position) {
-                        //     HELPERS.update_elem_text_colored(`chart-card-gain-${n}`, round2(+(position.unrealized_pl)), '$', '');
-                        //     HELPERS.update_elem_text_colored(`chart-card-pct-${n}`, round1(+(position.unrealized_plpc) * 100), '', '%');
-                        //     HELPERS.update_elem_text(`chart-card-seed-${n}`, round1(+(position.cost_basis)), '$', '');
-                        //     HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1)), '$', '');
-                        //     // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
-                        // } else {
-                        //     HELPERS.update_elem_text(`chart-card-gain-${n}`, round2(last - 1000), '$', '');
-                        //     HELPERS.update_elem_text(`chart-card-pct-${n}`, round1((last - 1000) / 1000 * 100), '', '%');
-                        //     HELPERS.update_elem_text_string(`chart-card-seed-${n}`, '-', '', '');
-                        //     HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2(last - last_minus_1), '$', '');
-                        // }
-                        // // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
-                        // HELPERS.update_elem_text_colored(`chart-card-peak-${n}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
+                    CONFIG.HA_SYMBOLS.forEach((s, i) => {
+                        // for await (const i of [0, 1, 2, 3, 4, 5]) {
+                        // const s = CONFIG.HA_SYMBOLS[i];
+                        if (CONFIG.TIMEFRAME === 'minute') {
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155), i === 0);
+                        } else {
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, data_d[s], data_d[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155), i === 0);
+                        }
                     });
-                    // const account_today_gain = account_detail.equity - account_history_14d[account_history_14d.length - 1].net
-                    // HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
-                    // HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
+                    // CHART_ACCOUNT_HISTORY.update(account_history
+                    //     // .filter((v) => hmm < 930 ? 400 : v.hmm >= 925 && v.hmm <= 1605)
+                    //     .map((v) => { return { e: new Date(v.t).getTime(), t: v.t, c: v.net } }), 120, true);
 
-                    const account_history_last = account_history_14d[account_history_14d.length - 1]
-                    if (new Date(account_history_last.t).getDate() !== new Date().getDate()) {
-                        account_history_14d.push({ e: Date.now(), t: new Date().toLocaleString(), hmm: HELPERS.getHMM(new Date()), net: account_detail.equity })
-                    }
-                    // _intraday
-                    const position_gain = account_positions.length > 0 ? account_positions[0].unrealized_pl : 0;
-                    const position_gain_pct = account_positions.length > 0 ? account_positions[0].unrealized_plpc * 100 : 0;
-                    const spend = account_positions.length > 0 ? round(account_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)) : 0;
+                    // const account_history_last = account_history_14d[account_history_14d.length - 1]
+                    // if (new Date(account_history_last.t).getDate() !== new Date().getDate()) {
+                    //     account_history_14d.push({ e: Date.now(), t: new Date().toLocaleString(), hmm: HELPERS.getHMM(new Date()), net: account_detail.equity })
+                    // }
 
-                    const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
-                    const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
+                    //* _intraday
+                    // const position_gain = account_positions.length > 0 ? account_positions[0].unrealized_pl : 0;
+                    // const position_gain_pct = account_positions.length > 0 ? account_positions[0].unrealized_plpc * 100 : 0;
+                    // const spend = account_positions.length > 0 ? round(account_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)) : 0;
 
-                    //* LAST */
-                    // HELPERS.update_elem_text_colored('last-gain', round2(this.last ? position_gain - this.last : 0), '$', '');
-                    // HELPERS.update_elem_text_colored('last-pct', round2(this.last_pct ? position_gain_pct - this.last_pct : 0), '', '%');
+                    // const today_gain = account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net;
+                    // const today_gain_pct = (account_history_14d[account_history_14d.length - 1].net - account_history_14d[account_history_14d.length - 2].net) / account_history_14d[account_history_14d.length - 2].net * 100;
 
                     //* TABLE */
                     const seed = 43500; //** TODO: get from account activity **/
-                    // // HELPERS.update_elem_text_colored('gain', round2(account_detail.equity - seed), '$', '');
-                    // document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
-                    // HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
 
-                    // HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
-                    // HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
-                    // HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
+                    // //* UPDATE FIELDS FOR CHANGE CALCULATION */
+                    // this.last = position_gain;
+                    // this.last_pct = position_gain_pct;
 
-                    // HELPERS.update_elem_text_colored('positions-gain', round2(position_gain), '$', '');
-                    // HELPERS.update_elem_text_colored('positions-pct', round2(position_gain_pct), '', '%');
-                    // HELPERS.update_elem_text_colored('today-gain', round2(today_gain), '$', '');
-                    // // HELPERS.update_elem_text_colored('today-pct', round2(today_gain_pct), '', '%'); //* TOP FIELD */
-                    // HELPERS.update_elem_text_colored('today-pct-2', round2(today_gain_pct), '', '%');
-                    // HELPERS.update_elem_text('invested', spend / 1000, '$', 'K');
-                    // // HELPERS.update_elem_text('account-equity', round1(account_detail.equity / 1000), '$', 'K');
-                    // HELPERS.update_elem_text_colored('account-delta', round1(account_detail.equity - seed), '$', '');
-                    // HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity / seed * 100) - 100), '', '%');
-                    // HELPERS.update_elem_text('buying-power', round(account_detail.buying_power), '$', '');
-
-                    //* UPSDAT FIELDS FOR CHANGE CALCULATION */
-                    this.last = position_gain;
-                    this.last_pct = position_gain_pct;
-
-                    //* STOP LOSS & TRAILING PERCENT CHECKS */
-                    const pct = account_positions.length > 0 ? account_positions[0].unrealized_plpc : 0;
-                    // console.log(`%c${round4(pct*100)}`, 'color:yellow');
-                    if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
-                        // ACCOUNT.sell();
-                    }
-                    this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
-                    const trail_stop_pct = INTERVAL.position_peak_pct * (1 + (CONFIG.TRAIL_PCT));
-                    // console.log(`%c${round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
-                    // console.log(`%c${round2(INTERVAL.position_peak_pct)} | ${round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
-                    // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
-                    //     ACCOUNT.sell();
+                    // //* STOP LOSS & TRAILING PERCENT CHECKS */
+                    // const pct = account_positions.length > 0 ? account_positions[0].unrealized_plpc : 0;
+                    // // console.log(`%c${round4(pct*100)}`, 'color:yellow');
+                    // if (CONFIG.STOP_LOSS !== 'OFF' && pct < CONFIG.STOP_LOSS) {
+                    //     // ACCOUNT.sell();
                     // }
+                    // this.position_peak_pct = position_gain_pct > +(this.position_peak_pct) ? +(position_gain_pct) : +(this.position_peak_pct);
+                    // const trail_stop_pct = INTERVAL.position_peak_pct * (1 + (CONFIG.TRAIL_PCT));
+                    // // console.log(`%c${round4(INTERVAL.position_peak_pct)} | ${CONFIG.TRAIL_PCT} | ${round4(trail_stop_pct)}`, 'color:yellow')
+                    // // console.log(`%c${round2(INTERVAL.position_peak_pct)} | ${round2(INTERVAL.position_peak_pct * (100 + (CONFIG.TRAIL_PCT * INTERVAL.position_peak_pct)))}`, 'color:yellow')
+                    // // if (CONFIG.TRAIL_PCT !== 'OFF' && pct < INTERVAL.position_peak_pct * (100 + CONFIG.TRAIL_PCT)) {
+                    // //     ACCOUNT.sell();
+                    // // }
 
                     // check_positions();
                 }
                 const elem = document.getElementById('clock');
                 elem.innerText = dt.toLocaleTimeString().split(' ')[0];
-                // if (dt.getMinutes() % 5 === 0) {
-                //     elem.style.backgroundColor = 'white';
-                //     setTimeout(() => elem.style.backgroundColor = '', 1000);
-                // }
             }
         }
     </script>
@@ -962,12 +952,17 @@
         const HELPERS = new Helpers();
         CONFIG.load_chart_cards();
         const DATA = new Data();
+        const CHARTS = {};
+        CONFIG.HA_SYMBOLS.forEach((v, i) => {
+            CHARTS[`CHART_V6_${i}`] = new Chart(`chart-ha-${i}-1`, `chart-ha-${i}-2`, `mobile-card-treemap`);
+        })
         const ACCOUNT = new Account();
-        const CHART_V6_0 = new Chart('chart-ha-0-1', 'chart-ha-0-2');
-        const CHART_V6_1 = new Chart('chart-ha-1-1', 'chart-ha-1-2');
-        const CHART_V6_2 = new Chart('chart-ha-2-1', 'chart-ha-2-2');
-        const CHART_V6_3 = new Chart('chart-ha-3-1', 'chart-ha-3-2');
-        const CHART_V6_4 = new Chart('chart-ha-4-1', 'chart-ha-4-2');
+        // const CHART_V6_0 = new Chart('chart-ha-0-1', 'chart-ha-0-2');
+        // const CHART_V6_1 = new Chart('chart-ha-1-1', 'chart-ha-1-2');
+        // const CHART_V6_2 = new Chart('chart-ha-2-1', 'chart-ha-2-2');
+        // const CHART_V6_3 = new Chart('chart-ha-3-1', 'chart-ha-3-2');
+        // const CHART_V6_4 = new Chart('chart-ha-4-1', 'chart-ha-4-2');
+        // const CHART_V6_5 = new Chart('chart-ha-5-1', 'chart-ha-5-2');
 
         // const CHART_HA_1 = new Chart('chart-ha-0');
         // const CHART_HA_2 = new Chart('chart-ha-1');
