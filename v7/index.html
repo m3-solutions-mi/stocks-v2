@@ -467,6 +467,8 @@
 
             const input = prompt('settings', '');
             console.log(input);
+
+            localStorage.clear();
             const obj = JSON.parse(input);
             console.log(Object.entries(obj));
             Object.entries(obj).forEach((v) => set_item(v[0], v[1]));
