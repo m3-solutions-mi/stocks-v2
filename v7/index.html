@@ -111,12 +111,14 @@
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
                             GROUP B
-                            <input id="symbol-list-group-b" style="width:100%;" value="DYN,DRTS,ERAS,LQDA,NEO,RARE,ROIV,TXG,XERS,WAY" />
+                            <input id="symbol-list-group-b" style="width:100%;"
+                                value="DYN,DRTS,ERAS,LQDA,NEO,RARE,ROIV,TXG,XERS,WAY" />
                         </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
                             AI+ LIST
-                            <input id="symbol-list-ai" style="width:100%;" value="DRAM,MU,UMC,SMCI,SNDK,SOXL,STX,WDC,TSEM" />
+                            <input id="symbol-list-ai" style="width:100%;"
+                                value="DRAM,MU,UMC,SMCI,SNDK,SOXL,STX,WDC,TSEM" />
                         </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
@@ -495,7 +497,9 @@
     <script>
         class Configuration {
             get_key = (name) => `m3-stocks-v6-${name}`;
-            constructor() { }
+            constructor() {
+                console.log(JSON.stringify(localStorage, null, 2));
+            }
             DAY_TARGET_DOLLARS = 500;
             SYMBOL = localStorage.getItem(this.get_key('symbol')) || 'QQQ';
             SYMBOL_LIST = localStorage.getItem(this.get_key('symbol-list')) || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
