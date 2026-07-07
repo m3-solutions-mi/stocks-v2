@@ -331,6 +331,9 @@ class Chart {
         _title: {
             text: 'Treemap with Color scale',
         },
+        noData: {
+            text: 'NO DATA',
+        },
         dataLabels: {
             enabled: true,
             style: {
@@ -410,7 +413,7 @@ class Chart {
         // }
         return obj;
     }
-    add_annotation_point = (x, y, size = 4.5, color = colors.black, text = null, fontSize = '22px', offsetX = 0, offsetY = 0) => {
+    add_annotation_point = (x, y, size = 10, color = colors.black, text = null, fontSize = '22px', offsetX = 0, offsetY = 0) => {
         const obj = { x, y, marker: { size, fillColor: color } };
         if (text) {
             obj.label = { text, offsetX, offsetY, style: { fontSize } };
@@ -648,7 +651,7 @@ class Chart {
 
 
     //@ SYMBOL CHART *** 2 *** - 24H */
-    async update_2(symbol, data, data_m, index, height = 280, summarize = false) {
+    async update_2(symbol, timeframe, data, data_m, index, height = 280, summarize = false) {
         // const is_crypto = symbol.indexOf('-USD') < 0;
         // if (timeframe === 5) {
         //     data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
@@ -711,7 +714,6 @@ class Chart {
             const annotations_p = () => {
                 const d = last.e;
                 return [
-                    // this.add_annotation_y(new Date(d).setHours(2, 15), null, colors.teal),
                     // this.add_annotation_y(new Date(d).setHours(9, 30), null, colors.deeppink),
                     // this.add_annotation_y(new Date(d).setHours(10, 0), null, colors.lightgrey),
                 ]
@@ -732,9 +734,11 @@ class Chart {
             const hmm = HELPERS.getHMM(new Date());
 
             //* REFERENCE VALUE */
-            const last_eod = data.find((v) => v.e >= (new Date(previous_day).setHours(20, 0)));
+            const last_eod = data.find((v) => v.e >= (new Date(previous_day).setHours(19, 55)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
-            let s = data[0].e; //new Date(previous_day).setHours(20, 0);
+            let s = timeframe === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
+            // let s = new Date(current_day).setHours(4, 0);
+            // let s = new Date(previous_day).setHours(19, 55);
             let start = data[0].c; //last_eod ? last_eod.c : 0;
             let shares = 1000 / start;
 
@@ -787,6 +791,7 @@ class Chart {
 
             //* ANNOTATIONS */
             this.options_candlestick.annotations.xaxis = annotations_x();
+            this.options_candlestick.annotations.yaxis.push(this.add_annotation_y(last_eod.d, colors.deeppink)),
 
 
             //* OTHER OPTIONS */
@@ -826,7 +831,7 @@ class Chart {
 
             //* DATA */
             series[0].data = data_m.map((v, i) => { return { x: v.e, y: v.c * shares } });
-            let add = 1000 * 0.005 / 24;
+            let add = 1000 * 0.005 / (timeframe === 'day' ? 1 : 10);
             let increment = series[0].data[0].y;
             // series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
 
@@ -891,7 +896,7 @@ class Chart {
                 series = [{ name: 'Gain %', type: 'treemap', data: [] }];
                 series[0].data = account_positions.map((v, i) => { return { x: v.symbol, y: round1(+(v.unrealized_plpc) * 100) } });
                 this.options_treemap.chart.type = 'treemap';
-                this.options_treemap.chart.height = 300;
+                this.options_treemap.chart.height = IS_SMALL ? 300 : 144;
                 // CHART_POSITIONS_TODAY.options.dataLabels.enabled = true;
                 // this.options_treemap.xaxis.type = 'category';
                 this.options_treemap.dataLabels.formatter = function (text, op) {

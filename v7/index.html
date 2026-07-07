@@ -93,6 +93,11 @@
                             SYMBOL
                             <input id="symbol" style="width:100%;" value="" />
                         </div>
+                        <div class="w3-col s12 m12 w3-padding w3-text-green w3-margin-top _w3-margin-left">
+                            <!-- <i class="fa fa-circle-o w3-text-green w3-xlarge w3-margin-right"></i> -->
+                            SYMBOL LIST
+                            <input id="symbol-list" style="width:100%;" value="QQQ" />
+                        </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
                             INDICATOR LIST
@@ -100,13 +105,18 @@
                         </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-on w3-text-green w3-xlarge w3-margin-right"></i>
-                            SYMBOL LIST
-                            <input id="symbol-list" style="width:100%;" value="QQQ" />
+                            GROUP A
+                            <input id="symbol-list-group-a" style="width:100%;" value="FROG,QLYS,NEO,BTSG,RARE,TXG" />
+                        </div>
+                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
+                            GROUP B
+                            <input id="symbol-list-group-b" style="width:100%;" value="DYN,DRTS,ERAS,LQDA,NEO,RARE,ROIV,TXG,XERS,WAY" />
                         </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
                             AI+ LIST
-                            <input id="symbol-list-ai" style="width:100%;" value="MU,UMC,SNDK,STX" />
+                            <input id="symbol-list-ai" style="width:100%;" value="DRAM,MU,UMC,SMCI,SNDK,SOXL,STX,WDC,TSEM" />
                         </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
@@ -525,12 +535,12 @@
                 let html = '';
                 let html_table = `
                     <span class="_w3-hide-medium _w3-hide-large w3-col s12 w3-xlarge _w3-margin w3-padding">
-                        <span class="w3-center w3-border w3-col s12 w3-padding" style="min-height:150px;">
+                        <span class="w3-center w3-border w3-col s12 m8 w3-padding" style="min-height:150px;">
                             <div class="">TODAY</div>
                             <b><div id="mobile-card-gain" class="w3-xxxlarge w3-wide"></div></b>
                             <div id="mobile-card-pct" class="w3-wide"></div>
                         </span>
-                        <span id="mobile-card-treemap" class="w3-center w3-border w3-col s12 w3-padding w3-margin-top" style="min-height:250px;"></span>
+                        <span id="mobile-card-treemap" class="w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;"></span>
                         <span>
                             <table id="mobile-card-table-rows">
                             </table>
@@ -812,8 +822,8 @@
                     const start_at = timeframe === '1D'
                         ? new Date(Date.now() - (60 * 24 * 60 * 60 * 1000)).toISOString()
                         : name.indexOf('-USD') > 0
-                            ? new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString()
-                            : new Date(calendar[calendar.map((v) => v.date).findIndex((v) => v > HELPERS.getYMD(new Date())) - 1].date).toISOString()
+                            ? new Date(Date.now() - (2 * 24 * 60 * 60 * 1000)).toISOString()
+                            : new Date(calendar[calendar.map((v) => v.date).findIndex((v) => v > HELPERS.getYMD(new Date())) - 2].date).toISOString()
                         ;
                     const end_at = new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
@@ -893,9 +903,9 @@
                         // for await (const i of [0, 1, 2, 3, 4, 5]) {
                         // const s = CONFIG.HA_SYMBOLS[i];
                         if (CONFIG.TIMEFRAME === 'minute') {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, data[s], data_m[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data_m[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155), i === 0);
                         } else {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, data_d[s], data_d[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data_d[s], data_d[s], i, IS_LARGE ? 125 : (IS_MEDIUM ? 125 : 155), i === 0);
                         }
                     });
 
