@@ -343,7 +343,8 @@
             console.log(Object.entries(obj));
             Object.entries(obj).forEach((v) => localStorage.setItem(v[0], v[1]));
 
-            window.location = window.location;
+            // window.location = window.location;
+            window.location.reload(true);
         }
         function save_settings() {
             settings_fields.forEach((v) => {
@@ -355,7 +356,8 @@
                 }
             });
 
-            window.location = window.location;
+            // window.location = window.location;
+            window.location.reload(true);
         }
         if (IS_SMALL) {
             document.getElementById('clock').parentElement.parentElement.style.marginTop = '0px';
