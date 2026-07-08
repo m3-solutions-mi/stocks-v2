@@ -661,7 +661,7 @@ class Chart {
 
         if (data && data.length > 0) {
 
-            //@ ANNOTATIONS */
+            //#region ANNOTATIONS */
             this.options_candlestick.annotations = { xaxis: [], yaxis: [], points: [] };
             this.options.annotations = { xaxis: [], yaxis: [], points: [] };
             const annotations_x = () => {
@@ -718,6 +718,7 @@ class Chart {
                     // this.add_annotation_y(new Date(d).setHours(10, 0), null, colors.lightgrey),
                 ]
             }
+            //#endregion
 
             //* MOVE HA last timestamp to end of 5 minutes */
             if (CONFIG.TIMEFRAME === 'minute') {

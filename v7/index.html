@@ -94,11 +94,43 @@
                             <input id="symbol" style="width:100%;" value="" />
                         </div>
                         <div class="w3-col s12 m12 w3-padding w3-text-green w3-margin-top _w3-margin-left">
-                            <!-- <i class="fa fa-circle-o w3-text-green w3-xlarge w3-margin-right"></i> -->
                             SYMBOL LIST
                             <input id="symbol-list" style="width:100%;" value="QQQ" />
                         </div>
-                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
+                        <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
+                            <span class="w3-text-grey">SYMBOL GROUPS</span>
+                            <div class="w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                    onchange="select_symbol_list(this)">
+                                <label contenteditable="true">FROG,QLYS,NEO,BTSG,RARE,TXG</label>
+                            </div>
+                            <div class="w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                    onchange="select_symbol_list(this)">
+                                <label contenteditable="true">QQQ,NQ=F,NDAQ,CL=F,^VIX,VOO</label>
+                            </div>
+                            <div class="w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                    onchange="select_symbol_list(this)">
+                                <label contenteditable="true">DYN,DRTS,ERAS,LQDA,NEO,RARE,ROIV,TXG,XERS,WAY</label>
+                            </div>
+                            <div class="w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                    onchange="select_symbol_list(this)">
+                                <label contenteditable="true">DRAM,MU,UMC,SMCI,SNDK,SOXL,STX,WDC,TSEM</label>
+                            </div>
+                            <div class="w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                    onchange="select_symbol_list(this)">
+                                <label contenteditable="true">BE,CAT,GNRC,GE,GEV,NBIS</label>
+                            </div>
+                            <div class="w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                    onchange="select_symbol_list(this)">
+                                <label contenteditable="true">BTC-USD,ETH-USD,LTC-USD,SOL-USD</label>
+                            </div>
+                        </div>
+                        <!-- <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
                             INDICATOR LIST
                             <input id="indicator-list" style="width:100%;" value="QQQ,NDAQ,NQ=F,CL=F,^VIX" />
@@ -129,20 +161,31 @@
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
                             CRYPTO
                             <input id="crypto-list" style="width:100%;" value="BTC-USD,ETH-USD,LTC-USD,SOL-USD" />
-                        </div>
-                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">API KEY
+                        </div> -->
+                        <div class="w3-col s6 w3-padding w3-text-grey">API KEY
                             <input id="api-key" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">API SECRET
+                        <div class="w3-col s6 w3-padding w3-text-grey">API SECRET
                             <input id="api-secret" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">API URL
+                        <div class="w3-col s6 w3-padding w3-text-grey">API URL
                             <input id="api-url" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s6 w3-padding w3-text-grey w3-margin-top _w3-margin-left">ACCOUNT URL
+                        <div class="w3-col s6 w3-padding w3-text-grey">ACCOUNT URL
                             <input id="account-url" style="width:100%;" value="" />
                         </div>
-                        <div class="w3-col s12 w3-padding w3-margin-top _w3-margin-left">
+                        <div class="w3-col s12 w3-padding">
+                            <span class="w3-text-grey">Timeframe</span>
+                            <div class="w3-right w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="minute">
+                                <label>Minute</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="day">
+                                <label>Days</label>
+                                <!-- <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="0.25%">
+                                <label>0.25 %</label> -->
+                            </div>
+                        </div>
+                        <div class="w3-col s12 w3-padding">
                             <span class="w3-text-grey">Stop Loss</span>
                             <!-- <i class="fa fa-toggle-off w3-right w3-margin-right"> 0.25</i>
                             <i class="fa fa-toggle-on w3-right w3-margin-right"> 0.5</i>
@@ -161,7 +204,7 @@
                                 <label>0.75 %</label>
                             </div>
                         </div>
-                        <div class="w3-col s12 w3-padding">
+                        <div class="w3-col s12 w3-padding w3-margin-bottom">
                             <span class="w3-text-grey">Trail Percent</span>
                             <div class="w3-right w3-large">
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="OFF">
@@ -174,28 +217,6 @@
                                 <label>0.5 %</label>
                                 <input class="w3-radio w3-margin-left" type="radio" name="trail-pct" value="0.75%">
                                 <label>0.75 %</label>
-                            </div>
-                        </div>
-                        <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
-                            <span class="w3-text-grey">Timeframe</span>
-                            <div class="w3-right w3-large">
-                                <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="minute">
-                                <label>Minute</label>
-                                <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="day">
-                                <label>Days</label>
-                                <!-- <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="0.25%">
-                                <label>0.25 %</label> -->
-                            </div>
-                        </div>
-                        <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
-                            <span class="w3-text-grey">Symbol List</span>
-                            <div class="w3-large">
-                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value="">
-                                <label contenteditable="true">FROG,QLYS,NEO,BTSG,RARE,TXG</label>
-                            </div>
-                            <div class="w3-large">
-                                <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value="">
-                                <label contenteditable="true">QQQ,NDAQ,NQ=F,CL=F,^VIX</label>
                             </div>
                         </div>
                         <div class="w3-button w3-border w3-wide w3-right pointer" style="width:180px;"
@@ -445,6 +466,13 @@
         const IS_LARGE = document.getElementById('is-large').checkVisibility();
         console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:', IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);
 
+        function select_symbol_list(elem) {
+            const symbols = elem.parentElement.children[1].innerText;
+            document.getElementById('symbol-list').value = symbols;
+            console.log(elem, symbols);
+            save_settings();
+        }
+
         function get_item(name) {
             return localStorage.getItem(`m3-stocks-v6-${name}`);
         }
@@ -526,7 +554,7 @@
             // UPDATE_AT = [0, 15, 30, 45];
             HA_SYMBOLS = [/*this.SYMBOL,*/ ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
-            
+
             constructor() {
                 console.log(JSON.stringify(localStorage, null, 2));
             }
