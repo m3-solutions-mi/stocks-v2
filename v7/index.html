@@ -499,9 +499,6 @@
     <script>
         class Configuration {
             get_key = (name) => `m3-stocks-v6-${name}`;
-            constructor() {
-                console.log(JSON.stringify(localStorage, null, 2));
-            }
             DAY_TARGET_DOLLARS = 500;
             SYMBOL = localStorage.getItem(this.get_key('symbol')) || 'QQQ';
             SYMBOL_LIST = localStorage.getItem(this.get_key('symbol-list')) || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
@@ -516,6 +513,10 @@
             // UPDATE_AT = [0, 15, 30, 45];
             HA_SYMBOLS = [/*this.SYMBOL,*/ ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
+            
+            constructor() {
+                console.log(JSON.stringify(localStorage, null, 2));
+            }
 
             // COMPARISON_NUM_DAYS = (symbol = null) => {
             //     // const is_crypto = symbol ? symbol.indexOf('-USD') > 0 : false;

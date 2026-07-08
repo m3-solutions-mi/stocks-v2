@@ -896,7 +896,7 @@ class Chart {
                 series = [{ name: 'Gain %', type: 'treemap', data: [] }];
                 series[0].data = account_positions.map((v, i) => { return { x: v.symbol, y: round1(+(v.unrealized_plpc) * 100) } });
                 this.options_treemap.chart.type = 'treemap';
-                this.options_treemap.chart.height = IS_SMALL ? 300 : 144;
+                this.options_treemap.chart.height = IS_SMALL ? 340 : 144;
                 // CHART_POSITIONS_TODAY.options.dataLabels.enabled = true;
                 // this.options_treemap.xaxis.type = 'category';
                 this.options_treemap.dataLabels.formatter = function (text, op) {
