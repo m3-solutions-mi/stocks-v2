@@ -741,6 +741,7 @@ class Chart {
             // let s = new Date(previous_day).setHours(19, 55);
             let start = data[0].c; //last_eod ? last_eod.c : 0;
             let shares = 1000 / start;
+            const show_full_day = true;
 
             //* HEIKEN-ASHI DATA */
             //* MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
@@ -786,16 +787,22 @@ class Chart {
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
+            if (show_full_day) {
+                series[0].data.push({ x: new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1), y: undefined });
+            }
             let cumulative = 0;
             series[1].data = ohlc_data.map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } });
+            if (show_full_day) {
+                series[1].data.push({ x: new Date(series[1].data[series[1].data.length - 1].x).setHours(20, 1), y: undefined });
+            }
 
             //* ANNOTATIONS */
             this.options_candlestick.annotations.xaxis = annotations_x();
             this.options_candlestick.annotations.yaxis.push(this.add_annotation_y(last_eod.d, colors.deeppink)),
 
 
-            //* OTHER OPTIONS */
-            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : 5, 3];
+                //* OTHER OPTIONS */
+                this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : 3, 3];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
@@ -831,6 +838,9 @@ class Chart {
 
             //* DATA */
             series[0].data = data_m.map((v, i) => { return { x: v.e, y: v.c * shares } });
+            if (show_full_day) {
+                series[0].data.push({ x: new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1), y: undefined });
+            }
             let add = 1000 * 0.005 / (timeframe === 'day' ? 1 : 10);
             let increment = series[0].data[0].y;
             // series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
@@ -852,8 +862,8 @@ class Chart {
 
             //#region SUMMARIES
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
-            const _last = chart_card_series[chart_card_series.length - 1].y;
-            const _last_minus_1 = chart_card_series[chart_card_series.length - 2].y;
+            const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y;
+            const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y;
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - 1000), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1((_last - 1000) / 1000 * 100), '', '%');
 
