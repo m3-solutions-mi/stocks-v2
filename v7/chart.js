@@ -795,7 +795,7 @@ class Chart {
 
 
             //* OTHER OPTIONS */
-            this.options_candlestick.stroke.width = [5, 3];
+            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : 5, 3];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
