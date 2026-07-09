@@ -906,6 +906,8 @@ class Chart {
                 
                 HELPERS.update_elem_text_colored('mobile-card-gain', round(account_today_gain), '', '');
                 HELPERS.update_elem_text_colored('mobile-card-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
+                HELPERS.update_elem_text_colored('mobile-card-gain-s', round(account_today_gain), '', '');
+                HELPERS.update_elem_text_colored('mobile-card-pct-s', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round2((_last - _last_minus_1) / 1000 * 100), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2(_last - _last_minus_1), '', '%');
 
