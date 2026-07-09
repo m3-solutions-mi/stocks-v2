@@ -891,9 +891,9 @@
                         // for await (const i of [0, 1, 2, 3, 4, 5]) {
                         // const s = CONFIG.HA_SYMBOLS[i];
                         if (CONFIG.TIMEFRAME === 'minute') {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data_m[s], i, IS_LARGE ? 260 : (IS_MEDIUM ? 260 : 155), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data_m[s], i, IS_LARGE ? 260 : (IS_MEDIUM ? 260 : 200), i === 0);
                         } else {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data_d[s], data_d[s], i, IS_LARGE ? 260 : (IS_MEDIUM ? 260 : 155), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data_d[s], data_d[s], i, IS_LARGE ? 260 : (IS_MEDIUM ? 260 : 200), i === 0);
                         }
                     });
 
