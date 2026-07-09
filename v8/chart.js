@@ -867,7 +867,7 @@ class Chart {
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y;
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - 1000), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1((_last - 1000) / 1000 * 100), '', '%');
-            // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - 1000), '$', '');
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
 
             if (summarize) {
                 const account_detail = await ACCOUNT.detail();
@@ -888,7 +888,7 @@ class Chart {
                         HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2(_last - _last_minus_1), '$', '');
                     }
                     // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
-                    HELPERS.update_elem_text_colored(`chart-card-peak-${i}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
+                    // HELPERS.update_elem_text_colored(`chart-card-peak-${i}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
                 });
 
                 const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
@@ -899,7 +899,7 @@ class Chart {
                 HELPERS.update_elem_text_colored('mobile-card-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
                 HELPERS.update_elem_text('account-equity', round(account_detail.equity), '$', '');
-                HELPERS.update_elem_text('invested', round(account_detail.buying_power), '$', '');
+                HELPERS.update_elem_text('invested', round(account_detail.buying_power/1000), '$', 'K');
                 HELPERS.update_elem_text_colored('account-delta', round(account_detail.equity - 43500), '$', '');
                 HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity - 43500) / 43500 * 100), '', '%');
 
