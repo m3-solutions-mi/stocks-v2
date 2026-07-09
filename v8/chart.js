@@ -838,7 +838,7 @@ class Chart {
             // series.push({ name: '0.5 %', type: 'line', data: [] });
 
             //* DATA */
-            series[0].data = data_m.map((v, i) => { return { x: v.e, y: v.c * shares } });
+            series[0].data = data.map((v, i) => { return { x: v.e, y: v.c * shares } });
             if (show_full_day) {
                 series[0].data.push({ x: new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1), y: undefined });
             }
