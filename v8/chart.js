@@ -878,11 +878,14 @@ class Chart {
                     const p = ''
                     const position = account_positions.find((v) => v.symbol === s.replace('-', ''));
                     if (position) {
-                        HELPERS.update_elem_text_colored(`chart-card-gain-${i}${p}`, round2(+(position.unrealized_pl)), '$', '');
-                        HELPERS.update_elem_text_colored(`chart-card-pct-${i}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
+                        // HELPERS.update_elem_text_colored(`chart-card-gain-${i}${p}`, round2(+(position.unrealized_pl)), '$', '');
+                        // HELPERS.update_elem_text_colored(`chart-card-pct-${i}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
+                        // HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2((_last - _last_minus_1)), '$', '');
                         HELPERS.update_elem_text(`chart-card-seed-${i}${p}`, round1(+(position.cost_basis / 1000)), '$', 'K');
-                        HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2((_last - _last_minus_1)), '$', '');
                         // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
+
+                        HELPERS.update_elem_text_colored(`mobile-card-position`, round2(+(position.unrealized_pl)), '$', '');
+                        HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(+(position.unrealized_plpc) * 100), '', '%');
                     } else {
                         HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
                         HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2(_last - _last_minus_1), '$', '');
