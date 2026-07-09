@@ -54,7 +54,7 @@
                     <div class="w3-large w3-container w3-card" style="background-color:#6dc573;">
                         <div class="w3-hide-small w3-col s2 w3-center">
                             <img class="w3-padding" src="https://offsite-ryan.github.io/m3-trader/favicon-black.png"
-                                style="width:55%" alt="M3 Solutions"
+                                style="width:100%" alt="M3 Solutions"
                                 onclick="document.getElementById('settings').style.display = 'block'">
                         </div>
 
@@ -241,7 +241,7 @@
                 <!--@ SYMBOL SELECTION-->
                 <div class="w3-hide w3-xlarge w3-right w3-text-blue"><span id="symbol-last-value"></div>
 
-                <span class="w3-hide-small _w3-right" style="margin-bottom:20px;">
+                <span class="w3-hide w3-hide-small _w3-right" style="margin-bottom:20px;">
                     <div class="w3-right w3-text-pink" style="cursor:pointer;font-size:22px;padding-top:3px;"
                         onclick="ACCOUNT.liquidate()">
                         <i class="fa fa-ban"></i>
@@ -249,7 +249,7 @@
                     <!-- <span class="w3-right w3-xlarge">&nbsp;|&nbsp;<b><span id="_invested"
                                 class="w3-wide w3-text-blue">-</span></b></span> -->
 
-                    <span class="w3-right w3-xlarge">
+                    <span class="w3-hide w3-right w3-xlarge">
                         <span>
                             <b><span id="account-today-gain">-</span></b>
                             &nbsp;|&nbsp;
@@ -260,7 +260,7 @@
                         </span>
                     </span>
 
-                    <span class="w3-hide-small w3-xlarge" style="margin-bottom:10px;">
+                    <span class="w3-hide w3-hide-small w3-xlarge" style="margin-bottom:10px;">
                         <b><span id="account-equity" class="">-</span></b>
                         &nbsp;|&nbsp;
                         <br />
@@ -561,36 +561,26 @@
                 console.log(JSON.stringify(localStorage, null, 2));
             }
 
-            // COMPARISON_NUM_DAYS = (symbol = null) => {
-            //     // const is_crypto = symbol ? symbol.indexOf('-USD') > 0 : false;
-            //     // const dow = new Date().getDay();
-            //     // const hmm = HELPERS.getHMM(new Date());
-            //     // const mo = market_open();
-            //     // const lmo = last_market_open();
-            //     // const now = HELPERS.getYMD(new Date());
-            //     // const diff = Math.abs(round2((new Date(lmo + 'T04:00:00').getTime() - new Date(now).getTime()) / 24 / 60 / 60 / 1000));
-            //     // // console.log(
-            //     // //     `%c${last_market_open()} %c | %c${mo} | ${lmo} | ${now} | ${diff}`
-            //     // //     , 'color:orange'
-            //     // //     , 'color:grey', 'color:lightblue'
-            //     // // );
-
-            //     // // console.log(new Date(HELPERS.getYMD(new Date())).getTime() - new Date(last_market_open()).getTime() / 60 / 60 / 1000);
-            //     // return /*is_crypto ? 2 :*/ diff;
-            //     // // return dow === 0 ? 3 : (dow === 6 ? 1.25 : (hmm <= 900 ? 1 : (hmm < 1600 ? 4 / 24 : 6.5 / 24)));
-            //     return 2;
-            // }
-
             load_chart_cards() {
                 let html = '';
                 let html_table = `
-                    <span class="_w3-hide-medium _w3-hide-large w3-col s12 w3-xlarge _w3-margin w3-padding">
-                        <span class="w3-center w3-border w3-col s12 m8 w3-padding" style="min-height:150px;">
+                    <span class="w3-col s12 w3-xlarge w3-margin-bottom">
+                        <span class="w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="">TODAY</div>
                             <b><div id="mobile-card-gain" class="w3-xxxlarge w3-wide"></div></b>
                             <div id="mobile-card-pct" class="w3-wide"></div>
                         </span>
-                        <span id="mobile-card-treemap" class="w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;"></span>
+                        <span id="mobile-card-treemap" class="w3-hide w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;"></span>
+                        <span class="w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
+                            <div class="">POSITION</div>
+                            <b><div id="mobile-card-position" class="w3-xxxlarge w3-wide">-</div></b>
+                            <div id="mobile-card-position-pct" class="w3-wide">-</div>
+                        </span>
+                        <span class="w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
+                            <div class="">CHANGE</div>
+                            <b><div id="mobile-card-change" class="w3-xxxlarge w3-wide">-</div></b>
+                            <div id="mobile-card-change-pct" class="w3-wide">-</div>
+                        </span>
                         <span>
                             <table id="mobile-card-table-rows">
                             </table>
@@ -599,80 +589,26 @@
 
                 // CONFIG.WATCH_LIST
                 this.HA_SYMBOLS
-                    // .split(',')
-                    // .slice(0, 6)
                     .forEach((s, i) => {
-
-                        // html += `
-                        // <!-- <span class="w3-col s12 w3-xlarge">123</span> -->
-                        // <div id="" class="w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
-                        //     <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
-                        //         <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
-                        //             <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
-                        //             <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
-                        //             <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
-                        //         </span>
-                        //     </div>
-                        //     <!-- <span class="w3-small w3-hide w3-hide-medium w3-hide-large">
-                        //         <div class="w3-text-grey">G<b><span id="chart-card-gain-${i}-s" class="w3-right">-</span></b></div>
-                        //         <div class="w3-text-grey">P<b><span id="chart-card-pct-${i}-s" class="w3-right">-</span></b></div>
-                        //         <div class="w3-text-grey">C<b><span id="chart-card-chg-${i}-s" class="w3-right">-</span></b></div>
-                        //         <div class="w3-text-grey">M<b><span id="chart-card-peak-${i}-s" class="w3-right">-</span></b></div>
-                        //         <div class="w3-text-grey">S<b><span id="chart-card-seed-${i}-s" class="w3-right">-</span></b></div>
-                        //     </span> -->
-                        //     <span class="w3-large w3-margin-top">
-                        //         <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
-                        //         <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
-                        //         <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
-                        //         <div class="w3-text-grey">MAX<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
-                        //         <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
-                        //     </span>
-                        // </div>
-                        // <div class="w3-col s12 m8">
-                        //     <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
-                        //     <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
-                        // </div>`;
-
-                        // html_table += `
-                        // `;
-
                         html += `
                         <span class="_w3-hide-small w3-col s12 w3-xlarge">
-                            <div class="w3-col s12 m5 w3-padding">
+                            <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                                     <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
                                     <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
                                 </span>
-                            </div>
-                            <div class="w3-col s12 m7 w3-padding" style="font-size:18px;">
                                 <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                     <!-- <i class="fa fa-toggle-on w3-text-grey w3-left w3-xlarge"></i> -->
-                                    <span id="chart-card-seed-${i}" class="w3-right w3-text-blue">$ - K</span>
-                                    <span class="w3-right w3-text-grey">&nbsp;|&nbsp;</span>
-                                    <span id="chart-card-chg-${i}" class="w3-right">-</span>
-                                    <span class="w3-right w3-text-grey">&nbsp;|&nbsp;</span>
-                                    <span id="chart-card-pct-${i}" class="w3-right">-</span>
-                                    <span class="w3-right w3-text-grey">&nbsp;|&nbsp;</span>
-                                    <span id="chart-card-gain-${i}" class="w3-right ">-</span>
+                                    <span id="chart-card-gain-${i}" class="">-</span>
+                                    <span class="w3-text-grey">&nbsp;|&nbsp;</span>
+                                    <span id="chart-card-pct-${i}" class="">-</span>
+                                    <span class="w3-text-grey w3-hide">&nbsp;|&nbsp;</span>
+                                    <span id="chart-card-chg-${i}" class="w3-hide">-</span>
+                                    <span class="w3-text-grey">&nbsp;|&nbsp;</span>
+                                    <span id="chart-card-seed-${i}" class="w3-text-blue">$ - K</span>
                                 </span>
                             </div>
-                            <!-- <div id="" class="w3-hide w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:170px;font-size:15px;">
-                                <div id="" class="w3-center w3-xlarge" style="padding-bottom:15px;">
-                                    <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
-                                        <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
-                                        <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
-                                        <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
-                                    </span>
-                                </div>
-                                <span class="w3-large w3-margin-top">
-                                    <div class="w3-text-grey">GAIN<b><span id="chart-card-gain-${i}" class="w3-right ">-</span></b></div>
-                                    <div class="w3-text-grey">PCT<b><span id="chart-card-pct-${i}" class="w3-right">-</span></b></div>
-                                    <div class="w3-text-grey">CHG<b><span id="chart-card-chg-${i}" class="w3-right">-</span></b></div>
-                                    <div class="w3-text-grey">MAX<b><span id="chart-card-peak-${i}" class="w3-right">-</span></b></div>
-                                    <div class="w3-text-grey">SEED<b><span id="chart-card-seed-${i}" class="w3-right">-</span></b></div>
-                                </span>
-                            </div> -->
                             <div class="w3-col s12 m12">
                                 <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
                                 <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>

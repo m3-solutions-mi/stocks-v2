@@ -868,7 +868,7 @@ class Chart {
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - 1000), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1((_last - 1000) / 1000 * 100), '', '%');
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
-
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
             if (summarize) {
                 const account_detail = await ACCOUNT.detail();
                 const account_history_5d = await ACCOUNT.history('5D', '1D');
@@ -895,13 +895,17 @@ class Chart {
                 HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
                 HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
-                HELPERS.update_elem_text_colored('mobile-card-gain', round2(account_today_gain), '$', '');
-                HELPERS.update_elem_text_colored('mobile-card-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
-
+                
                 HELPERS.update_elem_text('account-equity', round(account_detail.equity), '$', '');
-                HELPERS.update_elem_text('invested', round(account_detail.buying_power/1000), '$', 'K');
+                HELPERS.update_elem_text('invested', round(account_detail.buying_power / 1000), '$', 'K');
                 HELPERS.update_elem_text_colored('account-delta', round(account_detail.equity - 43500), '$', '');
                 HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity - 43500) / 43500 * 100), '', '%');
+                
+                HELPERS.update_elem_text_colored('mobile-card-gain', round(account_today_gain), '', '');
+                HELPERS.update_elem_text_colored('mobile-card-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
+                HELPERS.update_elem_text_colored(`mobile-card-change`, round2((_last - _last_minus_1) / 1000 * 100), '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2(_last - _last_minus_1), '', '%');
+
 
 
                 //#region POSITIONS TREEMAP CHART
