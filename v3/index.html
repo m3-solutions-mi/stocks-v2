@@ -229,7 +229,7 @@
                 </div>
                 <div class="w3-hide-small w3-col s6 m3 w3-padding">
                     <span id="futures-last-value" class="w3-large w3-right w3-text-blue">-</span>
-                    <div class="w3-medium w3-wide">FUTURES</div>
+                    <div class="w3-medium w3-wide">FUT</div>
                     <div id="chart-futures" class="w3-border w3-margin-top" style="">
                     </div>
                 </div>
@@ -653,9 +653,9 @@
                     document.getElementById('symbol-name').innerText = CONFIG.SYMBOL;
                     HELPERS.update_elem_text('symbol-last-value', CHART.options.series[0].data[CHART.options.series[0].data.length - 1].y - 1000, '$', '');
 
-                    HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '$', '');
-                    HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '$', '');
-                    HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '$', '');
+                    HELPERS.update_elem_text('futures-last-value', CHART_FUTURES.options.series[0].data[CHART_FUTURES.options.series[0].data.length - 1].y - 1000, '', '');
+                    HELPERS.update_elem_text('oil-last-value', CHART_OIL.options.series[0].data[CHART_OIL.options.series[0].data.length - 1].y, '', '');
+                    HELPERS.update_elem_text('vix-last-value', CHART_VIX.options.series[0].data[CHART_VIX.options.series[0].data.length - 1].y, '', '');
 
                     HELPERS.update_elem_text_colored('positions-gain', round2(position_gain), '$', '');
                     HELPERS.update_elem_text_colored('positions-pct', round2(position_gain_pct), '', '%');
