@@ -371,6 +371,8 @@ class Chart {
         this.chart_id_m = id_m;
         this.chart_id_t = id_t;
     }
+
+    //#region /* RENDER */
     _render(o = this.options_candlestick) {
         if (this.chart_instance) {
             // console.log(this.chart_id);
@@ -398,7 +400,9 @@ class Chart {
         this.chart_instance_t.render();
         // console.log(this.chart_id, this.options);
     }
+    //#endregion
 
+    //#region /* ANNOTATIONS */
     add_annotation_x = (x, text = null, color = colors.black, offsetX = 0) => {
         const obj = { x, borderWidth: 1, borderColor: color, fillColor: color, opacity: 1, strokeDashArray: 0 };
         if (text) {
@@ -427,228 +431,7 @@ class Chart {
         }
         return obj;
     }
-
-    //@ SYMBOL CHART - 24H */
-    update(symbol, data, height = 280, raw = false, type = null, timeframe = 1) {
-        const is_crypto = symbol.indexOf('-USD') < 0;
-        if (timeframe === 5) {
-            data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
-        } else if (timeframe === 15) {
-            data[data.length - 1].e = data[data.length - 2].e + (15 * 60 * 1000);
-        }
-
-        let point_xs = [];
-        if (data && data.length > 0) {
-
-            //@ TIME WINDOW VARS */
-            const today = Date.now();
-            const yesterday = today - (24 * 60 * 60 * 1000);
-            const hmm = HELPERS.getHMM(new Date());
-
-            //@ REFERENCE VALUE */
-            // const last_eod = data.find((v) => v.e >= (new Date(yesterday).setHours(20, 0)));
-            const last_eod = data.find((v) => v.e >= (new Date(today).setHours(2, 10)));
-
-            //@ FILTERED DATA */
-            const s = Date.now() - ((IS_SMALL ? 2 : 6) * 60 * 60 * 1000);
-            // const s = new Date(today).setHours(2, 0);
-            const e = new Date(today).setHours(23, 59);
-            data = data
-                .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
-
-            //@ HEIKEN-ASHI DATA */
-            const ohlc_data = calculateHeikinAshi(data);
-
-            let series = [
-                { name: 'Close', type: 'area', data: [] },
-                // { name: 'Bollinger', type: 'line', data: [] },
-            ];
-            let start = last_eod.c;//data[0].c;
-            let shares = 1000 / start;
-
-            if (type === 'mixed') {
-                const hmm = HELPERS.getHMM(new Date());
-                const hmm_s = hmm < 900 ? 400 : 800;
-                const hmm_e = 2000;
-                // const ohlc_data = calculateHeikinAshi(data);
-                series[0].type = 'bar';
-                series[0].data = ohlc_data
-                    // // .slice(-200)
-                    // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                    // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                    // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
-                    .map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
-                let cumulative = 0;
-                series.push({
-                    name: 'Gain',
-                    type: 'line',
-                    color: colors.teal,
-                    data: ohlc_data
-                        // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
-                        .map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } })
-                })
-
-                // series[0].data.forEach((v)=>{
-                //     if (v.y >= 1.5) {
-                //         this.options_candlestick.annotations.points.push(this.add_annotation_point(v.x, v.y, 1, colors.deeppink));
-                //         point_xs.push(v.x);
-                //     }
-                // })
-
-                const d3 = series[0].data[series[0].data.length - 1].x;
-                this.options_candlestick.annotations.xaxis = [];
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 15), null, colors.teal));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 0), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
-                this.options_candlestick.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.deeppink));
-
-                // this.options_candlestick.annotations.yaxis.push(this.add_annotation_y(series[1].data[series[1].data.length - 1].y, colors.lightgrey));
-
-                this.options_candlestick.stroke.width = [1, 2];
-                this.options_candlestick.yaxis = [
-                    {
-                        seriesName: 'Gain',
-                        alignZero: true,
-                        axisTicks: { show: true },
-                        axisBorder: { show: true, color: '#008FFB' },
-                        labels: { style: { colors: '#008FFB' } },
-                        title: { text: 'Profit (mixed +/-)', style: { color: '#008FFB' } },
-                    },
-                    {
-                        seriesName: 'Close',
-                        alignZero: true,
-                        opposite: true,
-                        axisTicks: { show: false },
-                        axisBorder: { show: false, color: '#00E396' },
-                        labels: { style: { colors: '#00E396' } },
-                        title: { text: 'Units (positive only)', style: { color: '#00E396' } },
-                    },
-                ];
-                // this.options_candlestick.yaxis[0].min = -30;
-                // this.options_candlestick.yaxis[1].min = -70;
-
-                // this.options_candlestick.annotations.points = []
-                // let count = 0;
-                // let is_up = true;
-                // series[0].data.forEach((v) => {
-                //     count += v.y[3] < v.y[0] ? 1 : 0;
-                //     if (count >= 5) {
-                //         this.options_candlestick.annotations.points.push(this.add_annotation_point(v.x, v.y[3], 1.5, colors.deepskyblue));
-                //         count = 0;
-                //         is_up = false;
-                //     }is_up = true
-                // })
-
-                delete this.options_candlestick.tooltip.custom;
-                this.options_candlestick.chart.type = 'line';
-                this.options_candlestick.chart.height = height;
-                this.options_candlestick.series = series;
-                this._render(this.options_candlestick);
-
-                // console.chart(ohlc_data.map((v) => {
-                //     return {
-                //         x: HELPERS.getHMM(new Date(v.e)),
-                //         y: round2(v.d * shares * 10)
-                //     }
-                // }).filter((v) => v.x >= 1000 && v.x <= 1200).map((v) => v.y)
-                // );
-            } else {
-                series[0].data = data
-                    .map((v, i) => { return { x: new Date(v.t).getTime(), y: v.c * shares } });
-
-                this.options.tooltip.enabledOnSeries = [0, 1];
-                this.options.stroke.width = [0.75, 2];
-                this.options.annotations.xaxis = [];
-                this.options.annotations.yaxis = [];
-
-                const d3 = series[0].data[series[0].data.length - 1].x;
-                const d2 = d3 - (24 * 60 * 60 * 1000);
-                // const d1 = d3 - (2 * 24 * 60 * 60 * 1000);
-                // const add_shade = (e, o = 0.25) => {
-                //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].x2 = e;
-                //     this.options.annotations.xaxis[chart.options.annotations.xaxis.length - 1].opacity = o;
-                // }
-                // add_shade(new Date(d3).setHours(9, 30), 0.1);
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.gray));
-
-                // let was_below = true;
-                // HELPERS.reduce1MinToNMin(ohlc_data, 5).forEach((v) => {
-                //     const y = v.d * shares;
-                //     if (y >= 1.5) {
-                //         this.options.annotations.points.push(this.add_annotation_point(v.e, y, 1));
-                //         was_below = false
-                //     }
-
-                //     // if (was_below && y >= 1.5) {
-                //     //     this.options.annotations.points.push(this.add_annotation_point(v.e, y, 1));
-                //     //     was_below = false
-                //     // } else if (!was_below && y < 1.5) {
-                //     //     was_below = true;
-                //     // }
-                // });
-
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 30), null, colors.deeppink));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 0), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(12, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(13, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(14, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 0), null, colors.lightgrey));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(10, 30), null, colors.lightgrey));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(11, 30), null, colors.lightgrey));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(15, 30), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(16, 0), null, colors.deeppink));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(20, 0), null, colors.lightgrey));
-
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(0, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(1, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(2, 15), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(3, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(4, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(5, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(6, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(7, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(8, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d3).setHours(9, 0), null, colors.lightgrey));
-
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.teal));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey));
-                this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(22, 0), null, colors.lightgrey));
-
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(4, 0), null, colors.darkgray));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(9, 30), null, colors.teal));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.deeppink));
-
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(4, 0), null, colors.darkgray));
-                // this.options.annotations.xaxis.push(this.add_annotation_x(new Date(d1).setHours(9, 30), null, colors.lightgrey));
-                this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y * 1.005, colors.violet));
-                this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 1].y, colors.grey));
-
-                //* LAST EOD */
-                // this.options.annotations.yaxis.push(this.add_annotation_y(1000, colors.teal));
-                // this.options.annotations.points.push(this.add_annotation_point(series[0].data[0].x, series[0].data[0].y, 4.5, colors.violet, `${round(series[0].data[0].y - 1000)}`, '12px', 15, 15));
-
-                this.options.chart.height = height;
-                this.options.series = series;
-                this._render();
-            }
-        } else {
-            // console.log('NO DATA');
-        }
-        return point_xs;
-    }
-
-
+    //#endregion
 
     //@ SYMBOL CHART *** 2 *** - 24H */
     async update_2(symbol, timeframe, data, data_m, index, height = 280, summarize = false) {
@@ -796,7 +579,7 @@ class Chart {
                     //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
                     //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
                     series.data.push({ x, y: undefined });
-                    series.data = series.data.filter((v) => v.x > (x - (5 * 60 * 60 * 1000)));
+                    series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
                 }
             }
             //#endregion
@@ -969,7 +752,7 @@ class Chart {
                     entries.push({ i, x: HELPERS.getHMM(new Date(v.x)), y: v.y });
                 });
 
-            const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length - 1].y;
+            const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length - 2].y;
             const color = v < 0.25 ? 'red' : '#6dc573';
             document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `5px solid ${color}`;
             // console.log(`%c${symbol}`, 'color:yellow');
