@@ -744,7 +744,7 @@ class Chart {
 
             // let start = data[0].c; //last_eod ? last_eod.c : 0;
             // let start = last_eod ? last_eod.c : data[0].c;
-            let start = Math.min(...(data.filter((v) => v.e >= s).map((v)=>v.c)));
+            let start = Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
             const seed = 10 * 1000;
             let shares = seed / start;
             const show_full_day = true;
@@ -786,6 +786,21 @@ class Chart {
             const previous_m = data_m[data_m.length - 2];
             //#endregion
 
+            //#region EXTEND OUT CHART FOR CONSISTENT SCALING
+            // TODO: /* keep a rolling 8hr window */
+            const extend_series = (series) => {
+                if (show_full_day && hmm < 2001) {
+                    const h = Math.ceil(hmm / 100);
+                    const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
+                    // const x = hmm < 1200
+                    //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
+                    //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
+                    series.data.push({ x, y: undefined });
+                    series.data = series.data.filter((v)=>v.x > (x - (5*60*60*1000)));
+                }
+            }
+            //#endregion
+
             //#region MIXED | HA 
             let series = [];
             series.push({ name: 'HA Close', type: 'bar', data: [] });
@@ -793,13 +808,16 @@ class Chart {
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
-            if (show_full_day && hmm < 2001) {
-                series[0].data.push({ x: new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1), y: undefined });
-            }
+            extend_series(series[0]);
+
             let cumulative = 0;
             series[1].data = ohlc_data.map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } });
             if (show_full_day && hmm < 2001) {
-                series[1].data.push({ x: new Date(series[1].data[series[1].data.length - 1].x).setHours(20, 1), y: undefined });
+                // const x = hmm <1200
+                //     ? new Date(series[0].data[series[0].data.length - 1].x).setHours(12,0)
+                //     : new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1);
+                // series[1].data.push({ x, y: undefined });
+                extend_series(series[1]);
             }
 
             //* ANNOTATIONS */
@@ -807,8 +825,8 @@ class Chart {
             // this.options_candlestick.annotations.yaxis.push(this.add_annotation_y(last_eod.d, colors.deeppink)),
 
 
-                //* OTHER OPTIONS */
-                this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 2.5), 3];
+            //* OTHER OPTIONS */
+            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 2.5), 3];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
@@ -844,9 +862,8 @@ class Chart {
 
             //* DATA */
             series[0].data = data.map((v, i) => { return { x: v.e, y: (v.c * shares) - seed } });
-            if (show_full_day && hmm < 2001) {
-                series[0].data.push({ x: new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1), y: undefined });
-            }
+            extend_series(series[0]);
+
             let add = 1000 * 0.005 / (timeframe === 'day' ? 1 : 10);
             let increment = series[0].data[0].y;
             // series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
@@ -886,14 +903,14 @@ class Chart {
                         // HELPERS.update_elem_text_colored(`chart-card-gain-${i}${p}`, round2(+(position.unrealized_pl)), '$', '');
                         // HELPERS.update_elem_text_colored(`chart-card-pct-${i}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
                         // HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2((_last - _last_minus_1)), '$', '');
-                        HELPERS.update_elem_text(`chart-card-seed-${i}${p}`, round1(+(position.cost_basis / 1000)), '$', 'K');
+                        // HELPERS.update_elem_text(`chart-card-seed/-${i}${p}`, round1(+(position.cost_basis / 1000)), '$', 'K');
                         // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
 
                         HELPERS.update_elem_text_colored(`mobile-card-position`, round2(+(position.unrealized_pl)), '$', '');
                         HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(+(position.unrealized_plpc) * 100), '', '%');
                     } else {
-                        HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
-                        HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2(_last - _last_minus_1), '$', '');
+                        // HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
+                        // HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2(_last - _last_minus_1), '$', '');
                     }
                     // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
                     // HELPERS.update_elem_text_colored(`chart-card-peak-${i}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
@@ -911,12 +928,13 @@ class Chart {
 
                 HELPERS.update_elem_text_colored('mobile-card-gain', round(account_today_gain), '', '');
                 HELPERS.update_elem_text_colored('mobile-card-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
-                
+
                 HELPERS.update_elem_text_colored('mobile-card-gain-s', round(account_today_gain), '', '');
                 HELPERS.update_elem_text_colored('mobile-card-pct-s', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
-                
+
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round2(_last - _last_minus_1), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((_last - _last_minus_1) / seed * 100), '', '%');
+                HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
 
 
 
