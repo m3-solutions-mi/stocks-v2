@@ -796,7 +796,7 @@ class Chart {
                     //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
                     //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
                     series.data.push({ x, y: undefined });
-                    series.data = series.data.filter((v)=>v.x > (x - (5*60*60*1000)));
+                    series.data = series.data.filter((v) => v.x > (x - (5 * 60 * 60 * 1000)));
                 }
             }
             //#endregion
@@ -936,6 +936,9 @@ class Chart {
                 HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((_last - _last_minus_1) / seed * 100), '', '%');
                 HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
 
+                HELPERS.update_elem_text(`mobile-account-net`, account_detail.equity, '$', '');
+                HELPERS.update_elem_text(`mobile-account-buying-power`, account_detail.buying_power, '$', '');
+
 
 
                 //#region POSITIONS TREEMAP CHART
@@ -970,8 +973,8 @@ class Chart {
             // console.table(entries);
 
             const m = 5;
-            document.getElementById(`clock`).style.color = hmm % m === 0 ? `white`: '';
-            document.getElementById(`clock`).parentElement.parentElement.style.border = hmm % m === 0 ? `2px solid white`: '';
+            document.getElementById(`clock`).style.color = hmm % m === 0 ? `white` : '';
+            document.getElementById(`clock`).parentElement.parentElement.style.border = hmm % m === 0 ? `2px solid white` : '';
 
             //#endregion
 
