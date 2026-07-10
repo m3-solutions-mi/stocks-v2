@@ -969,6 +969,9 @@ class Chart {
             // console.log(`%c${symbol}`, 'color:yellow');
             // console.table(entries);
 
+            document.getElementById(`clock`).style.color = hmm % 2 === 0 ? `white`: '';
+            document.getElementById(`clock`).parentElement.parentElement.style.border = hmm % 2 === 0 ? `2px solid white`: '';
+
             //#endregion
 
             return;

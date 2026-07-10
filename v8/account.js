@@ -8,8 +8,23 @@ class Account {
             'APCA-API-SECRET-KEY': CONFIG.API_SECRET,
         }
     };
+
+    //* CHECK POSITIONS */
+    check_positions() {
+        if (account_positions.length > 0) {
+            let total = account_positions.map((v) => v.gain).reduce((p, c) => p + c);
+            let total_pct = account_positions.map((v) => v.gain_pct).reduce((p, c) => p + c);
+            console.log('POSITIONS TOTAL $', total, ' | ', total_pct, '%');
+            account_positions.forEach((v) => {
+                if (v.gain_pct <= TRAIL_PCT) {
+                    //* SELL */
+                    // sell(v.name);
+                }
+            });
+        }
+    }
     buy(amount, symbol = CONFIG.SYMBOL) {
-        symbol=symbol.replace('-','/');
+        symbol = symbol.replace('-', '/');
         const spend = +(prompt(`BUY | ${symbol}`, amount));
         console.log(symbol, spend);
         if (spend > 10) {
@@ -35,7 +50,7 @@ class Account {
         }
     };
     sell(symbol = CONFIG.SYMBOL) {
-        symbol=symbol.replace('-','/');
+        symbol = symbol.replace('-', '/');
         if (confirm(`SELL SHARES | ${symbol}`)) {
             console.log('confirmed');
             const options = {

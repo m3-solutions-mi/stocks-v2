@@ -900,21 +900,6 @@
                     // const account_detail = await ACCOUNT.detail();
                     // const account_positions = await ACCOUNT.positions();
 
-                    //* CHECK POSITIONS */
-                    function check_positions() {
-                        if (account_positions.length > 0) {
-                            let total = account_positions.map((v) => v.gain).reduce((p, c) => p + c);
-                            let total_pct = account_positions.map((v) => v.gain_pct).reduce((p, c) => p + c);
-                            console.log('POSITIONS TOTAL $', total, ' | ', total_pct, '%');
-                            account_positions.forEach((v) => {
-                                if (v.gain_pct <= TRAIL_PCT) {
-                                    //* SELL */
-                                    // sell(v.name);
-                                }
-                            });
-                        }
-                    }
-
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
                             eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data[s], i, IS_LARGE ? 260 : (IS_MEDIUM ? 260 : 190), i === 0);
