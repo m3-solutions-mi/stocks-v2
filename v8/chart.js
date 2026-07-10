@@ -744,7 +744,7 @@ class Chart {
 
             // let start = data[0].c; //last_eod ? last_eod.c : 0;
             // let start = last_eod ? last_eod.c : data[0].c;
-            let start = Math.min(...(data.map((v)=>v.c)));
+            let start = Math.min(...(data.filter((v) => v.e >= s).map((v)=>v.c)));
             const seed = 10 * 1000;
             let shares = seed / start;
             const show_full_day = true;
@@ -867,13 +867,13 @@ class Chart {
             //#endregion
 
             //#region SUMMARIES
-            const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
+            const chart_card_series = eval(`CHARTS.CHART_V6_0`).options.series[0].data;
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y;
-            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - 1000), '$', '');
-            HELPERS.update_elem_text(`chart-card-pct-${index}`, round1((_last - 1000) / 1000 * 100), '', '%');
-            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
-            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
+            HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
+            // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
+            // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
             if (summarize) {
                 const account_detail = await ACCOUNT.detail();
                 const account_history_5d = await ACCOUNT.history('5D', '1D');
