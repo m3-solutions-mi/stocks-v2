@@ -735,22 +735,27 @@ class Chart {
             const hmm = HELPERS.getHMM(new Date());
 
             //* REFERENCE VALUE */
-            const last_eod = data.find((v) => v.e >= (new Date(previous_day).setHours(19, 55)));
+            const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
             let s = timeframe === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
             // let s = new Date(current_day).setHours(4, 0);
             // let s = new Date(previous_day).setHours(19, 55);
-            let start = data[0].c; //last_eod ? last_eod.c : 0;
-            let shares = 1000 / start;
+            // console.log(data[0].tl);
+
+            // let start = data[0].c; //last_eod ? last_eod.c : 0;
+            // let start = last_eod ? last_eod.c : data[0].c;
+            let start = Math.min(...(data.map((v)=>v.c)));
+            const seed = 10 * 1000;
+            let shares = seed / start;
             const show_full_day = true;
 
             //* HEIKEN-ASHI DATA */
             //* MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
             //* Viewed data is filtered below - after this calculation! */
-            // let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
+            let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
 
-            //* HEIKEN-ASHI CLOSE VALUE
-            let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
+            //* HEIKEN-ASHI CLOSE VALUE (seems to be to fast of an indicator!)
+            // let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
 
             //#region FILTERED DATA */
             // // let hour = 6;
@@ -788,18 +793,18 @@ class Chart {
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
-            if (show_full_day) {
+            if (show_full_day && hmm < 2001) {
                 series[0].data.push({ x: new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1), y: undefined });
             }
             let cumulative = 0;
             series[1].data = ohlc_data.map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } });
-            if (show_full_day) {
+            if (show_full_day && hmm < 2001) {
                 series[1].data.push({ x: new Date(series[1].data[series[1].data.length - 1].x).setHours(20, 1), y: undefined });
             }
 
             //* ANNOTATIONS */
             this.options_candlestick.annotations.xaxis = annotations_x();
-            this.options_candlestick.annotations.yaxis.push(this.add_annotation_y(last_eod.d, colors.deeppink)),
+            // this.options_candlestick.annotations.yaxis.push(this.add_annotation_y(last_eod.d, colors.deeppink)),
 
 
                 //* OTHER OPTIONS */
@@ -827,7 +832,7 @@ class Chart {
             //* FINISH UP */
             delete this.options_candlestick.tooltip.custom;
             this.options_candlestick.chart.type = 'line';
-            this.options_candlestick.chart.height = height + 25;
+            this.options_candlestick.chart.height = height;
             this.options_candlestick.series = series;
             this._render(this.options_candlestick);
             //#endregion
@@ -838,8 +843,8 @@ class Chart {
             // series.push({ name: '0.5 %', type: 'line', data: [] });
 
             //* DATA */
-            series[0].data = data.map((v, i) => { return { x: v.e, y: v.c * shares } });
-            if (show_full_day) {
+            series[0].data = data.map((v, i) => { return { x: v.e, y: (v.c * shares) - seed } });
+            if (show_full_day && hmm < 2001) {
                 series[0].data.push({ x: new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1), y: undefined });
             }
             let add = 1000 * 0.005 / (timeframe === 'day' ? 1 : 10);
@@ -848,15 +853,15 @@ class Chart {
 
             //* ANNOTATIONS */
             this.options.annotations.xaxis = annotations_x();
-            this.options.annotations.yaxis.push(this.add_annotation_y(last_m.c * shares, colors.grey));
-            this.options.annotations.yaxis.push(this.add_annotation_y(last_m.c * shares * 1.005, colors.violet));
+            this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y, colors.grey));
+            this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y * 1.005, colors.violet));
 
             //* OTHER OPTIONS */
             this.options.stroke.width = [1, 2];
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
-            this.options.chart.height = height - 25;
+            this.options.chart.height = height;
             this.options.series = series;
             this._render_m(this.options);
             //#endregion
@@ -898,12 +903,12 @@ class Chart {
                 HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
                 HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
-                
+
                 HELPERS.update_elem_text('account-equity', round(account_detail.equity), '$', '');
                 HELPERS.update_elem_text('invested', round(account_detail.buying_power / 1000), '$', 'K');
                 HELPERS.update_elem_text_colored('account-delta', round(account_detail.equity - 43500), '$', '');
                 HELPERS.update_elem_text_colored('account-pct', round2((account_detail.equity - 43500) / 43500 * 100), '', '%');
-                
+
                 HELPERS.update_elem_text_colored('mobile-card-gain', round(account_today_gain), '', '');
                 HELPERS.update_elem_text_colored('mobile-card-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
                 HELPERS.update_elem_text_colored('mobile-card-gain-s', round(account_today_gain), '', '');
