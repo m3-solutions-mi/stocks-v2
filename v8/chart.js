@@ -525,12 +525,6 @@ class Chart {
             // let s = new Date(previous_day).setHours(19, 55);
             // console.log(data[0].tl);
 
-            // let start = data[0].c; //last_eod ? last_eod.c : 0;
-            // let start = last_eod ? last_eod.c : data[0].c;
-            let start = Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
-            const seed = 10 * 1000;
-            let shares = seed / start;
-            const show_full_day = true;
 
             //* HEIKEN-ASHI DATA */
             //* MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
@@ -561,6 +555,18 @@ class Chart {
                 .filter((v) => v.e >= s)
             // .filter((v) => v.e <= e);
             //#endregion
+
+            // let start = data[0].c; //last_eod ? last_eod.c : 0;
+            // let start = last_eod ? last_eod.c : data[0].c;
+            let start = Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
+
+            // const t_400 = data.find((v)=>v.thm === 405);
+            // const t_930 = data.find((v)=>v.thm === 930);
+            // let start = t_930 ? t_930.c : Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
+            // // let start = t_930 ? t_930.c : data[0].c;
+            const seed = 1 * 1000;
+            let shares = seed / start;
+            const show_full_day = true;
 
             //#region LAST & PREVIOUS */
             const last = data[data.length - 1];
@@ -641,15 +647,16 @@ class Chart {
             //#region MINUTES CHART
             series = [];
             series.push({ name: 'Close', type: 'area', data: [] });
-            // series.push({ name: '0.5 %', type: 'line', data: [] });
+            series.push({ name: '0.5 %', type: 'line', data: [] });
 
             //* DATA */
             series[0].data = data.map((v, i) => { return { x: v.e, y: (v.c * shares) - seed } });
             extend_series(series[0]);
 
-            let add = 1000 * 0.005 / (timeframe === 'day' ? 1 : 10);
+            // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
+            let add = seed * 0.001 / 12;
             let increment = series[0].data[0].y;
-            // series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
+            series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
 
             //* ANNOTATIONS */
             this.options.annotations.xaxis = annotations_x();

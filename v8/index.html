@@ -421,19 +421,20 @@
                             <label class="${color}">${s}</label>
                         </div>`;
                 }
-                'QQQ,NQ=F,NDAQ,VOO'.split(',').sort().forEach((s) => { add(s) })
+                'QQQ,NQ=F,NDAQ,VOO'.split(',').forEach((s) => { add(s) })
+                // html += '<span style="border-top:1px solid;">&nbsp;</span>';
                 'BTC-USD,ETH-USD,SOL-USD'.split(',').sort().forEach((s) => { add(s,'w3-text-blue') })
                 document.getElementById('symbols-col-1').innerHTML += html;
 
-                html = ''
+                html = '';
                 'AMD,ARM,DRAM,DYN,MRVL,MU,SNDK,SOXX,STX'.split(',').sort().forEach((s) => { add(s) })
                 document.getElementById('symbols-col-2').innerHTML += html;
 
-                html = ''
+                html = '';
                 'AVAV,GE,GEV,NBIS,NUCL,NVDA,STRL,VRT'.split(',').sort().forEach((s) => { add(s) })
                 document.getElementById('symbols-col-3').innerHTML += html;
 
-                html = ''
+                html = '';
                 'AMZN,VSAT,WMT'.split(',').sort().forEach((s) => { add(s) })
                 document.getElementById('symbols-col-4').innerHTML += html;
             }
@@ -697,7 +698,7 @@
             }
 
             //* GET DATA */
-            async get_data(name = CONFIG.SYMBOL, timeframe = 5) {
+            async get_data(name = CONFIG.SYMBOL, timeframe = 5, num = 60) {
                 return new Promise(async (resolve, reject) => {
                     const dow = new Date().getDay();
                     const hmm = HELPERS.getHMM(new Date);
@@ -709,7 +710,7 @@
                     //     : new Date(Date.now() - (12 * 60 * 60 * 1000)).toISOString();
                     // const start_at = new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString();
                     const start_at = timeframe === '1D'
-                        ? new Date(Date.now() - (60 * 24 * 60 * 60 * 1000)).toISOString()
+                        ? new Date(Date.now() - (num * 24 * 60 * 60 * 1000)).toISOString()
                         : name.indexOf('-USD') > 0
                             ? new Date(Date.now() - (2 * 24 * 60 * 60 * 1000)).toISOString()
                             : new Date(calendar[calendar.map((v) => v.date).findIndex((v) => v > HELPERS.getYMD(new Date())) - 2].date).toISOString()
