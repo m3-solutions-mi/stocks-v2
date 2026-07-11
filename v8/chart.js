@@ -579,7 +579,7 @@ class Chart {
                     //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
                     //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
                     series.data.push({ x, y: undefined });
-                    series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
+                    // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
                 }
             }
             //#endregion
@@ -661,6 +661,7 @@ class Chart {
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
+            this.options.yaxis.max = Math.max(100, Math.max(...series[0].data.map((v)=>v.y).slice(0,-1)));
             this.options.chart.height = height;
             this.options.series = series;
             this._render_m(this.options);

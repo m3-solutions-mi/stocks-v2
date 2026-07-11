@@ -720,7 +720,7 @@
 
         //* LOADF SYMBOL LIST */
         html = '';
-        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort(), 'BTC-USD'].forEach((s) => {
+        ['QQQ', ...CONFIG.SYMBOL_LIST.split(',').sort(), ...'BTC-USD,ETH-USD,SOL-USD'.split(',')].forEach((s) => {
             const template = `<a onclick="select_symbol('${s}')" class="w3-padding w3-bar-item w3-button">
                 <i class="fa fa-tag"></i>&nbsp;
             ${s}</a>

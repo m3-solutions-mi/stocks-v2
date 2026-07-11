@@ -97,80 +97,16 @@
                             SYMBOL LIST
                             <input id="symbol-list" style="width:100%;" value="QQQ" />
                         </div>
-                        <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
+                        <!-- <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
                             <span class="w3-col s12 w3-text-grey">SYMBOLS</span>
-                            <div class="w3-col s12 m4">
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">QQQ</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">NQ=F</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">NDAQ</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">VOO</label>
-                                </div>
+                            <div id="symbols-col-1" class="w3-col s12 m4">
                             </div>
-                            <div class="w3-col s12 m4">
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">BTC-USD</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">ETH-USD</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">SOL-USD</label>
-                                </div>
+                            <div id="symbols-col-2" class="w3-col s12 m4">
                             </div>
-                            <div class="w3-col s12 m4">
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">DRAM</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">MU</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">SOXX</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">MRVL</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">NBIS</label>
-                                </div>
-                                <div class="w3-large">
-                                    <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
-                                        value="" onchange="select_symbol_list(this)">
-                                    <label contenteditable="true">DYN</label>
-                                </div>
+                            <div id="symbols-col-3" class="w3-col s12 m4">
                             </div>
-                        </div>
+                        </div> -->
+
                         <!-- <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
                             INDICATOR LIST
@@ -381,9 +317,10 @@
 
         function select_symbol_list(elem) {
             const symbols = elem.parentElement.children[1].innerText;
-            document.getElementById('symbol-list').value = symbols;
-            console.log(elem, symbols);
-            save_settings();
+            // document.getElementById('symbol-list').value = symbols;
+            // console.log(elem, symbols);
+            // save_settings();
+            select_symbol(symbols)
         }
 
         function get_item(name) {
@@ -408,10 +345,12 @@
 
         function select_symbol(symbol) {
             document.getElementById('symbol').value = symbol;
-            localStorage.setItem(`m3-stocks-v3-symbol`, symbol);
+            set_item(`symbol`, symbol);
+            set_item(`symbol-list`, symbol);
+            document.getElementById('chart-card-symbol-0').innerText = symbol;
             CONFIG.SYMBOL = symbol;
             CONFIG.UPDATE_HA_SYMBOLS();
-            CONFIG.load_chart_cards();
+            // CONFIG.load_chart_cards();
             INTERVAL.update(true);
         }
 
@@ -472,6 +411,28 @@
                 console.log(JSON.stringify(localStorage, null, 2));
             }
 
+            load_settings() {
+                let html = '';
+                const add = (s) => {
+                    html += `
+                        <div class="w3-large">
+                            <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
+                                value="" onchange="select_symbol_list(this)">
+                            <label>${s}</label>
+                        </div>`;
+                }
+                'QQQ,NQ=F,NDAQ,VOO'.split(',').forEach((s) => { add(s) })
+                document.getElementById('symbols-col-1').innerHTML += html;
+
+                html = ''
+                'DRAM,MU,SOXX,MRVL,NBIS,DYN'.split(',').forEach((s) => { add(s) })
+                document.getElementById('symbols-col-2').innerHTML += html;
+
+                html = ''
+                'BTC-USD,ETH-USD,SOL-USD'.split(',').forEach((s) => { add(s) })
+                document.getElementById('symbols-col-3').innerHTML += html;
+            }
+
             load_chart_cards() {
                 let html = '';
                 let html_table = `
@@ -505,6 +466,10 @@
                         </span>
                     </span>`;
 
+                html += `
+                    
+                    `;
+                
                 // CONFIG.WATCH_LIST
                 this.HA_SYMBOLS
                     .forEach((s, i) => {
@@ -513,8 +478,19 @@
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
-                                    <b id="chart-card-symbol-${i}" class="${s.indexOf('-USD') > 0 ? 'w3-text-blue' : ''}">${s}</b>
+                                    <b id="chart-card-symbol-${i}" class="">${s}</b><span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>
                                     <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10 * 1000},'${s}')" style="padding-top:3px;"></i>
+                                </span>
+                                <span id="symbol-picker" class="w3-hide w3-col s12 w3-xlarge">
+                                    <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
+                                        <span class="w3-col s12 w3-text-grey">SYMBOLS</span>
+                                        <div id="symbols-col-1" class="w3-col s12 m4">
+                                        </div>
+                                        <div id="symbols-col-2" class="w3-col s12 m4">
+                                        </div>
+                                        <div id="symbols-col-3" class="w3-col s12 m4">
+                                        </div>
+                                    </div>
                                 </span>
                                 <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                     <!-- <i class="fa fa-toggle-on w3-text-grey w3-left w3-xlarge"></i> -->
@@ -764,7 +740,7 @@
 
                     // const data_m = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols('1Min') : [];
                     const data = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols('5Min') : [];
-                    const data_d = CONFIG.TIMEFRAME !== 'minute' ? await DATA.get_symbols('1D') : [];
+                    const data_d = CONFIG.TIMEFRAME === 'day' ? await DATA.get_symbols('1D') : [];
 
                     // const account_history_14d = await ACCOUNT.history('14D', '1D');
                     // const account_detail = await ACCOUNT.detail();
@@ -772,9 +748,9 @@
 
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data[s], i, IS_LARGE ? 260 : (IS_MEDIUM ? 260 : 190), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 190), i === 0);
                         } else {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data_d[s], data_d[s], i, IS_LARGE ? 260 : (IS_MEDIUM ? 260 : 190), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data_d[s], data_d[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 190), i === 0);
                         }
                     });
 
@@ -793,6 +769,7 @@
         const CONFIG = new Configuration();
         const HELPERS = new Helpers();
         CONFIG.load_chart_cards();
+        CONFIG.load_settings();
         const DATA = new Data();
         const CHARTS = {};
         CONFIG.HA_SYMBOLS.forEach((v, i) => {

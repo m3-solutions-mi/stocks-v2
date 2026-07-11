@@ -532,9 +532,9 @@ class Chart {
             series[0].type = 'candlestick';
             series[0].data = ohlc_data
                 // .slice(-200)
-                .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                .filter((v) => HELPERS.getHMM(new Date(v.e)) >= 930)
-                .filter((v) => HELPERS.getHMM(new Date(v.e)) <= 1600)
+                // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
+                // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= 930)
+                // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= 1600)
                 .map((v, i) => { return { x: v.e, y: [round2(v.o * shares), round2(v.h * shares), round2(v.l * shares), round2(v.c * shares)] } });
             // series.push({
             //     name: 'Close',
@@ -575,17 +575,18 @@ class Chart {
             // }).filter((v) => v.x >= 1000 && v.x <= 1200).map((v) => v.y)
             // );
         } else
-            if (type === 'mixed') {const hmm = HELPERS.getHMM(new Date());
+            if (type === 'mixed') {
+                const hmm = HELPERS.getHMM(new Date());
                 const hmm_s = hmm < 900 ? 400 : 800;
                 const hmm_e = 2000;
                 const ohlc_data = calculateHeikinAshi(data);
                 series[0].type = 'bar';
                 series[0].data = ohlc_data
                     // .slice(-200)
-                    .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                    .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                    .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                    .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
+                    // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
+                    // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
+                    // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
+                    // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
                     .map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
                 let cumulative = 0;
                 series.push({
@@ -593,9 +594,9 @@ class Chart {
                     type: 'line',
                     color: colors.teal,
                     data: ohlc_data
-                        .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
-                        .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
-                        .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
+                        // .filter((v) => HELPERS.getYMD(new Date(v.e)) === HELPERS.getYMD(new Date(ohlc_data[ohlc_data.length - 1].e)))
+                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) >= hmm_s)
+                        // .filter((v) => HELPERS.getHMM(new Date(v.e)) <= hmm_e)
                         .map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } })
                 })
                 const d3 = series[0].data[series[0].data.length - 1].x;
