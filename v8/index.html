@@ -413,24 +413,29 @@
 
             load_settings() {
                 let html = '';
-                const add = (s) => {
+                const add = (s, color='') => {
                     html += `
                         <div class="w3-large">
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
                                 value="" onchange="select_symbol_list(this)">
-                            <label>${s}</label>
+                            <label class="${color}">${s}</label>
                         </div>`;
                 }
-                'QQQ,NQ=F,NDAQ,VOO'.split(',').forEach((s) => { add(s) })
+                'QQQ,NQ=F,NDAQ,VOO'.split(',').sort().forEach((s) => { add(s) })
+                'BTC-USD,ETH-USD,SOL-USD'.split(',').sort().forEach((s) => { add(s,'w3-text-blue') })
                 document.getElementById('symbols-col-1').innerHTML += html;
 
                 html = ''
-                'DRAM,MU,SOXX,MRVL,NBIS,DYN'.split(',').forEach((s) => { add(s) })
+                'AMD,ARM,DRAM,DYN,MRVL,MU,SNDK,SOXX,STX'.split(',').sort().forEach((s) => { add(s) })
                 document.getElementById('symbols-col-2').innerHTML += html;
 
                 html = ''
-                'BTC-USD,ETH-USD,SOL-USD'.split(',').forEach((s) => { add(s) })
+                'AVAV,GE,GEV,NBIS,NUCL,NVDA,STRL,VRT'.split(',').sort().forEach((s) => { add(s) })
                 document.getElementById('symbols-col-3').innerHTML += html;
+
+                html = ''
+                'AMZN,VSAT,WMT'.split(',').sort().forEach((s) => { add(s) })
+                document.getElementById('symbols-col-4').innerHTML += html;
             }
 
             load_chart_cards() {
@@ -484,11 +489,13 @@
                                 <span id="symbol-picker" class="w3-hide w3-col s12 w3-xlarge">
                                     <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
                                         <span class="w3-col s12 w3-text-grey">SYMBOLS</span>
-                                        <div id="symbols-col-1" class="w3-col s12 m4">
+                                        <div id="symbols-col-1" class="w3-col s12 m3">
                                         </div>
-                                        <div id="symbols-col-2" class="w3-col s12 m4">
+                                        <div id="symbols-col-2" class="w3-col s12 m3">
                                         </div>
-                                        <div id="symbols-col-3" class="w3-col s12 m4">
+                                        <div id="symbols-col-3" class="w3-col s12 m3">
+                                        </div>
+                                        <div id="symbols-col-4" class="w3-col s12 m3">
                                         </div>
                                     </div>
                                 </span>
