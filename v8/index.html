@@ -39,6 +39,7 @@
     <script src="./account.js"></script>
     <script src="./calendar.js"></script>
     <script src="./market.js"></script>
+    <script src="./algorithms.js"></script>
     <script src="./gemini.js"></script>
 
     <!--@ PAGE CONTENT -->
@@ -70,7 +71,10 @@
                         <!-- CLOCK -->
                         <div class="w3-col s12 m3 w3-center w3-xxlarge w3-text-black w3-wide pointer"
                             style="margin-top:15px;">
-                            <b><span id="clock" onclick="window.location.reload()">-</span></b>
+                            <b>
+                                <span id="clock" onclick="window.location.reload()">-</span>
+                                <input class="w3-medium" type="date" value="2026-07-13" />
+                            </b>
                         </div>
 
                         <!-- SCREEN SIZE -->
@@ -107,38 +111,40 @@
                             </div>
                         </div> -->
 
-                        <!-- <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
-                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
-                            INDICATOR LIST
-                            <input id="indicator-list" style="width:100%;" value="QQQ,NDAQ,NQ=F,CL=F,^VIX" />
+                        <!--@ SYMBOL GROUPS -->
+                        <div class="w3-large">
+                            <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                onchange="select_symbol_list(this)">
+                            <label contenteditable="true">FROG,QLYS,NEO,BTSG,RARE,TXG</label>
                         </div>
-                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
-                            <i class="fa fa-toggle-on w3-text-green w3-xlarge w3-margin-right"></i>
-                            GROUP A
-                            <input id="symbol-list-group-a" style="width:100%;" value="FROG,QLYS,NEO,BTSG,RARE,TXG" />
+                        <div class="w3-large">
+                            <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                onchange="select_symbol_list(this)">
+                            <label contenteditable="true">QQQ,NQ=F,NDAQ,CL=F,^VIX,VOO</label>
                         </div>
-                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
-                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
-                            GROUP B
-                            <input id="symbol-list-group-b" style="width:100%;"
-                                value="DYN,DRTS,ERAS,LQDA,NEO,RARE,ROIV,TXG,XERS,WAY" />
+                        <div class="w3-large">
+                            <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                onchange="select_symbol_list(this)">
+                            <label contenteditable="true">DYN,DRTS,ERAS,LQDA,NEO,RARE,ROIV,TXG,XERS,WAY</label>
                         </div>
-                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
-                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
-                            AI+ LIST
-                            <input id="symbol-list-ai" style="width:100%;"
-                                value="DRAM,MU,UMC,SMCI,SNDK,SOXL,STX,WDC,TSEM" />
+                        <div class="w3-large">
+                            <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                onchange="select_symbol_list(this)">
+                            <label contenteditable="true">DRAM,MU,UMC,SMCI,SNDK,SOXL,STX,PENG,WDC</label>
+                            <!-- <label contenteditable="true">DRAM,MRVL,MU,UMC,SITM,SMCI,SNDK,SOXL,STX,TSEM,PENG,WDC</label> -->
                         </div>
-                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
-                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
-                            ENERGY LIST
-                            <input id="symbol-list-energy" style="width:100%;" value="BE,CAT,GNRC,GE,GEV,NBIS" />
+                        <div class="w3-large">
+                            <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
+                                onchange="select_symbol_list(this)">
+                            <label contenteditable="true">BE,CAT,GNRC,GE,GEV,NBIS</label>
                         </div>
-                        <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
-                            <i class="fa fa-toggle-off w3-text-green w3-xlarge w3-margin-right"></i>
-                            CRYPTO
-                            <input id="crypto-list" style="width:100%;" value="BTC-USD,ETH-USD,LTC-USD,SOL-USD" />
-                        </div> -->
+                        <div class="w3-large">
+                            <input class="w3-radio w3-margin-left w3-margin-bottom" type="radio" name="group-symbols-list" value=""
+                                onchange="select_symbol_list(this)">
+                            <label contenteditable="true">BTC-USD,ETH-USD,LTC-USD,SOL-USD</label>
+                        </div>
+
+                        <!--@ FIELDS -->
                         <div class="w3-col s6 w3-padding w3-text-grey">API KEY
                             <input id="api-key" style="width:100%;" value="" />
                         </div>
@@ -151,6 +157,8 @@
                         <div class="w3-col s6 w3-padding w3-text-grey">ACCOUNT URL
                             <input id="account-url" style="width:100%;" value="" />
                         </div>
+
+                        <!--@ OPTIONS -->
                         <div class="w3-col s12 w3-padding">
                             <span class="w3-text-grey">Timeframe</span>
                             <div class="w3-right w3-large">
@@ -196,6 +204,8 @@
                                 <label>0.75 %</label>
                             </div>
                         </div>
+
+                        <!--@ BUTTONS -->
                         <div class="w3-button w3-border w3-wide w3-right pointer" style="width:180px;"
                             onclick="save_settings()">Save</div>
                         <div class="w3-button w3-border w3-wide w3-right pointer" style="width:180px;margin-right:20px;"
@@ -317,10 +327,13 @@
 
         function select_symbol_list(elem) {
             const symbols = elem.parentElement.children[1].innerText;
-            // document.getElementById('symbol-list').value = symbols;
-            // console.log(elem, symbols);
-            // save_settings();
-            select_symbol(symbols)
+            if (symbols.split(',').length > 1) {
+                document.getElementById('symbol-list').value = symbols;
+                // console.log(elem, symbols);
+                save_settings();
+            } else {
+                select_symbol(symbols);
+            }
         }
 
         function get_item(name) {
@@ -346,7 +359,7 @@
         function select_symbol(symbol) {
             document.getElementById('symbol').value = symbol;
             set_item(`symbol`, symbol);
-            set_item(`symbol-list`, symbol);
+            // set_item(`symbol-list`, symbol);
             document.getElementById('chart-card-symbol-0').innerText = symbol;
             CONFIG.SYMBOL = symbol;
             CONFIG.UPDATE_HA_SYMBOLS();
@@ -404,7 +417,7 @@
             TIMEFRAME = localStorage.getItem(this.get_key('timeframe')) || 'minute';
             UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
-            HA_SYMBOLS = [/*this.SYMBOL,*/ ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i);
+            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i);
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
             constructor() {
@@ -413,7 +426,7 @@
 
             load_settings() {
                 let html = '';
-                const add = (s, color='') => {
+                const add = (s, color = '') => {
                     html += `
                         <div class="w3-large">
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list"
@@ -423,7 +436,7 @@
                 }
                 'QQQ,NQ=F,NDAQ,VOO'.split(',').forEach((s) => { add(s) })
                 // html += '<span style="border-top:1px solid;">&nbsp;</span>';
-                'BTC-USD,ETH-USD,SOL-USD'.split(',').sort().forEach((s) => { add(s,'w3-text-blue') })
+                'BTC-USD,ETH-USD,SOL-USD'.split(',').sort().forEach((s) => { add(s, 'w3-text-blue') })
                 document.getElementById('symbols-col-1').innerHTML += html;
 
                 html = '';
@@ -431,11 +444,11 @@
                 document.getElementById('symbols-col-2').innerHTML += html;
 
                 html = '';
-                'AVAV,GE,GEV,NBIS,NUCL,NVDA,STRL,VRT'.split(',').sort().forEach((s) => { add(s) })
+                'AVAV,BE,GE,GEV,NBIS,NUCL,NVDA,STRL,VRT,CRM,CRWV'.split(',').sort().forEach((s) => { add(s) })
                 document.getElementById('symbols-col-3').innerHTML += html;
 
                 html = '';
-                'AMZN,VSAT,WMT'.split(',').sort().forEach((s) => { add(s) })
+                'AMZN,APH,BTSG,CAT,GNRC,HOOD,LITE,VSAT,WMT'.split(',').sort().forEach((s) => { add(s) })
                 document.getElementById('symbols-col-4').innerHTML += html;
             }
 
@@ -475,17 +488,17 @@
                 html += `
                     
                     `;
-                
+
                 // CONFIG.WATCH_LIST
                 this.HA_SYMBOLS
                     .forEach((s, i) => {
                         html += `
-                        <span class="_w3-hide-small w3-col s12 w3-xlarge">
+                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${i === 0 ? 12 : 4} w3-xlarge">
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                                     <b id="chart-card-symbol-${i}" class="">${s}</b><span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>
-                                    <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10 * 1000},'${s}')" style="padding-top:3px;"></i>
+                                    <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${7.5 * 1000},'${s}')" style="padding-top:3px;"></i>
                                 </span>
                                 <span id="symbol-picker" class="w3-hide w3-col s12 w3-xlarge">
                                     <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
@@ -500,7 +513,7 @@
                                         </div>
                                     </div>
                                 </span>
-                                <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
+                                <span id="chart-card-banner-${i}" class="${i > 0 ? '_w3-hide' : ''} w3-col s12 w3-center">
                                     <!-- <i class="fa fa-toggle-on w3-text-grey w3-left w3-xlarge"></i> -->
                                     <span id="chart-card-gain-${i}" class="">-</span>
                                     <span class="w3-text-grey">&nbsp;|&nbsp;</span>
@@ -512,7 +525,7 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${i > 0 ? 'w3-hide' : ''} w3-col s12 w3-border-top _w3-margin-bottom w3-padding" style="height:100px;"></div>
                                 <div id="chart-ha-${i}-2" class="w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
@@ -729,6 +742,19 @@
                     resolve(resp.bars[name]);
                 });
             };
+            
+
+            //* GET DAY DATA */
+            async get_day_data(name = CONFIG.SYMBOL, ymd) {
+                return new Promise(async (resolve, reject) => {
+
+                    const url = `${CONFIG.API_URL}/${name}/1M/${ymd}`;
+                    const resp = await fetch(url, {
+                        method: 'GET',
+                    }).then((resp) => resp.json());
+                    resolve(resp.bars[name]);
+                });
+            };
         }
     </script>
 
@@ -747,7 +773,8 @@
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
 
                     // const data_m = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols('1Min') : [];
-                    const data = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols('5Min') : [];
+                    const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
+                    const data = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols(timeframe) : [];
                     const data_d = CONFIG.TIMEFRAME === 'day' ? await DATA.get_symbols('1D') : [];
 
                     // const account_history_14d = await ACCOUNT.history('14D', '1D');
@@ -756,9 +783,9 @@
 
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 190), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data[s], data[s], i, IS_LARGE ? (i === 0 ? 175 : 125) : (IS_MEDIUM ? 175 : 190), timeframe, i === 0);
                         } else {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data_d[s], data_d[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 190), i === 0);
+                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, data_d[s], data_d[s], i, IS_LARGE ? (i === 0 ? 175 : 125) : (IS_MEDIUM ? 175 : 190), (24 * 60).toString(), i === 0);
                         }
                     });
 
@@ -785,6 +812,7 @@
         })
         const ACCOUNT = new Account();
         const CHART_ACCOUNT_HISTORY = new Chart('chart-account-history');
+        const ALGOS = new Algorithms();
 
         //* INTERVAL */
         const INTERVAL = new Interval();

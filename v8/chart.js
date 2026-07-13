@@ -434,7 +434,7 @@ class Chart {
     //#endregion
 
     //@ SYMBOL CHART *** 2 *** - 24H */
-    async update_2(symbol, timeframe, data, data_m, index, height = 280, summarize = false) {
+    async update_2(symbol, mode, data, data_m, index, height = 280, timeframe = '15Min', summarize = false) {
         // const is_crypto = symbol.indexOf('-USD') < 0;
         // if (timeframe === 5) {
         //     data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
@@ -505,7 +505,7 @@ class Chart {
 
             //* MOVE HA last timestamp to end of 5 minutes */
             if (CONFIG.TIMEFRAME === 'minute') {
-                data[data.length - 1].e = data[data.length - 2].e + (5 * 60 * 1000);
+                data[data.length - 1].e = data[data.length - 2].e + (+(timeframe.replace('M','')) * 60 * 1000);
             }
 
             //* TIME WINDOW VARIABLES */
@@ -520,9 +520,10 @@ class Chart {
             //* REFERENCE VALUE */
             const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
-            let s = timeframe === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
+            // let s = mode === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
             // let s = new Date(current_day).setHours(4, 0);
             // let s = new Date(previous_day).setHours(19, 55);
+            let s = data[data.length-1].e - (1*24*60*60*1000);
             // console.log(data[0].tl);
 
 
@@ -556,17 +557,24 @@ class Chart {
             // .filter((v) => v.e <= e);
             //#endregion
 
+            
+            //#region SEED & START
+            const seed = 10 * 1000;
+            
             // let start = data[0].c; //last_eod ? last_eod.c : 0;
             // let start = last_eod ? last_eod.c : data[0].c;
-            let start = Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
+            // let start = Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
+            //#endregion
 
+            //#region CALC SHARES
             // const t_400 = data.find((v)=>v.thm === 405);
             // const t_930 = data.find((v)=>v.thm === 930);
             // let start = t_930 ? t_930.c : Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
             // // let start = t_930 ? t_930.c : data[0].c;
-            const seed = 1 * 1000;
-            let shares = seed / start;
+            const t_930 = data.find((v)=>v.thm === 930);
+            let shares = seed / data[0].c;
             const show_full_day = true;
+            //#endregion
 
             //#region LAST & PREVIOUS */
             const last = data[data.length - 1];
@@ -639,7 +647,7 @@ class Chart {
             //* FINISH UP */
             delete this.options_candlestick.tooltip.custom;
             this.options_candlestick.chart.type = 'line';
-            this.options_candlestick.chart.height = height;
+            this.options_candlestick.chart.height = height - 75;
             this.options_candlestick.series = series;
             this._render(this.options_candlestick);
             //#endregion
@@ -650,11 +658,11 @@ class Chart {
             series.push({ name: '0.5 %', type: 'line', data: [] });
 
             //* DATA */
-            series[0].data = data.map((v, i) => { return { x: v.e, y: (v.c * shares) - seed } });
+            series[0].data = data.map((v, i) => { return { x: v.e, y: (v.c * shares) /*- seed*/ } });
             extend_series(series[0]);
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
-            let add = seed * 0.001 / 12;
+            let add = seed * 0.0001;
             let increment = series[0].data[0].y;
             series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
 
@@ -675,9 +683,9 @@ class Chart {
             //#endregion
 
             //#region SUMMARIES
-            const chart_card_series = eval(`CHARTS.CHART_V6_0`).options.series[0].data;
-            const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y;
-            const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y;
+            const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
+            const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
+            const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
             // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
@@ -766,7 +774,7 @@ class Chart {
             // console.log(`%c${symbol}`, 'color:yellow');
             // console.table(entries);
 
-            const m = 5;
+            const m = 15;
             document.getElementById(`clock`).style.color = hmm % m === 0 ? `white` : '';
             document.getElementById(`clock`).parentElement.parentElement.style.border = hmm % m === 0 ? `2px solid white` : '';
 
