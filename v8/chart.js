@@ -452,7 +452,7 @@ class Chart {
                     const d = data[data.length - 1].e;
                     const d2 = last.e - (24 * 60 * 60 * 1000);
                     return [
-                        this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.deeppink),
 
                         // this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
                         this.add_annotation_x(new Date(d).setHours(9, 30), null, colors.deeppink),

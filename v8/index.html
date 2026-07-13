@@ -449,15 +449,16 @@
                 document.getElementById('symbols-col-1').innerHTML += html;
 
                 html = '';
-                'AMD,ARM,DRAM,DYN,MRVL,MU,SNDK,SOXX,STX'.split(',').sort().forEach((s) => { add(s) })
+                'AMD,ARM,DRAM,DYN,MRVL,MU,SNDK,SOXL,SOXX,STX,WDC'.split(',').sort().forEach((s) => { add(s) });
                 document.getElementById('symbols-col-2').innerHTML += html;
 
                 html = '';
-                'AVAV,BE,GE,GEV,NBIS,NUCL,NVDA,STRL,VRT,CRM,CRWV'.split(',').sort().forEach((s) => { add(s) })
+                'AVAV,GE,NBIS,NUCL,NVDA,STRL,VRT,CRM,CRWV'.split(',').sort().forEach((s) => { add(s) });
+                'BE,GEV'.split(',').sort().forEach((s) => { add(s, 'w3-text-blue') });
                 document.getElementById('symbols-col-3').innerHTML += html;
 
                 html = '';
-                'AMZN,APH,BTSG,CAT,GNRC,HOOD,LITE,VSAT,WAY,WMT,XERS'.split(',').sort().forEach((s) => { add(s) })
+                'AMZN,APH,BTSG,CAT,GNRC,HOOD,LITE,VSAT,WAY,WMT,XERS'.split(',').sort().forEach((s) => { add(s) });
                 document.getElementById('symbols-col-4').innerHTML += html;
             }
 
@@ -502,7 +503,7 @@
                 this.HA_SYMBOLS
                     .forEach((s, i) => {
                         html += `
-                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${i === 0 ? 12 : 4} w3-xlarge">
+                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${i === 0 ? 12 : (IS_SMALL ? 12 : 4)} w3-xlarge">
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
@@ -782,7 +783,7 @@
                 if (now || CONFIG.UPDATE_AT.indexOf(dt.getSeconds()) >= 0) {
 
                     // const data_m = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols('1Min') : [];
-                    const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
+                    const timeframe = '15M'; //* 1M, 5M, 15M, 30M */
                     const data = CONFIG.TIMEFRAME === 'minute' ? await DATA.get_symbols(timeframe) : [];
                     const data_d = CONFIG.TIMEFRAME === 'day' ? await DATA.get_symbols('1D') : [];
 
