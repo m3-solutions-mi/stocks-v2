@@ -415,8 +415,8 @@
         class Configuration {
             get_key = (name) => `m3-stocks-v6-${name}`;
             DAY_TARGET_DOLLARS = 500;
-            SYMBOL = localStorage.getItem(this.get_key('symbol')) || 'QQQ';
-            SYMBOL_LIST = localStorage.getItem(this.get_key('symbol-list')) || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
+            SYMBOL = localStorage.getItem(this.get_key('symbol'));// || 'QQQ';
+            SYMBOL_LIST = localStorage.getItem(this.get_key('symbol-list'));// || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
             API_KEY = localStorage.getItem(this.get_key('api-key')) || '';
             API_SECRET = localStorage.getItem(this.get_key('api-secret')) || '';
             API_URL = localStorage.getItem(this.get_key('api-url')) || '';
@@ -426,7 +426,7 @@
             TIMEFRAME = localStorage.getItem(this.get_key('timeframe')) || 'minute';
             UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
-            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i);
+            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i).filter((v)=>v !== '');
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
             constructor() {
