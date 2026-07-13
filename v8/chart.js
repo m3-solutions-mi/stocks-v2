@@ -708,8 +708,8 @@ class Chart {
                         HELPERS.update_elem_text_colored(`mobile-card-position`, round2(+(position.unrealized_pl)), '', '');
                         HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(+(position.unrealized_plpc) * 100), '', '%');
                     } else {
-                        HELPERS.update_elem_text_colored(`mobile-card-position`, 0, '', '');
-                        HELPERS.update_elem_text_colored(`mobile-card-position-pct`, 0, '', '%');
+                        // HELPERS.update_elem_text_colored(`mobile-card-position`, 0, '', '');
+                        // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, 0, '', '%');
 
                         // HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
                         // HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2(_last - _last_minus_1), '$', '');
