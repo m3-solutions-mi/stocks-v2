@@ -619,7 +619,7 @@ class Chart {
             //#region MIXED | HA 
             let series = [];
             series.push({ name: 'HA Close', type: 'bar', data: [] });
-            series.push({ name: 'Gain', type: 'line', color: colors.orange, data: [] });
+            series.push({ name: 'Gain', type: 'line', color: colors.black, data: [] });
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
@@ -641,7 +641,7 @@ class Chart {
 
 
             //* OTHER OPTIONS */
-            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 4.5), 3];
+            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 4.5), 2];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
