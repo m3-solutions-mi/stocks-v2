@@ -576,7 +576,7 @@
                             </div>
                             <div class="w3-col s12 m12">
                                 <div id="chart-ha-${i}-1" class="${i > 0  && !IS_SMALL ? '_w3-hide' : ''} w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${IS_SMALL ? 'w3-hide' : ''} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${IS_SMALL ? 'w3-hide' : 'w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
@@ -853,9 +853,9 @@
 
                         CONFIG.HA_SYMBOLS.forEach((s, i) => {
                             if (CONFIG.TIMEFRAME === 'minute') {
-                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, IS_LARGE ? (i === 0 ? 175 : 125) : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
+                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, IS_LARGE ? (i === 0 ? 300 : 300) : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
                             } else {
-                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_1D[s], SHARED.DATA_1D[s], i, IS_LARGE ? (i === 0 ? 175 : 125) : (IS_MEDIUM ? 175 : 190), (24 * 60).toString(), i === 0);
+                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_1D[s], SHARED.DATA_1D[s], i, IS_LARGE ? (i === 0 ? 175 : 225) : (IS_MEDIUM ? 175 : 190), (24 * 60).toString(), i === 0);
                             }
                         });
 
