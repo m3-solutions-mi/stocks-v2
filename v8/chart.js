@@ -641,7 +641,7 @@ class Chart {
 
 
             //* OTHER OPTIONS */
-            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 4.5), 2];
+            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 4.5), 2.5];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
