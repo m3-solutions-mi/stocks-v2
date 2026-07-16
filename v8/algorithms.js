@@ -18,7 +18,7 @@ class Algorithms {
         // });
     }
     async test(n = 7) {
-        console.log('%c------------------------------------------------------------','color:yellow;');
+        console.log('%c------------------------------------------------------------', 'color:yellow;');
         // this.iterate_days(async (ymd) => {
         //     return new Promise(async (resolve) => {
 
@@ -30,13 +30,13 @@ class Algorithms {
         let g = 0;
         // const symbols = 'MU,NBIS,SNDK,UMC,STX'.split(',');
         // const symbols = 'DRAM,MU,NBIS,NVDA,SOXX,SNDK,UMC,STX,WDC'.split(',');
-        const symbols = 'SNDK,NBIS,WDC,DRAM,SOXL'.split(',');
+        const symbols = 'MU,SNDK,NBIS,WDC,DRAM,SOXL'.split(',');
         // const symbols = 'QQQ'.split(',');
 
         for await (const s of symbols) {
-            let data = await DATA.get_data(s, '1D', n);
+            let data = await FETCH_DATA.get_data(s, '1D', n);
             const buy_power = 40 * 1000;
-            const seed = 10*1000; //buy_power / symbols.length;
+            const seed = 10 * 1000; //buy_power / symbols.length;
             data = data.map((v, i) => {
                 const shares = seed / v.o;
                 return {
@@ -53,6 +53,35 @@ class Algorithms {
             const t = round2(data.map((v) => v.d).reduce((p, c) => p + (c < -100 ? -100 : c)));
             console.log(s, data, t);
             g += t < -250 ? -250 : t;
+        }
+        console.log(`%cTOTAL GAIN | ${n}d | ${round2(g).toLocaleString()}`, 'color:yellow;');
+        // }
+    }
+    async test_timeframe(n = 7) {
+        console.log('%c------------------------------------------------------------', 'color:yellow;');
+        // this.iterate_days(async (ymd) => {
+        //     return new Promise(async (resolve) => {
+
+        // const is_open = calendar.find((v) => v.date === ymd);
+        // if (is_open) {
+        // console.log('MARKET OPEN | ', ymd);
+
+        const days = [];
+        let g = 0;
+        // const symbols = 'MU,NBIS,SNDK,UMC,STX'.split(',');
+        // const symbols = 'DRAM,MU,NBIS,NVDA,SOXX,SNDK,UMC,STX,WDC'.split(',');
+        const symbols = 'MU,SNDK,NBIS,WDC,DRAM,SOXL'.split(',');
+        // const symbols = 'QQQ'.split(',');
+
+        for await (const s of symbols) {
+            let data = await FETCH_DATA.get_data(s, '1D', n);
+            const buy_power = 40 * 1000;
+            const seed = 10 * 1000; //buy_power / symbols.length;
+            const shares = seed / data[0].o;
+            const delta = (data[data.length - 1].c - data[0].o) * shares;
+
+            console.log(s, data, delta);
+            g += delta;
         }
         console.log(`%cTOTAL GAIN | ${n}d | ${round2(g).toLocaleString()}`, 'color:yellow;');
         // }
@@ -74,9 +103,10 @@ class Algorithms {
                         const seed = buy_power / symbols.length;
                         // let i = 0;
                         for await (const s of symbols) {
-                            let data = await DATA.get_day_data(s, ymd);
-                            data = data
-                                .filter((v) => v.thm === 935 || v.thm === 1600)
+                            let data = await FETCH_DATA.get_day_data(s, ymd);
+                            if (data) {
+                                data = data
+                                    .filter((v) => v.thm === 930 || v.thm === 1600)
                                 // .map((v, i) => {
                                 //     const shares = 1; //seed / v.o;
                                 //     return {
@@ -87,18 +117,19 @@ class Algorithms {
                                 //         d: round2((v.c - v.o) * shares)
                                 //     }
                                 // });
-                            data.forEach((v, i) => {
-                                if (i > 0 && (i+1) % 2 === 0) {
-                                    const o = data[i - 1].o;
-                                    const c = data[i].c;
-                                    const shares = 1; //seed / o;
-                                    const t = round2((c-o) * shares);
-                                    // const t = round2(data.map((v) => v.d).reduce((p, c) => p + c));
-                                    // console.log(s, c, o, c - o, t);
-                                    t_d += t < -200 ? -200 : t;
-                                    g += t;
-                                }
-                            });
+                                data.forEach((v, i) => {
+                                    if (i > 0 && (i + 1) % 2 === 0) {
+                                        const o = data[i - 1].o;
+                                        const c = data[i].c;
+                                        const shares = 1; //seed / o;
+                                        const t = round2((c - o) * shares);
+                                        // const t = round2(data.map((v) => v.d).reduce((p, c) => p + c));
+                                        // console.log(s, c, o, c - o, t);
+                                        t_d += t < -200 ? -200 : t;
+                                        g += t;
+                                    }
+                                });
+                            }
                         }
                         console.log(`MARKET OPEN | %c${ymd} | %c${round2(t_d)} | ${round1(t_d / buy_power * 100)}%`, 'color:cyan;', 'color:yellow;');
                     }
@@ -110,17 +141,17 @@ class Algorithms {
         }, n);
     };
     async test_3(symbol = 'SNDK', ymd = '2026-07-01') {
-        const data = (await DATA.get_day_data(symbol, ymd)).filter((v)=>v.thm === 935 || v.thm === 1600);
+        const data = (await FETCH_DATA.get_day_data(symbol, ymd)).filter((v) => v.thm === 935 || v.thm === 1600);
         console.log(data);
         const days = [];
         data.forEach((v, i) => {
-            if ((i+1) % 2 === 0) {
-                const n = 10000 / data[i-1].c
-                const delta = (v.c - data[i-1].c) * n;
+            if ((i + 1) % 2 === 0) {
+                const n = 10000 / data[i - 1].c
+                const delta = (v.c - data[i - 1].c) * n;
                 days.push(delta < -150 ? -150 : delta);
             }
         });
         console.table(days);
-        console.table(days.reduce((p,c)=>p+c));
+        console.table(days.reduce((p, c) => p + c));
     }
 }

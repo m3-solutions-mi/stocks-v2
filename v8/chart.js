@@ -452,6 +452,18 @@ class Chart {
                     const d = data[data.length - 1].e;
                     const d2 = last.e - (24 * 60 * 60 * 1000);
                     return [
+                        this.add_annotation_x(new Date(d2).setHours(8, 0), null, colors.deeppink),
+                        this.add_annotation_x(new Date(d2).setHours(9, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(10, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(11, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(12, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(13, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(14, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(15, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(17, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(18, 0), null, colors.lightgrey),
+                        this.add_annotation_x(new Date(d2).setHours(19, 0), null, colors.lightgrey),
                         this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.deeppink),
 
                         // this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
@@ -505,7 +517,7 @@ class Chart {
 
             //* MOVE HA last timestamp to end of 5 minutes */
             if (CONFIG.TIMEFRAME === 'minute') {
-                data[data.length - 1].e = data[data.length - 2].e + (+(timeframe.replace('M','')) * 60 * 1000);
+                data[data.length - 1].e = data[data.length - 2].e + (+(timeframe.replace('M', '')) * 60 * 1000);
             }
 
             //* TIME WINDOW VARIABLES */
@@ -519,21 +531,27 @@ class Chart {
 
             //* REFERENCE VALUE */
             const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
+            // const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
             // let s = mode === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
-            // let s = new Date(current_day).setHours(4, 0);
-            // let s = new Date(previous_day).setHours(19, 55);
-            let s = data[data.length-1].e - (1*24*60*60*1000);
+            
+            let s = data[0].e;
+            // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
+            if (hmm < 900) { s = new Date(previous_day).setHours(4, 0); }
+            if (hmm >= 900) { s = new Date(current_day).setHours(4, 0); }
+            if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+            // s = new Date(current_day).setHours(9, 0);
+            // s = new Date(previous_day).setHours(19, 55);
             // console.log(data[0].tl);
 
 
             //* HEIKEN-ASHI DATA */
             //* MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
             //* Viewed data is filtered below - after this calculation! */
-            // let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
+            let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
 
             //* HEIKEN-ASHI CLOSE VALUE (seems to be to fast of an indicator!)
-            let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
+            // let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
 
             //#region FILTERED DATA */
             // // let hour = 6;
@@ -557,10 +575,10 @@ class Chart {
             // .filter((v) => v.e <= e);
             //#endregion
 
-            
+
             //#region SEED & START
             const seed = 10 * 1000;
-            
+
             // let start = data[0].c; //last_eod ? last_eod.c : 0;
             // let start = last_eod ? last_eod.c : data[0].c;
             // let start = Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
@@ -571,7 +589,7 @@ class Chart {
             // const t_930 = data.find((v)=>v.thm === 930);
             // let start = t_930 ? t_930.c : Math.min(...(data.filter((v) => v.e >= s).map((v) => v.c)));
             // // let start = t_930 ? t_930.c : data[0].c;
-            const t_930 = data.find((v)=>v.thm === 930);
+            const t_930 = data.find((v) => v.thm === 930);
             let shares = seed / data[0].c;
             const show_full_day = true;
             //#endregion
@@ -623,7 +641,7 @@ class Chart {
 
 
             //* OTHER OPTIONS */
-            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 2.5), 3];
+            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : 4.5), 3];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
@@ -658,7 +676,7 @@ class Chart {
             series.push({ name: '0.5 %', type: 'line', data: [] });
 
             //* DATA */
-            series[0].data = data.map((v, i) => { return { x: v.e, y: (v.c * shares) /*- seed*/ } });
+            series[0].data = data_m.map((v, i) => { return { x: v.e, y: (v.c * shares) /*- seed*/ } });
             extend_series(series[0]);
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
@@ -676,7 +694,7 @@ class Chart {
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
-            this.options.yaxis.max = Math.max(100, Math.max(...series[0].data.map((v)=>v.y).slice(0,-1)));
+            this.options.yaxis.max = Math.max(100, Math.max(...series[0].data.map((v) => v.y).slice(0, -1)));
             this.options.chart.height = height;
             this.options.series = series;
             this._render_m(this.options);
@@ -684,8 +702,10 @@ class Chart {
 
             //#region SUMMARIES
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
+            // const _last = chart_card_series[chart_card_series.length-1].y - seed;
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
+
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
             // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
@@ -694,6 +714,11 @@ class Chart {
                 const account_detail = await ACCOUNT.detail();
                 const account_history_5d = await ACCOUNT.history('5D', '1D');
                 const account_positions = await ACCOUNT.positions();
+
+                const positions_gain = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_pl)));
+                const positions_gain_pct = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_plpc)));
+                HELPERS.update_elem_text_colored(`mobile-card-position`, round2(positions_gain), '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(positions_gain_pct * 100), '', '%');
 
                 CONFIG.HA_SYMBOLS.forEach((s, i) => {
                     const p = ''
@@ -705,9 +730,12 @@ class Chart {
                         // HELPERS.update_elem_text(`chart-card-seed/-${i}${p}`, round1(+(position.cost_basis / 1000)), '$', 'K');
                         // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
 
-                        HELPERS.update_elem_text_colored(`mobile-card-position`, round2(+(position.unrealized_pl)), '', '');
-                        HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(+(position.unrealized_plpc) * 100), '', '%');
+
+
+                        document.getElementById(`chart-card-symbol-${i}`).style.color = 'green'
                     } else {
+                        document.getElementById(`chart-card-symbol-${i}`).style.color = ''
+
                         // HELPERS.update_elem_text_colored(`mobile-card-position`, 0, '', '');
                         // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, 0, '', '%');
 

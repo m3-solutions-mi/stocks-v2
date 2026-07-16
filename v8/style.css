@@ -1,3 +1,31 @@
 .pointer {
-    cursor:pointer;
+    cursor: pointer;
+}
+
+/* Sharp on/off flashing (Classic look) */
+.flash-text {
+    animation: sharp-flash 1s steps(2, start) infinite;
+}
+
+@keyframes sharp-flash {
+    to {
+        visibility: hidden;
+    }
+}
+
+/* Smooth fade flashing (Modern look) */
+.smooth-flash {
+    animation: smooth-fade 1.5s infinite;
+}
+
+@keyframes smooth-fade {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
