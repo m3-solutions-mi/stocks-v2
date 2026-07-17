@@ -453,12 +453,12 @@ class Chart {
                     const d2 = last.e - (24 * 60 * 60 * 1000);
                     const obj = [];
                     [d2, d].forEach((date) => {
-                        [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].forEach((x)=>{
-                            obj.push(this.add_annotation_x(new Date(date).setHours(x, 0), null, colors.lightgrey)); 
+                        [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].forEach((x) => {
+                            obj.push(this.add_annotation_x(new Date(date).setHours(x, 0), null, colors.lightgrey));
                         });
-                        obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal)); 
-                        obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink)); 
-                        obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal)); 
+                        obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal));
                     });
                     return obj;
 
@@ -754,7 +754,7 @@ class Chart {
                         // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, 0, '', '%');
 
                         // HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
-                        HELPERS.update_elem_text_colored(`chart-card-chg-${i}`, round2(_last - _last_minus_1), '', '');
+                        // HELPERS.update_elem_text_colored(`chart-card-chg-${i}`, round2(_last - _last_minus_1), '', '');
                     }
                     // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
                     // HELPERS.update_elem_text_colored(`chart-card-peak-${i}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
@@ -778,7 +778,7 @@ class Chart {
 
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round2(_last - _last_minus_1), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((_last - _last_minus_1) / seed * 100), '', '%');
-                // HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
+                HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
 
                 HELPERS.update_elem_text(`mobile-account-net`, account_detail.equity, '$', '');
                 HELPERS.update_elem_text(`mobile-account-buying-power`, account_detail.buying_power, '$', '');

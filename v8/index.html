@@ -675,7 +675,7 @@
 
                 for (const key in obj) {
                     if (obj.hasOwnProperty(key)) {
-                        clonedObj[key] = deepClone(obj[key]);
+                        clonedObj[key] = this.deepClone(obj[key]);
                     }
                 }
 
