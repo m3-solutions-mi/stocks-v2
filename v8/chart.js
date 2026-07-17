@@ -444,56 +444,67 @@ class Chart {
 
         if (data && data.length > 0) {
 
-            //#region ANNOTATIONS */
+            //#region ADD ANNOTATIONS */
             this.options_candlestick.annotations = { xaxis: [], yaxis: [], points: [] };
             this.options.annotations = { xaxis: [], yaxis: [], points: [] };
             const annotations_x = () => {
                 if (CONFIG.TIMEFRAME === 'minute') {
                     const d = data[data.length - 1].e;
                     const d2 = last.e - (24 * 60 * 60 * 1000);
-                    return [
-                        this.add_annotation_x(new Date(d2).setHours(8, 0), null, colors.deeppink),
-                        this.add_annotation_x(new Date(d2).setHours(9, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(10, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(11, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(12, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(13, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(14, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(15, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(17, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(18, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(19, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.deeppink),
+                    const obj = [];
+                    [d2, d].forEach((date) => {
+                        [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].forEach((x)=>{
+                            obj.push(this.add_annotation_x(new Date(date).setHours(x, 0), null, colors.lightgrey)); 
+                        });
+                        obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal)); 
+                        obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink)); 
+                        obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal)); 
+                    });
+                    return obj;
 
-                        // this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
-                        this.add_annotation_x(new Date(d).setHours(9, 30), null, colors.deeppink),
-                        this.add_annotation_x(new Date(d).setHours(16, 0), null, colors.deeppink),
+                    // return [
+                    //     this.add_annotation_x(new Date(d2).setHours(8, 0), null, colors.deeppink),
+                    //     this.add_annotation_x(new Date(d2).setHours(9, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(10, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(11, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(12, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(13, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(14, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(15, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(16, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(17, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(18, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(19, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d2).setHours(20, 0), null, colors.deeppink),
 
-                        // this.add_annotation_x(new Date(d).setHours(0, 0), null, colors.lightgrey),
-                        // this.add_annotation_x(new Date(d).setHours(1, 0), null, colors.lightgrey),
-                        // this.add_annotation_x(new Date(d).setHours(2, 0), null, colors.lightgrey),
-                        // this.add_annotation_x(new Date(d).setHours(3, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(4, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(5, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(6, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(7, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(8, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(9, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(10, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(11, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(12, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(13, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(14, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(15, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(17, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(18, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(19, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(20, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(21, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(22, 0), null, colors.lightgrey),
-                        this.add_annotation_x(new Date(d).setHours(23, 0), null, colors.lightgrey),
-                    ]
+                    //     // this.add_annotation_x(new Date(d).setHours(2, 15), null, colors.teal),
+                    //     this.add_annotation_x(new Date(d).setHours(9, 30), null, colors.deeppink),
+                    //     this.add_annotation_x(new Date(d).setHours(16, 0), null, colors.deeppink),
+
+                    //     // this.add_annotation_x(new Date(d).setHours(0, 0), null, colors.lightgrey),
+                    //     // this.add_annotation_x(new Date(d).setHours(1, 0), null, colors.lightgrey),
+                    //     // this.add_annotation_x(new Date(d).setHours(2, 0), null, colors.lightgrey),
+                    //     // this.add_annotation_x(new Date(d).setHours(3, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(4, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(5, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(6, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(7, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(8, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(9, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(10, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(11, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(12, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(13, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(14, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(15, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(17, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(18, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(19, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(20, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(21, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(22, 0), null, colors.lightgrey),
+                    //     this.add_annotation_x(new Date(d).setHours(23, 0), null, colors.lightgrey),
+                    // ]
                 } else {
                     return [];
                 }
@@ -534,11 +545,13 @@ class Chart {
             // const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
             // let s = mode === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
-            
+
             let s = data[0].e;
             // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
-            if (hmm < 900) { s = new Date(previous_day).setHours(4, 0); }
-            if (hmm >= 900) { s = new Date(current_day).setHours(4, 0); }
+            // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
+            // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
+            if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
+            if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
             if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
             // s = new Date(current_day).setHours(9, 0);
             // s = new Date(previous_day).setHours(19, 55);
@@ -620,6 +633,7 @@ class Chart {
             let series = [];
             series.push({ name: 'HA Close', type: 'bar', data: [] });
             series.push({ name: 'Gain', type: 'line', color: colors.black, data: [] });
+            // series.push({ name: 'Gain', type: 'area', color: '#6dc57347', data: [] });
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
@@ -740,7 +754,7 @@ class Chart {
                         // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, 0, '', '%');
 
                         // HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
-                        // HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2(_last - _last_minus_1), '$', '');
+                        HELPERS.update_elem_text_colored(`chart-card-chg-${i}`, round2(_last - _last_minus_1), '', '');
                     }
                     // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
                     // HELPERS.update_elem_text_colored(`chart-card-peak-${i}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
@@ -764,7 +778,7 @@ class Chart {
 
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round2(_last - _last_minus_1), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((_last - _last_minus_1) / seed * 100), '', '%');
-                HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
+                // HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
 
                 HELPERS.update_elem_text(`mobile-account-net`, account_detail.equity, '$', '');
                 HELPERS.update_elem_text(`mobile-account-buying-power`, account_detail.buying_power, '$', '');

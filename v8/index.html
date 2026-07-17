@@ -73,7 +73,7 @@
                             style="margin-top:15px;">
                             <b>
                                 <span id="clock" onclick="window.location.reload()">-</span>
-                                <span class="fa fa-ban w3-text-pink" onclick="ACCOUNT.liquidate()"></span>
+                                <div class="fa fa-ban w3-padding-top w3-text-pink" onclick="ACCOUNT.liquidate()"></div>
                                 <!-- <input class="w3-medium" type="date" value="2026-07-13" /> -->
                                 <input id="selected-date" class="w3-hide flatpickr flatpickr-input w3-input w3-border"
                                     style="font-size:18px;" type="text" value="2026-04-17"
@@ -298,6 +298,15 @@
         round3 = (v) => { return Math.round(v * 1000) / 1000; };
         round4 = (v) => { return Math.round(v * 10000) / 10000; };
 
+        /** PRINT THE VERSION */
+        const print_version = () => {
+            console.log(`%c======================`, 'color:lime');
+            console.log(`%c  ███      ███  ████\n  ██ ██  ██ ██    ██\n  ██   ██   ██  ████\n  ██        ██    ██\n  ██        ██  ████`, 'color:lime');
+            console.log('%c     M3 STOCKS V8', 'color:lime');
+            console.log(`%c======================`, 'color:lime');
+        }
+        print_version();
+
         console.chart = function (data, group = '-') {
             // const cols = data.map((v, i)=>i+1)
             // console.log(data);
@@ -513,18 +522,18 @@
                             </b>
                         </span>
                         <span class="w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
-                            <div class="">TODAY</div>
+                            <div class="w3-border-bottom">TODAY</div>
                             <b><div id="mobile-card-gain" class="w3-xxxlarge w3-wide">-</div></b>
                             <div id="mobile-card-pct" class="w3-wide">-</div>
                         </span>
                         <span id="mobile-card-treemap" class="w3-hide w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;"></span>
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
-                            <div class="">POSITION</div>
+                            <div class="w3-border-bottom">POSITION</div>
                             <b><div id="mobile-card-position" class="w3-xxxlarge w3-wide">-</div></b>
                             <div id="mobile-card-position-pct" class="w3-wide">-</div>
                         </span>
                         <span class="w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
-                            <div class="">CHANGE</div>
+                            <div class="w3-border-bottom">CHANGE</div>
                             <b><div id="mobile-card-change" class="w3-xxxlarge w3-wide">-</div></b>
                             <div id="mobile-card-change-pct" class="w3-wide">-</div>
                         </span>
@@ -547,7 +556,7 @@
                                 <span id="chart-card-banner-${i}" class="w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                                     <b id="chart-card-symbol-${i}" class="">${s}</b><span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>
-                                    <i id="" class="fa fa-credit-card w3-left w3-text-grey pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 1000},'${s}')" style="padding-top:3px;"></i>
+                                    <!-- <i id="" class="fa fa-credit-card w3-left w3-text-grey pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 1000},'${s}')" style="padding-top:3px;"></i> -->
                                     <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${5 * 1000},'${s}')" style="padding-top:3px;"></i>
                                 </span>
                                 <span id="symbol-picker" class="w3-hide w3-col s12 w3-xlarge">
@@ -839,7 +848,7 @@
 
                     // if (now || [1].indexOf(dt.getSeconds()) >= 0) {
 
-                        console.log(new Date().toLocaleTimeString());
+                        // console.log(new Date().toLocaleTimeString());
 
                         const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
                         // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
