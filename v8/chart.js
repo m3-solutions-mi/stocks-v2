@@ -798,6 +798,8 @@ class Chart {
                 this.options_treemap.series = series;
                 this._render_t();
                 //#endregion
+            } else {
+                HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
             }
             //#endregion
 
