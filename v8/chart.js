@@ -550,9 +550,14 @@ class Chart {
             // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
             // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
             // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
-            if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
-            if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
-            if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+            if (symbol.indexOf('-USD') > 0) {
+                s = current_day - (8 * 60 * 60 * 1000);
+            } else {
+                if (hmm <= 900) { s = data[data.length - 1].e - (12 * 60 * 60 * 1000); }
+                // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
+                if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
+                if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+            }
             // s = new Date(current_day).setHours(9, 0);
             // s = new Date(previous_day).setHours(19, 55);
             // console.log(data[0].tl);
@@ -640,7 +645,9 @@ class Chart {
             extend_series(series[0]);
 
             let cumulative = 0;
-            series[1].data = ohlc_data.map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } });
+            // series[1].data = ohlc_data.map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } });
+            // series[1].data = ohlc_data.map((v, i) => { /*cumulative += (v.d * shares);*/ return { x: v.e, y: round2(v.c) } });
+            series[1].data = data.map((v, i) => { return { x: v.e, y: round2((v.c * shares) - seed) } });
             if (show_full_day && hmm < 2001) {
                 // const x = hmm <1200
                 //     ? new Date(series[0].data[series[0].data.length - 1].x).setHours(12,0)
@@ -648,6 +655,9 @@ class Chart {
                 // series[1].data.push({ x, y: undefined });
                 extend_series(series[1]);
             }
+            const y_min = Math.min(...(series[1].data.slice(0,-1).map((v)=>v.y)));
+            const y_max = Math.max(...series[1].data.slice(0,-1).map((v)=>v.y));
+            // console.log(y_min, y_max);
 
             //* ANNOTATIONS */
             this.options_candlestick.annotations.xaxis = annotations_x();
@@ -664,6 +674,8 @@ class Chart {
                     axisBorder: { show: true, color: '#008FFB' },
                     labels: { style: { colors: '#008FFB' } },
                     title: { text: 'Profit (mixed +/-)', style: { color: '#008FFB' } },
+                    // min: y_min > -100 ? -125 : undefined,
+                    // max: y_max < 100 ? 125 : undefined,
                 },
                 {
                     seriesName: 'Close',
@@ -673,6 +685,8 @@ class Chart {
                     axisBorder: { show: false, color: '#00E396' },
                     labels: { style: { colors: '#00E396' } },
                     title: { text: 'Units (positive only)', style: { color: '#00E396' } },
+                    min: y_min > -100 ? -125 : undefined,
+                    max: y_max < 100 ? 125 : undefined,
                 },
             ];
 
