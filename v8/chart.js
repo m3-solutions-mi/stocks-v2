@@ -458,6 +458,7 @@ class Chart {
                         });
                         obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(16, 0), null, colors.deeppink));
                         obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal));
                     });
                     return obj;
@@ -541,22 +542,30 @@ class Chart {
             const hmm = HELPERS.getHMM(new Date());
 
             //* REFERENCE VALUE */
-            const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
+            const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(0, 0)));
             // const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
             // let s = mode === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
 
             let s = data[0].e;
+            let e = data[data.length-1].e;
             // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
             // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
             // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
             if (symbol.indexOf('-USD') > 0) {
                 s = current_day - (8 * 60 * 60 * 1000);
+                // s = new Date(current_day).setHours(0, 0);
+                // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
             } else {
-                if (hmm <= 900) { s = data[data.length - 1].e - (12 * 60 * 60 * 1000); }
-                // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
-                if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
-                if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+                if (new Date(current_day).getDay() === dow) {
+                    if (hmm <= 800) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
+                    // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
+                    if (hmm >= 800) { s = new Date(current_day).setHours(6, 0); }
+                    if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+                } else {
+                    s = new Date(current_day).setHours(9, 0);
+                    e = new Date(current_day).setHours(17, 0);
+                }
             }
             // s = new Date(current_day).setHours(9, 0);
             // s = new Date(previous_day).setHours(19, 55);
@@ -566,7 +575,7 @@ class Chart {
             //* HEIKEN-ASHI DATA */
             //* MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
             //* Viewed data is filtered below - after this calculation! */
-            let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= s));
+            let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= last_eod.e));
 
             //* HEIKEN-ASHI CLOSE VALUE (seems to be to fast of an indicator!)
             // let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
@@ -584,13 +593,15 @@ class Chart {
             //             : new Date(current_day).setHours(9, 0, 0, 0)
             //     )
             //     ;
-            ohlc_data = ohlc_data.filter((v) => v.e >= s);
+            ohlc_data = ohlc_data
+                .filter((v) => v.e >= s)
+                .filter((v) => v.e <= e);
             data = data
                 .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+                .filter((v) => v.e <= e);
             data_m = data_m
                 .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+                .filter((v) => v.e <= e);
             //#endregion
 
 
@@ -655,8 +666,8 @@ class Chart {
                 // series[1].data.push({ x, y: undefined });
                 extend_series(series[1]);
             }
-            const y_min = Math.min(...(series[1].data.slice(0,-1).map((v)=>v.y)));
-            const y_max = Math.max(...series[1].data.slice(0,-1).map((v)=>v.y));
+            const y_min = Math.min(...(series[1].data.slice(0, -1).map((v) => v.y)));
+            const y_max = Math.max(...series[1].data.slice(0, -1).map((v) => v.y));
             // console.log(y_min, y_max);
 
             //* ANNOTATIONS */
