@@ -553,7 +553,7 @@ class Chart {
             // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
             // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
             if (symbol.indexOf('-USD') > 0) {
-                s = current_day - (8 * 60 * 60 * 1000);
+                s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
                 // s = new Date(current_day).setHours(0, 0);
                 // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
             } else {
