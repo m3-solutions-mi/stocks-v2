@@ -561,6 +561,7 @@ class Chart {
                     if (hmm <= 800) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
                     // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
                     if (hmm >= 800) { s = new Date(current_day).setHours(6, 0); }
+                    if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
                     if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
                 } else {
                     s = new Date(current_day).setHours(9, 0);
