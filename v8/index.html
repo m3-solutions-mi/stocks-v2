@@ -566,7 +566,7 @@
                 this.HA_SYMBOLS
                     .forEach((s, i) => {
                         html += `
-                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${i === 0 ? 4 : (IS_SMALL ? 12 : 4)} w3-xlarge">
+                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${IS_SMALL ? 12 : 4} w3-xlarge">
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
@@ -599,8 +599,8 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="${i > 0 && !IS_SMALL ? '_w3-hide' : ''} w3-hide w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${IS_SMALL ? 'w3-hide' : '_w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${!IS_SMALL ? '_w3-hide' : ''} w3-hide w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${IS_SMALL ? '_w3-hide' : '_w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
