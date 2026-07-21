@@ -458,6 +458,7 @@ class Chart {
                         });
                         obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(10, 30), null, colors.lightgrey));
                         obj.push(this.add_annotation_x(new Date(date).setHours(16, 0), null, colors.deeppink));
                         obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal));
                     });
@@ -636,10 +637,11 @@ class Chart {
             const extend_series = (series) => {
                 if (show_full_day && hmm < 2001) {
                     const h = Math.ceil(hmm / 100);
-                    const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
-                    // const x = hmm < 1200
-                    //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
-                    //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
+                    // const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
+                    // // const x = hmm < 1200
+                    // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
+                    // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
+                    const x = new Date(series.data[series.data.length - 1].x).setHours(20, 1);
                     series.data.push({ x, y: undefined });
                     // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
                 }
@@ -650,7 +652,6 @@ class Chart {
             let series = [];
             series.push({ name: 'HA Close', type: 'bar', data: [] });
             series.push({ name: 'Gain', type: 'line', color: colors.black, data: [] });
-            // series.push({ name: 'Gain', type: 'area', color: '#6dc57347', data: [] });
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
@@ -711,18 +712,25 @@ class Chart {
             //#endregion
 
             //#region MINUTES CHART
+            // '#216d24', '#991010', '#4CAF50'
             series = [];
-            series.push({ name: 'Close', type: 'area', data: [] });
+            series.push({ name: 'Close', type: 'area', color: 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? '#1c611e' : '#4CAF50', data: [] });
             series.push({ name: '0.5 %', type: 'line', data: [] });
+            // series.push({ name: 'Bollinger', type: 'line', color: colors.red, data: [] });
 
             //* DATA */
             series[0].data = data_m.map((v, i) => { return { x: v.e, y: (v.c * shares) /*- seed*/ } });
             extend_series(series[0]);
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
-            let add = seed * 0.0001;
+            // 0.00001 : 0.0001
+            let add = seed * (symbol.indexOf('-USD') > 0 || symbol === 'QQQ' ? 0.25 / seed : 1 / seed);
             let increment = series[0].data[0].y;
             series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
+            
+            // const bol = applyBands(series[0].data.map((v)=>{ return {x: v.x, c: v.y} }), 15, 0.5)
+            // // console.log(bol);
+            // series[1].data = bol.map((v, i) => { return { x: v.x, y: v.bands_c.sma === 0 ? series[0].data[0].y : v.bands_c.sma } });
 
             //* ANNOTATIONS */
             this.options.annotations.xaxis = annotations_x();
@@ -730,11 +738,12 @@ class Chart {
             this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y * 1.005, colors.violet));
 
             //* OTHER OPTIONS */
-            this.options.stroke.width = [1, 2];
+            this.options.stroke.width = [2, 2];
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
-            this.options.yaxis.max = Math.max(100, Math.max(...series[0].data.map((v) => v.y).slice(0, -1)));
+            // this.options.yaxis.max = Math.max(100, Math.max(...series[0].data.map((v) => v.y).slice(0, -1)));
+            // this.options.chart.type = 'line';
             this.options.chart.height = height;
             this.options.series = series;
             this._render_m(this.options);

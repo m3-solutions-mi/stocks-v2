@@ -55,7 +55,7 @@
                     <div class="w3-large w3-container w3-card" style="background-color:#6dc573;">
                         <div class="w3-hide-small w3-col s2 w3-center">
                             <img class="w3-padding" src="https://offsite-ryan.github.io/m3-trader/favicon-black.png"
-                                style="width:100%" alt="M3 Solutions"
+                                style="width:60%" alt="M3 Solutions"
                                 onclick="document.getElementById('settings').style.display = 'block'">
                         </div>
 
@@ -136,7 +136,7 @@
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
                                 onchange="select_symbol_list(this)">
                             <label
-                                contenteditable="true">MU,DRAM,SOXL,UMC,SNDK,WDC,STX,PENG,AVGO,GEV,NBIS,WMT,AMZN</label>
+                                contenteditable="true">QQQ,ETH-USD,MU,DRAM,SOXL,UMC,SNDK,WDC,STX,PENG,AVGO,GEV,NBIS,WMT,AMZN</label>
                             <!-- <label contenteditable="true">DRAM,MRVL,MU,UMC,SITM,SMCI,SNDK,SOXL,STX,TSEM,PENG,WDC</label> -->
                         </div>
                         <div class="w3-large">
@@ -170,6 +170,17 @@
                         </div>
 
                         <!--@ OPTIONS -->
+                        <div class="w3-col s12 w3-padding">
+                            <span class="w3-text-grey">Chart Type</span>
+                            <div class="w3-right w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="chart-type" value="minute">
+                                <label>Heiken-Ashi (5m)</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="chart-type" value="day">
+                                <label>Minutes</label>
+                                <!-- <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="0.25%">
+                                <label>0.25 %</label> -->
+                            </div>
+                        </div>
                         <div class="w3-col s12 w3-padding">
                             <span class="w3-text-grey">Timeframe</span>
                             <div class="w3-right w3-large">
@@ -441,7 +452,7 @@
     <script>
         class Configuration {
             get_key = (name) => `m3-stocks-v6-${name}`;
-            DAY_TARGET_DOLLARS = 500;
+            DAY_TARGET_DOLLARS = 326.5;
             SYMBOL = localStorage.getItem(this.get_key('symbol'));// || 'QQQ';
             SYMBOL_LIST = localStorage.getItem(this.get_key('symbol-list'));// || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
             API_KEY = localStorage.getItem(this.get_key('api-key')) || '';
@@ -555,7 +566,7 @@
                 this.HA_SYMBOLS
                     .forEach((s, i) => {
                         html += `
-                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${i === 0 ? 12 : (IS_SMALL ? 12 : 4)} w3-xlarge">
+                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${i === 0 ? 4 : (IS_SMALL ? 12 : 4)} w3-xlarge">
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
@@ -588,8 +599,8 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="${i > 0 && !IS_SMALL ? '_w3-hide' : ''} w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${IS_SMALL ? 'w3-hide' : 'w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${i > 0 && !IS_SMALL ? '_w3-hide' : ''} w3-hide w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${IS_SMALL ? 'w3-hide' : '_w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
@@ -920,7 +931,11 @@
 
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
-                            eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, IS_LARGE ? (i === 0 ? 300 : 300) : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
+                            if (SHARED.DATA_5M[s] && SHARED.DATA_1M[s]) {
+                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
+                            } else {
+                                console.log(`%c${s} | NOT UPDATED`, 'color:orange')
+                            }
                         } else {
                             eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_1D[s], SHARED.DATA_1D[s], i, IS_LARGE ? (i === 0 ? 175 : 225) : (IS_MEDIUM ? 175 : 190), (24 * 60).toString(), i === 0);
                         }

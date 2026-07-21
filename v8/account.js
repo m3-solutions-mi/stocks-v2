@@ -48,7 +48,7 @@ class Account {
             const payload = {
                 side: 'buy',
                 type: 'market',
-                time_in_force: symbol.indexOf('/USD') > 0 ? 'gtc' : 'day',
+                time_in_force: symbol.indexOf('/USD') > 0 ? 'ioc' : 'day',
                 symbol: symbol,
                 notional: round2(spend).toString(),
             };
