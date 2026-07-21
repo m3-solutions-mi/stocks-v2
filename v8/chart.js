@@ -724,7 +724,7 @@ class Chart {
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
             // 0.00001 : 0.0001
-            let add = seed * (symbol.indexOf('-USD') > 0 || symbol === 'QQQ' ? 0.25 / seed : 1 / seed);
+            let add = seed * (symbol.indexOf('-USD') > 0 || 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? 0.25 / seed : 1 / seed);
             let increment = series[0].data[0].y;
             series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
             
@@ -847,11 +847,13 @@ class Chart {
                     entries.push({ i, x: HELPERS.getHMM(new Date(v.x)), y: v.y });
                 });
 
-            const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length - 2].y;
-            const color = v < 0.25 ? 'red' : '#6dc573';
-            document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `5px solid ${color}`;
-            // console.log(`%c${symbol}`, 'color:yellow');
-            // console.table(entries);
+            // const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length - 2].y;
+            // const color = v < 0.25 ? 'red' : '#6dc573';
+            // document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `1px solid ${color}`;
+            // // console.log(`%c${symbol}`, 'color:yellow');
+            // // console.table(entries);
+
+            document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `1px solid lightgrey`;
 
             const m = 15;
             document.getElementById(`clock`).style.color = hmm % m === 0 ? `white` : '';
