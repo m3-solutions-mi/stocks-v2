@@ -30,14 +30,27 @@ class Account {
             account_positions.forEach((v) => {
                 if ((v.unrealized_plpc * 100) < -1.5) {
                     //* SELL */
-                    console.log('SELL');
+                    console.log('%cSELL', 'color:red');
                     // this.sell(v.symbol);
                 }
             });
             // console.table(account_positions.map((v)=>{return{s: v.symbol, g: round2(v.unrealized_pl), p: round3(v.unrealized_plpc * 100)}}))
+            const obj = {};
+            let t_gain = 0;
+            let t_seed = 0;
             account_positions.map((v) => {
                 console.log(`%c${v.symbol.padEnd(4, ' ')} | $ ${round2(v.unrealized_pl).toString().padEnd(7, ' ')} | ${round3(v.unrealized_plpc * 100)} % | $ ${round(v.cost_basis)}`, 'color:yellow;');
+                obj[v.symbol] = {
+                    gain: round2(v.unrealized_pl),
+                    pct: round1(v.unrealized_plpc * 100),
+                    seed: round(v.cost_basis),
+                }
+                t_gain += round2(v.unrealized_pl);
+                t_seed += round(v.cost_basis);
             });
+            obj['TOTAL'] = {gain: t_gain, pct: t_gain / t_seed * 100, seed: t_seed}
+            console.log(obj);
+            return obj;
         }
     }
     buy(amount, symbol = CONFIG.SYMBOL) {

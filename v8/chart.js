@@ -34,9 +34,17 @@ class Chart {
         stroke: {
             curve: 'smooth',
         },
-        fill: {
+        _fill: {
             type: 'gradient',
-            opacity: [0.35, 1],
+            opacity: [-1, 1],
+        },
+        fill: {
+            // type: 'vertical',
+            gradient: {
+                // type: 'horizontal',
+                opacityFrom: [0.8, 0.47],
+                opacityTo: [0.2, 0.47],
+            }
         },
         _labels: [
             'Dec 01',
@@ -549,7 +557,7 @@ class Chart {
             // let s = mode === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
 
             let s = data[0].e;
-            let e = data[data.length-1].e;
+            let e = data[data.length - 1].e;
             // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
             // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
             // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
@@ -700,8 +708,17 @@ class Chart {
 
             //#region MINUTES CHART
             // '#216d24', '#991010', '#4CAF50'
+            // '#216d2485'
+            // '#1c611e7a'
             series = [];
-            series.push({ name: 'Close', type: 'area', color: 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? '#1c611e' : '#4CAF50', data: [] });
+            series.push({ 
+                name: 'Close',
+                type: 'area',
+                // color: 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? '#1c611e' : '#4CAF50',
+                // color: '#1c611e',
+                color: '#4CAF50',
+                data: [] 
+            });
             series.push({ name: '0.5 %', type: 'line', data: [] });
             // series.push({ name: 'Bollinger', type: 'line', color: colors.red, data: [] });
 
@@ -714,7 +731,7 @@ class Chart {
             let add = seed * (symbol.indexOf('-USD') > 0 || 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? 0.25 / seed : 1 / seed);
             let increment = series[0].data[0].y;
             series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
-            
+
             // const bol = applyBands(series[0].data.map((v)=>{ return {x: v.x, c: v.y} }), 15, 0.5)
             // // console.log(bol);
             // series[1].data = bol.map((v, i) => { return { x: v.x, y: v.bands_c.sma === 0 ? series[0].data[0].y : v.bands_c.sma } });
@@ -743,7 +760,7 @@ class Chart {
 
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
-            
+
             if (summarize) {
 
                 const account_detail = await ACCOUNT.detail();
