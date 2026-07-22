@@ -562,7 +562,7 @@ class Chart {
                     if (hmm <= 800) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
                     // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
                     if (hmm >= 800) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
+                    if (hmm >= 900) { s = new Date(current_day).setHours(8, 0); }
                     if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
 
                     // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
@@ -745,8 +745,6 @@ class Chart {
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
             
             if (summarize) {
-                // const position_current_value = +(document.getElementById('mobile-card-position').innerText);
-                // console.log(position_current_value);
 
                 const account_detail = await ACCOUNT.detail();
                 const account_history_5d = await ACCOUNT.history('5D', '1D');
@@ -756,6 +754,10 @@ class Chart {
                 const positions_gain_pct = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_plpc)));
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round2(positions_gain), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(positions_gain_pct * 100), '', '%');
+                
+                const position_current_value = +(document.getElementById('mobile-card-position').innerText);
+                HELPERS.update_elem_text_colored(`mobile-card-change`, round2(positions_gain - position_current_value), '', '');
+                // console.log(position_current_value);
 
                 CONFIG.HA_SYMBOLS.forEach((s, i) => {
                     const p = ''
@@ -783,8 +785,8 @@ class Chart {
                 HELPERS.update_elem_text_colored('mobile-card-gain-s', round(account_today_gain), '', '');
                 HELPERS.update_elem_text_colored('mobile-card-pct-s', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
-                HELPERS.update_elem_text_colored(`mobile-card-change`, round2(_last - _last_minus_1), '', '');
-                HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((_last - _last_minus_1) / seed * 100), '', '%');
+                // HELPERS.update_elem_text_colored(`mobile-card-change`, round2(_last - _last_minus_1), '', '');
+                // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((_last - _last_minus_1) / seed * 100), '', '%');
                 HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
 
                 HELPERS.update_elem_text(`mobile-account-net`, account_detail.equity, '$', '');
