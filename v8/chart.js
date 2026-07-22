@@ -758,6 +758,7 @@ class Chart {
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
                 // console.log(position_current_value);
 
                 CONFIG.HA_SYMBOLS.forEach((s, i) => {
