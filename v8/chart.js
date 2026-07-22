@@ -755,9 +755,9 @@ class Chart {
                 const positions_gain = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_pl)));
                 const positions_gain_pct = round1(positions_gain / positions_cost_basis * 100);
                 // const positions_gain_pct = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_plpc)));
-                HELPERS.update_elem_text_colored(`mobile-card-position`, round2(positions_gain), '', '');
-                HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(positions_gain_pct), '', '%');
-                HELPERS.update_elem_text_colored(`mobile-card-change`, round2(positions_gain - position_current_value), '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
+                HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
                 // console.log(position_current_value);
 
                 CONFIG.HA_SYMBOLS.forEach((s, i) => {
