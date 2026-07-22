@@ -738,7 +738,7 @@ class Chart {
             this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y * 1.005, colors.violet));
 
             //* OTHER OPTIONS */
-            this.options.stroke.width = [2, 2];
+            this.options.stroke.width = IS_SMALL ? [1, 2] : [1, 2];
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
