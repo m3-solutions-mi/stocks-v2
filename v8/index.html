@@ -797,7 +797,7 @@
             }
 
             //* GET DATA */
-            async get_data(name = CONFIG.SYMBOL, timeframe = 5, num = 60) {
+            async get_data(name = CONFIG.SYMBOL, timeframe = 1, num = 60) {
                 return new Promise(async (resolve, reject) => {
                     const dow = new Date().getDay();
                     const hmm = HELPERS.getHMM(new Date);
