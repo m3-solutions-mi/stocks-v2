@@ -561,17 +561,16 @@ class Chart {
                 if (new Date(current_day).getDay() === dow) {
                     if (hmm <= 800) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
                     // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 800) { s = new Date(current_day).setHours(6, 0); }
+                    if (hmm >= 800) { s = new Date(current_day).setHours(4, 0); }
                     if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
                     if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+
+                    // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
                 } else {
                     s = new Date(current_day).setHours(9, 0);
                     e = new Date(current_day).setHours(17, 0);
                 }
             }
-            // s = new Date(current_day).setHours(9, 0);
-            // s = new Date(previous_day).setHours(19, 55);
-            // console.log(data[0].tl);
 
 
             //* HEIKEN-ASHI DATA */
@@ -582,19 +581,7 @@ class Chart {
             //* HEIKEN-ASHI CLOSE VALUE (seems to be to fast of an indicator!)
             // let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
 
-            //#region FILTERED DATA */
-            // // let hour = 6;
-            // // if (hmm < 900) { hour = 16 }
-            // // s = new Date(hmm < 900 ? yesterday : today).setHours(hour, 0, 0, 0);
-            // // // const e = new Date(today).setHours(23, 59);
-            // s = hmm < 900
-            //     ? new Date(current_day).setHours(4, 0, 0, 0)
-            //     : (
-            //         hmm < 1100
-            //             ? new Date(current_day).setHours(7, 0, 0, 0)
-            //             : new Date(current_day).setHours(9, 0, 0, 0)
-            //     )
-            //     ;
+            //#region FILTER DATA */
             ohlc_data = ohlc_data
                 .filter((v) => v.e >= s)
                 .filter((v) => v.e <= e);
@@ -641,7 +628,7 @@ class Chart {
                     // // const x = hmm < 1200
                     // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
                     // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
-                    const x = new Date(series.data[series.data.length - 1].x).setHours(20, 1);
+                    const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? 16 : 20), 1);
                     series.data.push({ x, y: undefined });
                     // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
                 }
@@ -751,15 +738,16 @@ class Chart {
 
             //#region SUMMARIES
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
-            // const _last = chart_card_series[chart_card_series.length-1].y - seed;
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
 
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
-            // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
-            // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _last_minus_1), '$', '');
+            
             if (summarize) {
+                // const position_current_value = +(document.getElementById('mobile-card-position').innerText);
+                // console.log(position_current_value);
+
                 const account_detail = await ACCOUNT.detail();
                 const account_history_5d = await ACCOUNT.history('5D', '1D');
                 const account_positions = await ACCOUNT.positions();
@@ -773,26 +761,10 @@ class Chart {
                     const p = ''
                     const position = account_positions.find((v) => v.symbol === s.replace('-', ''));
                     if (position) {
-                        // HELPERS.update_elem_text_colored(`chart-card-gain-${i}${p}`, round2(+(position.unrealized_pl)), '$', '');
-                        // HELPERS.update_elem_text_colored(`chart-card-pct-${i}${p}`, round3(+(position.unrealized_plpc) * 100), '', '%');
-                        // HELPERS.update_elem_text_colored(`chart-card-chg-${i}${p}`, round2((_last - _last_minus_1)), '$', '');
-                        // HELPERS.update_elem_text(`chart-card-seed/-${i}${p}`, round1(+(position.cost_basis / 1000)), '$', 'K');
-                        // HELPERS.update_elem_text_colored(`chart-card-chg-${n}`, round2((last - last_minus_1) / (1000 / +(position.cost_basis))), '$', '');
-
-
-
                         document.getElementById(`chart-card-symbol-${i}`).style.color = 'green'
                     } else {
                         document.getElementById(`chart-card-symbol-${i}`).style.color = ''
-
-                        // HELPERS.update_elem_text_colored(`mobile-card-position`, 0, '', '');
-                        // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, 0, '', '%');
-
-                        // HELPERS.update_elem_text_string(`chart-card-seed-${i}${p}`, '-', '', '');
-                        // HELPERS.update_elem_text_colored(`chart-card-chg-${i}`, round2(_last - _last_minus_1), '', '');
                     }
-                    // HELPERS.update_elem_text_colored(`chart-card-delta-${n}`, round2(chart_card_series[chart_card_series.length-1].y), '$', '');
-                    // HELPERS.update_elem_text_colored(`chart-card-peak-${i}${p}`, round2(Math.max(...(chart_card_series.map((v) => v.y - 1000)))), '$', '');
                 });
 
                 const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net

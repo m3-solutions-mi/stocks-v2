@@ -860,64 +860,58 @@
                 if (now || [0, 10, 20, 30, 40, 50].indexOf(dt.getSeconds()) >= 0) {
 
                     //* TABLE */
-                    const seed = 43500; //** TODO: get from account activity **/
-                    const rows = CONFIG.HA_SYMBOLS.map((s, i) => {
-                        return {
-                            symbol: s,
-                            delta: i,
-                            pct: `${i}`,
-                            chg: `${i}`,
-                        }
-                    });
-                    const totals = {
-                        delta: rows.map((v) => v.delta).reduce((p, c) => p + c),
-                    }
-                    const table_template = `
-                            <table class="w3-hide-small w3-table w3-striped">
-                                <thead id="thead" class="w3-border-bottom">
-                                    ${'Symbol,Delta, Pct,Change,Position'.split(',').map((v, i) => `
-                                    <th style="${i === 5 ? 'width:30%' : ''}">${v}</th>`
-                    ).join('')}
-                                </thead>
+                    const seed = 30*1000; //** TODO: get from account activity **/
+                    // const rows = CONFIG.HA_SYMBOLS.map((s, i) => {
+                    //     return {
+                    //         symbol: s,
+                    //         delta: i,
+                    //         pct: `${i}`,
+                    //         chg: `${i}`,
+                    //     }
+                    // });
+                    // const totals = {
+                    //     delta: rows.map((v) => v.delta).reduce((p, c) => p + c),
+                    // }
+                    // const table_template = `
+                    //         <table class="w3-hide-small w3-table w3-striped">
+                    //             <thead id="thead" class="w3-border-bottom">
+                    //                 ${'Symbol,Delta, Pct,Change,Position'.split(',').map((v, i) => `
+                    //                 <th style="${i === 5 ? 'width:30%' : ''}">${v}</th>`
+                    // ).join('')}
+                    //             </thead>
                                 
-                                <tbody id="tbody">
-                                    <tr class="w3-border-top w3-border-bottom w3-text-blue w3-xlarge">
-                                        <td class=""><b>TODAY</b></td>
-                                        <td>${totals.delta}</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                    </tr>
-                                    ${rows.map((v, i) => `
-                                    <tr>
-                                        <td class="">${v.symbol}</td>
-                                        <td>${v.delta}</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                    </tr>`
-                    ).join('')}
-                                    <tr class="w3-border-top w3-border-bottom">
-                                        <td class=""><b>POSITIONS</b></td>
-                                        <td>${totals.delta}</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                    </tr>
-                                <tbody>
-                            </table>
-                        `;
-                    // console.log(rows);
-                    // console.log(rows);
-                    // console.log(table_template);
-                    document.getElementById('output-table').innerHTML = table_template;
+                    //             <tbody id="tbody">
+                    //                 <tr class="w3-border-top w3-border-bottom w3-text-blue w3-xlarge">
+                    //                     <td class=""><b>TODAY</b></td>
+                    //                     <td>${totals.delta}</td>
+                    //                     <td>-</td>
+                    //                     <td>-</td>
+                    //                     <td>-</td>
+                    //                 </tr>
+                    //                 ${rows.map((v, i) => `
+                    //                 <tr>
+                    //                     <td class="">${v.symbol}</td>
+                    //                     <td>${v.delta}</td>
+                    //                     <td>-</td>
+                    //                     <td>-</td>
+                    //                     <td>-</td>
+                    //                 </tr>`
+                    // ).join('')}
+                    //                 <tr class="w3-border-top w3-border-bottom">
+                    //                     <td class=""><b>POSITIONS</b></td>
+                    //                     <td>${totals.delta}</td>
+                    //                     <td>-</td>
+                    //                     <td>-</td>
+                    //                     <td>-</td>
+                    //                 </tr>
+                    //             <tbody>
+                    //         </table>
+                    //     `;
+                    // // console.log(rows);
+                    // // console.log(rows);
+                    // // console.log(table_template);
+                    // document.getElementById('output-table').innerHTML = table_template;
 
-                    // if (now || [1].indexOf(dt.getSeconds()) >= 0) {
-                    // if (now || ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(dt.getMinutes()) >= 0 && dt.getSeconds === 1)) {
-
-                    // if (now || [1].indexOf(dt.getSeconds()) >= 0) {
-
-                    // console.log(new Date().toLocaleTimeString());
 
                     const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
                     // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
