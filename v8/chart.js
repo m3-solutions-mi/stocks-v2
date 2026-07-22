@@ -750,12 +750,11 @@ class Chart {
                 const account_history_5d = await ACCOUNT.history('5D', '1D');
                 const account_positions = await ACCOUNT.positions();
 
+                const position_current_value = +(document.getElementById('mobile-card-position').innerText);
                 const positions_gain = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_pl)));
                 const positions_gain_pct = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_plpc)));
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round2(positions_gain), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(positions_gain_pct * 100), '', '%');
-                
-                const position_current_value = +(document.getElementById('mobile-card-position').innerText);
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round2(positions_gain - position_current_value), '', '');
                 // console.log(position_current_value);
 
