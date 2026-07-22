@@ -458,7 +458,7 @@ class Chart {
                         });
                         obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink));
-                        obj.push(this.add_annotation_x(new Date(date).setHours(10, 30), null, colors.lightgrey));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(10, 30), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(16, 0), null, colors.deeppink));
                         obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal));
                     });
@@ -751,10 +751,12 @@ class Chart {
                 const account_positions = await ACCOUNT.positions();
 
                 const position_current_value = +(document.getElementById('mobile-card-position').innerText);
+                const positions_cost_basis = HELPERS.reduce_safe(account_positions.map((v) => +(v.cost_basis)));
                 const positions_gain = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_pl)));
-                const positions_gain_pct = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_plpc)));
+                const positions_gain_pct = round1(positions_gain / positions_cost_basis * 100);
+                // const positions_gain_pct = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_plpc)));
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round2(positions_gain), '', '');
-                HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(positions_gain_pct * 100), '', '%');
+                HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round3(positions_gain_pct), '', '%');
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round2(positions_gain - position_current_value), '', '');
                 // console.log(position_current_value);
 
