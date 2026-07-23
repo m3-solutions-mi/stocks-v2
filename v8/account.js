@@ -48,9 +48,11 @@ class Account {
                 t_gain += round2(v.unrealized_pl);
                 t_seed += round(v.cost_basis);
             });
-            obj['_TOTAL_'] = {gain: t_gain, pct: round2(t_gain / t_seed * 100), seed: t_seed}
+            obj['_TOTAL_'] = { gain: t_gain, pct: round2(t_gain / t_seed * 100), seed: t_seed }
             console.log(obj);
             return obj;
+        } else {
+            return { _TOTAL_: { gain: 0, pct: 0, seed: 0 } };
         }
     }
     buy(amount, symbol = CONFIG.SYMBOL) {
