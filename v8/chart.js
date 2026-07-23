@@ -567,10 +567,10 @@ class Chart {
                 // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
             } else {
                 if (new Date(current_day).getDay() === dow) {
-                    if (hmm <= 800) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
+                    if (hmm <= 900) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
                     // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 800) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 900) { s = new Date(current_day).setHours(8, 0); }
+                    if (hmm >= 900) { s = new Date(current_day).setHours(4, 0); }
+                    if (hmm >= 930) { s = new Date(current_day).setHours(8, 0); }
                     if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
 
                     // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
@@ -758,8 +758,8 @@ class Chart {
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
 
-            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
-            HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
+            HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(_last), '$', '');
+            HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
 
             if (summarize) {
 
@@ -782,9 +782,14 @@ class Chart {
                     const p = ''
                     const position = account_positions.find((v) => v.symbol === s.replace('-', ''));
                     if (position) {
-                        document.getElementById(`chart-card-symbol-${i}`).style.color = 'green'
+                        document.getElementById(`chart-card-symbol-${i}`).style.color = position.unrealized_pl > 0 ? 'green' : 'red';
+                        document.getElementById(`chart-card-symbol-${i}`).style.fontWeight = 'bold';
+                        // document.getElementById('chart-card-symbol-0').parentElement.style.borderBottom = '5px solid'
+                        document.getElementById(`chart-card-symbol-${i}`).parentElement.style.borderBottom = '1px solid ' + (position.unrealized_pl > 0 ? 'green' : 'red');
                     } else {
-                        document.getElementById(`chart-card-symbol-${i}`).style.color = ''
+                        document.getElementById(`chart-card-symbol-${i}`).style.color = 'grey';
+                        document.getElementById(`chart-card-symbol-${i}`).style.fontWeight = 'normal';
+                        document.getElementById(`chart-card-symbol-${i}`).parentElement.style.borderBottom = '1px solid lightgrey'
                     }
                 });
 
@@ -832,26 +837,25 @@ class Chart {
             //#endregion
 
             //#region BUY | SELL INICATION
-            const threshold = 1;
-            const entries = [];
-            this.options_candlestick.series[0].data
-                .filter((v) => v.y >= threshold)
-                .forEach((v, i) => {
-                    entries.push({ i, x: HELPERS.getHMM(new Date(v.x)), y: v.y });
-                });
+            // const threshold = 1;
+            // const entries = [];
+            // this.options_candlestick.series[0].data
+            //     .filter((v) => v.y >= threshold)
+            //     .forEach((v, i) => {
+            //         entries.push({ i, x: HELPERS.getHMM(new Date(v.x)), y: v.y });
+            //     });
 
-            // const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length - 2].y;
-            // const color = v < 0.25 ? 'red' : '#6dc573';
-            // document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `1px solid ${color}`;
-            // // console.log(`%c${symbol}`, 'color:yellow');
-            // // console.table(entries);
+            // // const v = this.options_candlestick.series[0].data[this.options_candlestick.series[0].data.length - 2].y;
+            // // const color = v < 0.25 ? 'red' : '#6dc573';
+            // // document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `1px solid ${color}`;
+            // // // console.log(`%c${symbol}`, 'color:yellow');
+            // // // console.table(entries);
 
-            document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `1px solid lightgrey`;
+            // // document.getElementById(`chart-card-banner-${index}`).style.borderBottom = `1px solid lightgrey`;
 
-            const m = 15;
-            document.getElementById(`clock`).style.color = hmm % m === 0 ? `white` : '';
-            document.getElementById(`clock`).parentElement.parentElement.style.border = hmm % m === 0 ? `2px solid white` : '';
-
+            // const m = 15;
+            // document.getElementById(`clock`).style.color = hmm % m === 0 ? `white` : '';
+            // document.getElementById(`clock`).parentElement.parentElement.style.border = hmm % m === 0 ? `2px solid white` : '';
             //#endregion
 
             return;

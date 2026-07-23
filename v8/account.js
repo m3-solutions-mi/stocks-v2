@@ -30,7 +30,7 @@ class Account {
             account_positions.forEach((v) => {
                 if ((v.unrealized_plpc * 100) < -1.5) {
                     //* SELL */
-                    console.log('%cSELL', 'color:red');
+                    console.log('%c S E L L ', 'background-color:red;color:white;');
                     // this.sell(v.symbol);
                 }
             });

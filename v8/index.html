@@ -570,7 +570,7 @@
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
-                                    <b id="chart-card-symbol-${i}" class="">${s}</b><span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>
+                                    <span id="chart-card-symbol-${i}" class="w3-wide">${s}</span><!--<span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>-->
                                     <!-- <i id="" class="fa fa-credit-card w3-left w3-text-grey pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 1000},'${s}')" style="padding-top:3px;"></i> -->
                                     <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${7.5 * 1000},'${s}')" style="padding-top:3px;"></i>
                                 </span>
