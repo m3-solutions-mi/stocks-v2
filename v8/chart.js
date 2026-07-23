@@ -570,8 +570,8 @@ class Chart {
                     if (hmm <= 900) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
                     // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
                     if (hmm >= 900) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 930) { s = new Date(current_day).setHours(8, 0); }
-                    if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+                    if (hmm >= 930) { s = new Date(current_day).setHours(9, 0); }
+                    // if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
 
                     // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
                 } else {
