@@ -563,9 +563,13 @@
                     `;
 
                 // CONFIG.WATCH_LIST
-                this.HA_SYMBOLS
-                    .forEach((s, i) => {
-                        html += `
+                // [...(SHARED.POSITIONS.length > 0 ? SHARED.POSITIONS.map((v)=>v.symbol) : []), ...CONFIG.HA_SYMBOLS]
+                (SHARED.POSITIONS === null
+                    ? this.HA_SYMBOLS
+                    : [...(SHARED.POSITIONS.length > 0 ? SHARED.POSITIONS.map((v) => v.symbol) : []), ...CONFIG.HA_SYMBOLS])
+                        .filter((v, i, a) => a.indexOf(v) === i)
+                        .forEach((s, i) => {
+                            html += `
                         <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${IS_SMALL ? 12 : 4} w3-xlarge">
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
@@ -603,7 +607,7 @@
                                 <div id="chart-ha-${i}-2" class="${IS_SMALL ? '_w3-hide' : '_w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
-                    });
+                        });
 
                 document.getElementById('output-charts').innerHTML = html_table + html;
             }
@@ -758,6 +762,7 @@
             DATA_15M = null;
             DATA_1D = null;
             POSITIONS = null;
+            POSITIONS_SUMMARY = null;
             ACCOUNT_DETAIL = null;
             ACCOUNT_HISTORY = null;
             constructor() { }
@@ -860,7 +865,7 @@
                 if (now || [0, 10, 20, 30, 40, 50].indexOf(dt.getSeconds()) >= 0) {
 
                     //* TABLE */
-                    const seed = 30*1000; //** TODO: get from account activity **/
+                    const seed = 30 * 1000; //** TODO: get from account activity **/
                     // const rows = CONFIG.HA_SYMBOLS.map((s, i) => {
                     //     return {
                     //         symbol: s,
@@ -879,7 +884,7 @@
                     //                 <th style="${i === 5 ? 'width:30%' : ''}">${v}</th>`
                     // ).join('')}
                     //             </thead>
-                                
+
                     //             <tbody id="tbody">
                     //                 <tr class="w3-border-top w3-border-bottom w3-text-blue w3-xlarge">
                     //                     <td class=""><b>TODAY</b></td>
@@ -922,6 +927,10 @@
                     // const account_history_14d = await ACCOUNT.history('14D', '1D');
                     // const account_detail = await ACCOUNT.detail();
 
+                    //* CHECK POSITIONS */
+                    SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
+                    
+
 
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
@@ -936,9 +945,6 @@
 
                         // eval(`CHARTS.CHART_TABLE_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, 100, timeframe, i === 0);
                     });
-
-                    //* CHECK POSITIONS */
-                    ACCOUNT.check_positions(SHARED.POSITIONS);
                     // }
                 }
                 const elem = document.getElementById('clock');

@@ -48,7 +48,7 @@ class Account {
                 t_gain += round2(v.unrealized_pl);
                 t_seed += round(v.cost_basis);
             });
-            obj['TOTAL'] = {gain: t_gain, pct: t_gain / t_seed * 100, seed: t_seed}
+            obj['_TOTAL_'] = {gain: t_gain, pct: round2(t_gain / t_seed * 100), seed: t_seed}
             console.log(obj);
             return obj;
         }

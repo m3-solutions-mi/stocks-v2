@@ -768,10 +768,14 @@ class Chart {
                 const account_positions = await ACCOUNT.positions();
 
                 const position_current_value = +(document.getElementById('mobile-card-position').innerText);
-                const positions_cost_basis = HELPERS.reduce_safe(account_positions.map((v) => +(v.cost_basis)));
-                const positions_gain = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_pl)));
-                const positions_gain_pct = round1(positions_gain / positions_cost_basis * 100);
-                // const positions_gain_pct = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_plpc)));
+                // const positions_cost_basis = HELPERS.reduce_safe(account_positions.map((v) => +(v.cost_basis)));
+                // const positions_gain = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_pl)));
+                // const positions_gain_pct = round1(positions_gain / positions_cost_basis * 100);
+
+                const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
+                const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
+                const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
+                
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
