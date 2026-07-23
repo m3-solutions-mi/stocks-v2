@@ -733,7 +733,9 @@ class Chart {
             let increment = series[0].data[0].y;
             let increment_neg = series[0].data[0].y;
             series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
+            extend_series(series[1]);
             series[2].data = data_m.map((v, i) => { increment_neg -= add; return { x: v.e, y: increment_neg } });
+            extend_series(series[2]);
 
             // const bol = applyBands(series[0].data.map((v)=>{ return {x: v.x, c: v.y} }), 15, 0.5)
             // // console.log(bol);
