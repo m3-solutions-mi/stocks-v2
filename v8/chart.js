@@ -758,8 +758,8 @@ class Chart {
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
 
-            HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(_last), '$', '');
-            HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
+            HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
 
             if (summarize) {
 
