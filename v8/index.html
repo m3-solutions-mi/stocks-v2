@@ -365,6 +365,26 @@
         const IS_LARGE = document.getElementById('is-large').checkVisibility();
         console.log('IS_SMALL:', IS_SMALL, ' | IS_MEDIUM:', IS_MEDIUM, ' | IS_LARGE:', IS_LARGE);
 
+        // function console.log(...args) {
+        //     console.log(args);
+        // }
+
+        // 1. Store the native browser method
+        const originalLog = console.log;
+
+        // 2. Assign your custom function
+        console.log = function (...args) {
+            const timestamp = `[${new Date().toLocaleTimeString()}]`;
+
+            // 3. Trigger your custom logic here (e.g., send logs to an external server)
+
+            // 4. Call the original console method to print to dev tools
+            if (args.length > 1) {
+                args[0] = timestamp + ' ' + args[0];
+            }
+            originalLog.apply(console, [...args]);
+        };
+
         flatpickr("#selected-date", {
             // Optional configuration
             dateFormat: "Y-m-d",
@@ -543,7 +563,7 @@
                         </span>
                         <span id="mobile-card-treemap" class="w3-hide w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;"></span>
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
-                            <div class="w3-border-bottom">POSITION</div>
+                            <div class="w3-border-bottom">POSITIONS</div>
                             <b><div id="mobile-card-position" class="w3-xxxlarge w3-wide">-</div></b>
                             <div id="mobile-card-position-pct" class="w3-wide">-</div>
                         </span>
@@ -567,9 +587,9 @@
                 (SHARED.POSITIONS === null
                     ? this.HA_SYMBOLS
                     : [...(SHARED.POSITIONS.length > 0 ? SHARED.POSITIONS.map((v) => v.symbol) : []), ...CONFIG.HA_SYMBOLS])
-                        .filter((v, i, a) => a.indexOf(v) === i)
-                        .forEach((s, i) => {
-                            html += `
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                    .forEach((s, i) => {
+                        html += `
                         <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${IS_SMALL ? 12 : 4} w3-xlarge">
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
@@ -607,7 +627,7 @@
                                 <div id="chart-ha-${i}-2" class="${IS_SMALL ? '_w3-hide' : '_w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
-                        });
+                    });
 
                 document.getElementById('output-charts').innerHTML = html_table + html;
             }
@@ -929,7 +949,7 @@
 
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
-                    
+
 
 
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {

@@ -42,8 +42,8 @@ class Chart {
             // type: 'vertical',
             gradient: {
                 // type: 'horizontal',
-                opacityFrom: [0.8, 0.47],
-                opacityTo: [0.2, 0.47],
+                opacityFrom: [0.8, 0.8, 0.8],
+                opacityTo: [0.2, 0.8, 0.8],
             }
         },
         _labels: [
@@ -53,7 +53,7 @@ class Chart {
             size: 0,
         },
         noData: { text: 'No Data Available', style: { color: '#000' } },
-        colors: ['#4CAF50', '#007bf7', '#E91E63', '#445c68', '#FF9800'],
+        colors: ['#4CAF50', '#ffffff', '#ffffff', '#E91E63', '#445c68', '#FF9800'],
         // plotOptions: {
         //     bar: {
         //         colors: {
@@ -720,6 +720,7 @@ class Chart {
                 data: [] 
             });
             series.push({ name: '0.5 %', type: 'line', data: [] });
+            series.push({ name: '-0.5 %', type: 'line', data: [] });
             // series.push({ name: 'Bollinger', type: 'line', color: colors.red, data: [] });
 
             //* DATA */
@@ -728,9 +729,11 @@ class Chart {
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
             // 0.00001 : 0.0001
-            let add = seed * (symbol.indexOf('-USD') > 0 || 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? 0.25 / seed : 1 / seed);
+            let add = seed * (symbol.indexOf('-USD') > 0 || 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? 0.25 / seed : 0.8 / seed);
             let increment = series[0].data[0].y;
+            let increment_neg = series[0].data[0].y;
             series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
+            series[2].data = data_m.map((v, i) => { increment_neg -= add; return { x: v.e, y: increment_neg } });
 
             // const bol = applyBands(series[0].data.map((v)=>{ return {x: v.x, c: v.y} }), 15, 0.5)
             // // console.log(bol);
@@ -742,7 +745,7 @@ class Chart {
             this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y * 1.005, colors.violet));
 
             //* OTHER OPTIONS */
-            this.options.stroke.width = IS_SMALL ? [1, 2] : [1, 2];
+            this.options.stroke.width = IS_SMALL ? [1, 2, 2] : [1, 2, 2];
             this.options.tooltip.enabledOnSeries = [0, 1];
 
             //* FINISH UP */
@@ -775,7 +778,7 @@ class Chart {
                 const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
                 const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
                 const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
-                
+
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
                 HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
