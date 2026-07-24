@@ -765,7 +765,7 @@ class Chart {
             const _max = Math.max(...(chart_card_series.map((v)=>v.y - seed)));
 
             // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
-            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_max - _last), '$', '');
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _max), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
 
             if (summarize) {
