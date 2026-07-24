@@ -869,7 +869,7 @@
                         }
                     }).then((resp) => resp.json());
 
-                    resp.bars[name].forEach((v)=>{
+                    resp.bars[name].forEach((v) => {
                         v.e = new Date(v.t).getTime();
                     })
                     resolve(resp.bars[name]);
@@ -903,8 +903,9 @@
             async update(now = false) {
                 const dt = new Date();
                 const hmm = HELPERS.getHMM(new Date());
+                const second = dt.getSeconds();
 
-                if (now || [0, 10, 20, 30, 40, 50].indexOf(dt.getSeconds()) >= 0) {
+                if (now || [0, 5, 10, 20, 30, 40, 50].indexOf(second) >= 0) {
 
                     //* TABLE */
                     const seed = 35 * 1000; //** TODO: get from account activity **/
@@ -959,18 +960,20 @@
                     // // console.log(table_template);
                     // document.getElementById('output-table').innerHTML = table_template;
 
-
                     const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
-                    // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
-                    SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
-                    SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
-                    SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
                     SHARED.POSITIONS = await ACCOUNT.positions();
                     // const account_history_14d = await ACCOUNT.history('14D', '1D');
                     // const account_detail = await ACCOUNT.detail();
 
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
+
+                    if (now || second === 5) {
+                        // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
+                        SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
+                        SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
+                        SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
+                    }
 
 
 
