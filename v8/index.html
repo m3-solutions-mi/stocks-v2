@@ -171,6 +171,19 @@
 
                         <!--@ OPTIONS -->
                         <div class="w3-col s12 w3-padding">
+                            <span class="w3-text-grey">Extend Chart Window</span>
+                            <div class="w3-right w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="chart-type" value="minute">
+                                <label>12:00 PM</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="chart-type" value="minute">
+                                <label>4:00 PM</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="chart-type" value="day">
+                                <label>8:00 PM</label>
+                                <!-- <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="0.25%">
+                                <label>0.25 %</label> -->
+                            </div>
+                        </div>
+                        <div class="w3-col s12 w3-padding">
                             <span class="w3-text-grey">Chart Type</span>
                             <div class="w3-right w3-large">
                                 <input class="w3-radio w3-margin-left" type="radio" name="chart-type" value="minute">
@@ -369,21 +382,21 @@
         //     console.log(args);
         // }
 
-        // 1. Store the native browser method
-        const originalLog = console.log;
+        // // 1. Store the native browser method
+        // const originalLog = console.log;
 
-        // 2. Assign your custom function
-        console.log = function (...args) {
-            const timestamp = `[${new Date().toLocaleTimeString()}]`;
+        // // 2. Assign your custom function
+        // console.log = function (...args) {
+        //     const timestamp = `[${new Date().toLocaleTimeString()}]`;
 
-            // 3. Trigger your custom logic here (e.g., send logs to an external server)
+        //     // 3. Trigger your custom logic here (e.g., send logs to an external server)
 
-            // 4. Call the original console method to print to dev tools
-            if (args.length > 1) {
-                args[0] = timestamp + ' ' + args[0];
-            }
-            originalLog.apply(console, [...args]);
-        };
+        //     // 4. Call the original console method to print to dev tools
+        //     if (args.length > 1) {
+        //         args[0] = timestamp + ' ' + args[0];
+        //     }
+        //     originalLog.apply(console, [...args]);
+        // };
 
         flatpickr("#selected-date", {
             // Optional configuration

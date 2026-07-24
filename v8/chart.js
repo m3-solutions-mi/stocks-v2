@@ -53,7 +53,7 @@ class Chart {
             size: 0,
         },
         noData: { text: 'No Data Available', style: { color: '#000' } },
-        colors: ['#4CAF50', '#ffffff', '#ffffff', '#E91E63', '#445c68', '#FF9800'],
+        colors: ['#4CAF50', '#9e88ff', '#9e88ff', '#E91E63', '#445c68', '#FF9800'],
         // plotOptions: {
         //     bar: {
         //         colors: {
@@ -569,8 +569,9 @@ class Chart {
                 if (new Date(current_day).getDay() === dow) {
                     if (hmm <= 900) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
                     // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 900) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 930) { s = new Date(current_day).setHours(9, 0); }
+                    if (hmm >= 830) { s = new Date(current_day).setHours(4, 0); }
+                    if (hmm >= 830) { s = new Date(current_day).setHours(8, 0); }
+                    // if (hmm >= 915) { s = new Date(current_day).setHours(9, 0); }
                     // if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
 
                     // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
@@ -636,7 +637,7 @@ class Chart {
                     // // const x = hmm < 1200
                     // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
                     // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
-                    const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? 16 : 20), 1);
+                    const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? (hmm < 1100 ? 12 : 16) : 20), 1);
                     series.data.push({ x, y: undefined });
                     // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
                 }
@@ -762,7 +763,7 @@ class Chart {
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
-            const _max = Math.max(...(chart_card_series.map((v)=>v.y - seed)));
+            const _max = Math.max(...(chart_card_series.slice(0,-1).map((v)=>v.y - seed)));
 
             // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _max), '$', '');
