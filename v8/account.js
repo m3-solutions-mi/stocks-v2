@@ -24,6 +24,10 @@ class Account {
             //     }
             // });
 
+            // FETCH_DATA.get_data('^IXIC', '1D', 10).then((ixic) => {
+            //     console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `,'background-color:orange;color:black;');
+            // })
+
             let total = account_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c);
             let total_pct = account_positions.map((v) => +(v.unrealized_plpc)).reduce((p, c) => p + c) * 100;
             console.log('POSITIONS TOTAL $', round2(total), ' | ', round3(total_pct), '%');

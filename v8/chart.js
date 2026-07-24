@@ -593,13 +593,13 @@ class Chart {
             //#region FILTER DATA */
             ohlc_data = ohlc_data
                 .filter((v) => v.e >= s)
-                .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
             data = data
                 .filter((v) => v.e >= s)
-                .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
             data_m = data_m
                 .filter((v) => v.e >= s)
-                .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
             //#endregion
 
 

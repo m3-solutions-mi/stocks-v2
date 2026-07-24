@@ -855,14 +855,23 @@
                     const end_at = new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
-                    const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
+                    // const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
                     // const url = `${CONFIG.API_URL}/symbol/${name}/${timeframe}Min/${start_at}/${end_at}`;
-                    // const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=5Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
+                    const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
 
 
                     const resp = await fetch(url, {
                         method: 'GET',
+                        headers: {
+                            accept: 'application/json',
+                            'APCA-API-KEY-ID': CONFIG.API_KEY,
+                            'APCA-API-SECRET-KEY': CONFIG.API_SECRET
+                        }
                     }).then((resp) => resp.json());
+
+                    resp.bars[name].forEach((v)=>{
+                        v.e = new Date(v.t).getTime();
+                    })
                     resolve(resp.bars[name]);
                 });
             };
