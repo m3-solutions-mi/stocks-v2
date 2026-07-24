@@ -762,8 +762,10 @@ class Chart {
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
+            const _max = Math.max(...(chart_card_series.map((v)=>v.y - seed)));
 
-            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
+            // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_max - _last), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
 
             if (summarize) {
