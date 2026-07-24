@@ -42,8 +42,8 @@ class Chart {
             // type: 'vertical',
             gradient: {
                 // type: 'horizontal',
-                opacityFrom: [0.8, 0.8, 0.8],
-                opacityTo: [0.2, 0.8, 0.8],
+                opacityFrom: [0.8, 0, 0],
+                opacityTo: [0.2, 0, 0],
             }
         },
         _labels: [
@@ -748,7 +748,7 @@ class Chart {
 
             //* OTHER OPTIONS */
             this.options.stroke.width = IS_SMALL ? [1, 2, 2] : [1, 2, 2];
-            this.options.tooltip.enabledOnSeries = [0, 1];
+            this.options.tooltip.enabledOnSeries = [0, 1, 2];
 
             //* FINISH UP */
             // this.options.yaxis.max = Math.max(100, Math.max(...series[0].data.map((v) => v.y).slice(0, -1)));
