@@ -572,7 +572,7 @@ class Chart {
                     if (hmm >= 830) { s = new Date(current_day).setHours(4, 0); }
                     if (hmm >= 830) { s = new Date(current_day).setHours(8, 0); }
                     // if (hmm >= 915) { s = new Date(current_day).setHours(9, 0); }
-                    // if (hmm >= 1130) { s = new Date(current_day).setHours(9, 0); }
+                    if (hmm >= 1130) { s = new Date(current_day).setHours(9, 30); }
 
                     // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
                 } else {
