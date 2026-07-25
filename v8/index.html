@@ -152,7 +152,7 @@
                         <div class="w3-large">
                             <input class="w3-radio w3-margin-left w3-margin-bottom" type="radio"
                                 name="group-symbols-list" value="" onchange="select_symbol_list(this)">
-                            <label contenteditable="true">ETH-USD,BTC-USD,LTC-USD,SOL-USD</label>
+                            <label contenteditable="true">AAVE-USD,ETH-USD,BTC-USD,LTC-USD,SOL-USD</label>
                         </div>
 
                         <!--@ FIELDS -->
@@ -302,12 +302,9 @@
                         <span id="mobile-account-buying-power" class="w3-right w3-text-blue">-</span>
                     </b>
                 </div>
-                <!-- <div class="w3-col s12 w3-large w3-wide w3-border-top w3-padding" style="margin-top:10px;">
-                    <b>
-                        <span id="mobile-account-net" class="w3-left">-</span>
-                        <span id="mobile-account-buying-power" class="w3-right w3-text-blue">-</span>
-                    </b>
-                </div> -->
+                <div class="w3-col s12 w3-large w3-wide w3-border-top w3-padding" style="margin-top:10px;">
+                    <div id="chart-account-history" style="height:250px;"></div>
+                </div>
 
                 <div id="output-table" class="w3-col s12 w3-large w3-wide w3-border-top w3-padding"
                     style="margin-top:10px;"></div>
@@ -526,7 +523,7 @@
                 }
                 'QQQ,NQ=F,NDAQ,VOO'.split(',').forEach((s) => { add(s) })
                 // html += '<span style="border-top:1px solid;">&nbsp;</span>';
-                'ETH-USD,BTC-USD,LTC-USD,SOL-USD'.split(',').sort().forEach((s) => { add(s, 'w3-text-blue') })
+                'AAVE-USD,ETH-USD,BTC-USD,LTC-USD,SOL-USD'.split(',').sort().forEach((s) => { add(s, 'w3-text-blue') })
                 document.getElementById('symbols-col-1').innerHTML += html;
 
                 html = '';
@@ -855,20 +852,25 @@
                     const end_at = new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString();
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
-                    const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
-                    // const url = `${CONFIG.API_URL}/symbol/${name}/${timeframe}Min/${start_at}/${end_at}`;
-                    // const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
-
-
-                    const resp = await fetch(url, {
-                        method: 'GET',
-                        // headers: {
-                        //     accept: 'application/json',
-                        //     'APCA-API-KEY-ID': CONFIG.API_KEY,
-                        //     'APCA-API-SECRET-KEY': CONFIG.API_SECRET
-                        // }
-                    }).then((resp) => resp.json());
-
+                    let resp = null;
+                    if (true) {
+                        /* M3 */
+                        const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
+                        resp = await fetch(url, {
+                            method: 'GET',
+                        }).then((resp) => resp.json());
+                    } else {
+                        /* ALPACA */
+                        const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=1Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
+                        resp = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                accept: 'application/json',
+                                'APCA-API-KEY-ID': CONFIG.API_KEY,
+                                'APCA-API-SECRET-KEY': CONFIG.API_SECRET
+                            }
+                        }).then((resp) => resp.json());
+                    }
                     resp.bars[name].forEach((v) => {
                         v.e = new Date(v.t).getTime();
                     })
@@ -962,7 +964,7 @@
 
                     const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
                     SHARED.POSITIONS = await ACCOUNT.positions();
-                    // const account_history_14d = await ACCOUNT.history('14D', '1D');
+                    SHARED.ACCOUNT_HISTORY = await ACCOUNT.history('14D', '1D');
                     // const account_detail = await ACCOUNT.detail();
 
                     //* CHECK POSITIONS */

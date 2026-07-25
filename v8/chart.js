@@ -562,7 +562,7 @@ class Chart {
             // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
             // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
             if (symbol.indexOf('-USD') > 0) {
-                s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
+                s = current_day - ((IS_SMALL ? 4 : 10) * 60 * 60 * 1000);
                 // s = new Date(current_day).setHours(0, 0);
                 // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
             } else {
@@ -764,9 +764,10 @@ class Chart {
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
             const _max = Math.max(...(chart_card_series.slice(0,-1).map((v)=>v.y - seed)));
+            const _first = chart_card_series[0].y - seed;
 
             // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
-            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _max), '$', '');
+            HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
 
             if (summarize) {
