@@ -43,7 +43,7 @@ class Account {
             let t_gain = 0;
             let t_seed = 0;
             account_positions.map((v) => {
-                // console.log(`%c${v.symbol.padEnd(4, ' ')} | $ ${round2(v.unrealized_pl).toString().padEnd(7, ' ')} | ${round3(v.unrealized_plpc * 100)} % | $ ${round(v.cost_basis)}`, 'color:yellow;');
+                console.log(`%c${v.symbol.padEnd(4, ' ')} | $ ${round2(v.unrealized_pl).toString().padEnd(7, ' ')} | ${round3(v.unrealized_plpc * 100)} % | $ ${round(v.cost_basis)}`, 'color:yellow;');
                 obj[v.symbol] = {
                     gain: round2(v.unrealized_pl),
                     pct: round1(v.unrealized_plpc * 100),
@@ -53,7 +53,8 @@ class Account {
                 t_seed += round(v.cost_basis);
             });
             obj['_TOTAL_'] = { gain: t_gain, pct: round2(t_gain / t_seed * 100), seed: t_seed }
-            // console.log(obj);
+            console.log(`TOTAL | ${obj._TOTAL_.gain} | ${obj._TOTAL_.pct} %`);
+            console.log(obj);
             return obj;
         } else {
             return { _TOTAL_: { gain: 0, pct: 0, seed: 0 } };

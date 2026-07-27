@@ -593,13 +593,13 @@ class Chart {
             //#region FILTER DATA */
             ohlc_data = ohlc_data
                 .filter((v) => v.e >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
             data = data
                 .filter((v) => v.e >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
             data_m = data_m
                 .filter((v) => v.e >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
             //#endregion
 
 
@@ -712,13 +712,13 @@ class Chart {
             // '#216d2485'
             // '#1c611e7a'
             series = [];
-            series.push({ 
+            series.push({
                 name: 'Close',
                 type: 'area',
                 // color: 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? '#1c611e' : '#4CAF50',
                 // color: '#1c611e',
                 color: '#4CAF50',
-                data: [] 
+                data: []
             });
             series.push({ name: '0.5 %', type: 'line', data: [] });
             series.push({ name: '-0.5 %', type: 'line', data: [] });
@@ -763,12 +763,12 @@ class Chart {
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options.series[0].data;
             const _last = chart_card_series[chart_card_series.length - (show_full_day ? 2 : 1)].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - (show_full_day ? 3 : 2)].y - seed;
-            const _max = Math.max(...(chart_card_series.slice(0,-1).map((v)=>v.y - seed)));
+            const _max = Math.max(...(chart_card_series.slice(0, -1).map((v) => v.y - seed)));
             const _first = chart_card_series[0].y - seed;
 
-            // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last), '$', '');
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
+            HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
 
             if (summarize) {
 
@@ -776,35 +776,58 @@ class Chart {
                 const account_history_5d = await ACCOUNT.history('5D', '1D');
                 const account_positions = await ACCOUNT.positions();
 
+                //#region summary cards
                 const position_current_value = +(document.getElementById('mobile-card-position').innerText);
-                // const positions_cost_basis = HELPERS.reduce_safe(account_positions.map((v) => +(v.cost_basis)));
-                // const positions_gain = HELPERS.reduce_safe(account_positions.map((v) => +(v.unrealized_pl)));
-                // const positions_gain_pct = round1(positions_gain / positions_cost_basis * 100);
-
                 const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
                 const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
                 const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
+                const positions_change = round2(positions_gain - position_current_value);
+                const positions_change_pct = round3(positions_change / positions_cost_basis * 100);
+                console.log(position_current_value, positions_gain, positions_change, positions_change_pct);
 
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
-                HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
-                HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
-                // console.log(position_current_value);
+                HELPERS.update_elem_text_colored(`mobile-card-change`, positions_change, '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-change-pct`, positions_change_pct, '', '');
 
-                CONFIG.HA_SYMBOLS.forEach((s, i) => {
-                    const p = ''
-                    const position = account_positions.find((v) => v.symbol === s.replace('-', ''));
-                    if (position) {
-                        document.getElementById(`chart-card-symbol-${i}`).style.color = position.unrealized_pl > 0 ? 'green' : 'red';
-                        document.getElementById(`chart-card-symbol-${i}`).style.fontWeight = 'bold';
-                        // document.getElementById('chart-card-symbol-0').parentElement.style.borderBottom = '5px solid'
-                        document.getElementById(`chart-card-symbol-${i}`).parentElement.style.borderBottom = '1px solid ' + (position.unrealized_pl > 0 ? 'green' : 'red');
-                    } else {
-                        document.getElementById(`chart-card-symbol-${i}`).style.color = 'grey';
-                        document.getElementById(`chart-card-symbol-${i}`).style.fontWeight = 'normal';
-                        document.getElementById(`chart-card-symbol-${i}`).parentElement.style.borderBottom = '1px solid lightgrey'
-                    }
-                });
+                // HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
+                // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
+                // HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
+                // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
+                //#endregion
+                
+                const position = account_positions.find((v) => v.symbol === symbol.replace('-', ''));
+                if (position) {
+                    HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
+                    HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
+                    HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+                } else {
+                    HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
+                    HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
+                    HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+                }
+
+                // CONFIG.HA_SYMBOLS.forEach((s, i) => {
+                //     const p = ''
+                //     const position = account_positions.find((v) => v.symbol === s.replace('-', ''));
+                //     if (position) {
+                //         document.getElementById(`chart-card-symbol-${i}`).style.color = position.unrealized_pl > 0 ? 'green' : 'red';
+                //         document.getElementById(`chart-card-symbol-${i}`).style.fontWeight = 'bold';
+                //         document.getElementById(`chart-card-symbol-${i}`).parentElement.style.borderBottom = '1px solid ' + (position.unrealized_pl > 0 ? 'green' : 'red');
+
+                //         HELPERS.update_elem_text_colored(`chart-card-gain-${i}`, round2(position.unrealized_pl), '$', '');
+                //         HELPERS.update_elem_text_colored(`chart-card-pct-${i}`, round1(position.unrealized_plpc * 100), '', '%');
+                //         HELPERS.update_elem_text_colored(`chart-card-chg-${i}`, round2(_last - _last_minus_1), '', '');
+                //     } else {
+                //         document.getElementById(`chart-card-symbol-${i}`).style.color = 'grey';
+                //         document.getElementById(`chart-card-symbol-${i}`).style.fontWeight = 'normal';
+                //         document.getElementById(`chart-card-symbol-${i}`).parentElement.style.borderBottom = '1px solid lightgrey';
+
+                //         // HELPERS.update_elem_text(`chart-card-gain-${i}`, round2(_last - _first), '$', '');
+                //         // HELPERS.update_elem_text(`chart-card-pct-${i}`, round1(_last / seed * 100), '', '%');
+                //         // HELPERS.update_elem_text(`chart-card-chg-${i}`, round2(_last - _last_minus_1), '', '');
+                //     }
+                // });
 
                 const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
                 HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
@@ -824,7 +847,6 @@ class Chart {
 
                 // HELPERS.update_elem_text_colored(`mobile-card-change`, round2(_last - _last_minus_1), '', '');
                 // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((_last - _last_minus_1) / seed * 100), '', '%');
-                HELPERS.update_elem_text_colored(`chart-card-chg-0`, round2(_last - _last_minus_1), '', '');
 
                 HELPERS.update_elem_text(`mobile-account-net`, account_detail.equity, '$', '');
                 HELPERS.update_elem_text(`mobile-account-buying-power`, account_detail.buying_power, '$', '');
@@ -845,7 +867,7 @@ class Chart {
                 this._render_t();
                 //#endregion
             } else {
-                HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+                // HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
             }
             //#endregion
 

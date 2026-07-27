@@ -311,6 +311,23 @@
 
             </div>
         </div>
+
+        <!-- Trigger/Open the Modal -->
+        <!-- <button onclick="document.getElementById('id01').style.display='block'" class="w3-button">Open Modal</button> -->
+
+        <!-- The Modal -->
+        <!-- <div id="id01" class="w3-modal">
+            <div class="w3-modal-content">
+                <div class="w3-container w3-margin w3-padding">
+                    <span onclick="document.getElementById('id01').style.display='none'"
+                        class="w3-button w3-display-topright">&times;</span>
+                    <p>Some text in the Modal..</p>
+                    <p>Some text in the Modal..</p>
+                    <button class="w3-right">Cancel</button>
+                    <button class="w3-right">OK</button>
+                </div>
+            </div>
+        </div> -->
     </div>
 
 
@@ -970,12 +987,12 @@
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
 
-                    if (now || second === 5) {
+                    // if (now || second === 5) {
                         // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
                         SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
                         SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
                         SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
-                    }
+                    // }
 
 
 
