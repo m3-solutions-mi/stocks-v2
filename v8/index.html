@@ -521,7 +521,7 @@
             // UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
             // UPDATE_AT = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56];
-            HA_SYMBOLS = [this.SYMBOL, ...this.SYMBOL_LIST.split(',')/*.slice(0, 6)*/].filter((v, i, a) => a.indexOf(v) === i).filter((v) => v !== '');
+            HA_SYMBOLS = [this.SYMBOL, this.SYMBOL, ...this.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i)/*.slice(0, 6)*/].filter((v) => v !== '');
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
             constructor() {
@@ -614,7 +614,7 @@
                 (SHARED.POSITIONS === null
                     ? this.HA_SYMBOLS
                     : [...(SHARED.POSITIONS.length > 0 ? SHARED.POSITIONS.map((v) => v.symbol) : []), ...CONFIG.HA_SYMBOLS])
-                    .filter((v, i, a) => a.indexOf(v) === i)
+                    // .filter((v, i, a) => a.indexOf(v) === i)
                     .forEach((s, i) => {
                         html += `
                         <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${IS_SMALL ? 12 : 4} w3-xlarge">
@@ -651,7 +651,7 @@
                             </div>
                             <div class="w3-col s12 m12">
                                 <div id="chart-ha-${i}-1" class="${i > 0 ? 'w3-hide' : ''} w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${i === 0 ? 'w3-hide' : ''} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${i < 1 ? 'w3-hide' : ''} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
