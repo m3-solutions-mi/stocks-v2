@@ -136,7 +136,7 @@
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
                                 onchange="select_symbol_list(this)">
                             <label
-                                contenteditable="true">QQQ,MU,DRAM,SOXL,SNDK,WDC,STX,NBIS,GEV,PENG,AVGO,APH,MRVL,LITE,DELL</label>
+                                contenteditable="true">QQQ,MU,SOXL,SNDK,WDC,DRAM,STX,NBIS,GEV,PENG,AVGO,APH,MRVL,LITE,DELL</label>
                             <!-- <label contenteditable="true">DRAM,MRVL,MU,UMC,SITM,SMCI,SNDK,SOXL,STX,TSEM,PENG,WDC</label> -->
                         </div>
                         <div class="w3-large">
@@ -521,7 +521,14 @@
             // UPDATE_AT = [0, 10, 20, 30, 40, 50];
             // UPDATE_AT = [0, 15, 30, 45];
             // UPDATE_AT = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56];
-            HA_SYMBOLS = [this.SYMBOL, this.SYMBOL, ...this.SYMBOL_LIST.split(',').filter((v, i, a) => a.indexOf(v) === i)/*.slice(0, 6)*/].filter((v) => v !== '');
+            HA_SYMBOLS = [
+                /*this.SYMBOL,*/
+                /*this.SYMBOL,*/
+                ...this.SYMBOL_LIST
+                    .split(',').filter((v, i, a) => a.indexOf(v) === i)
+                /*.slice(0, 6)*/
+            ]
+                .filter((v) => v !== '');
             UPDATE_HA_SYMBOLS = () => this.HA_SYMBOLS[0] = this.SYMBOL;
 
             constructor() {
@@ -617,7 +624,7 @@
                     // .filter((v, i, a) => a.indexOf(v) === i)
                     .forEach((s, i) => {
                         html += `
-                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${IS_SMALL ? 12 : 4} w3-xlarge">
+                        <span class="${i === 0 ? '_w3-hide' : ''} _w3-hide-small w3-col s${IS_SMALL ? 12 : 12/*(i % 2 === 0 ? 5 : 7)*/} w3-xlarge">
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
@@ -650,8 +657,8 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="${i > 0 ? 'w3-hide' : ''} w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${i < 1 ? 'w3-hide' : ''} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${i % 2 !== 0 ? '_w3-hide' : ''} w3-col s5 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-col s7 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
@@ -805,6 +812,7 @@
     <!--@ SHARED -->
     <script>
         class Shared {
+            DATA_1M = null;
             DATA_5M = null;
             DATA_15M = null;
             DATA_1D = null;
@@ -988,10 +996,10 @@
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
 
                     // if (now || second === 5) {
-                        // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
-                        SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
-                        SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
-                        SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
+                    // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
+                    SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
+                    SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
+                    SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
                     // }
 
 
@@ -999,7 +1007,7 @@
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
                             if (SHARED.DATA_5M[s] && SHARED.DATA_1M[s]) {
-                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
+                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_5M[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
                             } else {
                                 console.log(`%c${s} | NOT UPDATED`, 'color:orange')
                             }

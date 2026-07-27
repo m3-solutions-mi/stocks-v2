@@ -562,22 +562,24 @@ class Chart {
             // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
             // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
             if (symbol.indexOf('-USD') > 0) {
-                s = current_day - ((IS_SMALL ? 4 : 10) * 60 * 60 * 1000);
+                s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
                 // s = new Date(current_day).setHours(0, 0);
                 // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
             } else {
                 if (new Date(current_day).getDay() === dow) {
                     if (hmm <= 900) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
-                    // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
                     if (hmm >= 830) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 830) { s = new Date(current_day).setHours(8, 0); }
-                    // if (hmm >= 915) { s = new Date(current_day).setHours(9, 0); }
                     if (hmm >= 1130) { s = new Date(current_day).setHours(9, 15); }
+                    // if (hmm >= 830) { s = new Date(current_day).setHours(8, 0); }
+                    // if (hmm >= 1605) { s = new Date(current_day).setHours(9, 15); }
+                    // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
+                    // if (hmm >= 915) { s = new Date(current_day).setHours(9, 0); }
+                    // if (hmm >= 1430) { s = new Date(current_day).setHours(12, 0); }
 
                     // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
                 } else {
                     s = new Date(current_day).setHours(9, 0);
-                    e = new Date(current_day).setHours(17, 0);
+                    // e = new Date(current_day).setHours(17, 0);
                 }
             }
 
@@ -631,16 +633,21 @@ class Chart {
             //#region EXTEND OUT CHART FOR CONSISTENT SCALING
             // TODO: /* keep a rolling 8hr window */
             const extend_series = (series) => {
-                if (show_full_day && hmm < 2001) {
-                    const h = Math.ceil(hmm / 100);
-                    // const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
-                    // // const x = hmm < 1200
-                    // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
-                    // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
-                    const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? (hmm < 1100 ? 12 : 16) : 20), 1);
-                    series.data.push({ x, y: undefined });
-                    // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
-                }
+
+                // if (index === 2) {
+                //     series.data = series.data.slice(-90);
+                // } else {
+                    if (show_full_day && hmm < 2001) {
+                        const h = Math.ceil(hmm / 100);
+                        // const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
+                        // // const x = hmm < 1200
+                        // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
+                        // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
+                        const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? /*(hmm < 1100 ? 12 : 16)*/ 16 : 20), 1);
+                        series.data.push({ x, y: undefined });
+                        // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
+                    }
+                // }
             }
             //#endregion
 
@@ -674,7 +681,7 @@ class Chart {
 
 
             //* OTHER OPTIONS */
-            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 3 : index > 0 ? 2 : 4.5), 2.5];
+            this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 1.5 : 2), 2];
             this.options_candlestick.yaxis = [
                 {
                     seriesName: 'Gain',
@@ -795,16 +802,16 @@ class Chart {
                 // HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
                 // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
                 //#endregion
-                
+
                 const position = account_positions.find((v) => v.symbol === symbol.replace('-', ''));
                 // if (position) {
                 //     HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
                 //     HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
                 //     HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
                 // } else {
-                    HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
-                    HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
-                    HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+                HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
+                HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
+                HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
                 // }
 
                 // CONFIG.HA_SYMBOLS.forEach((s, i) => {
