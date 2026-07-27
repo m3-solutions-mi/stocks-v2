@@ -650,8 +650,8 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="${!IS_SMALL ? '_w3-hide' : ''} w3-hide w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${IS_SMALL ? '_w3-hide' : '_w3-hide'} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${i > 0 ? 'w3-hide' : ''} w3-col s12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${i === 0 ? 'w3-hide' : ''} w3-col s12 _w3-border w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });

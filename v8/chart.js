@@ -651,7 +651,7 @@ class Chart {
 
             //* DATA */
             series[0].data = ohlc_data.map((v, i) => { return { x: v.e, y: round2(v.d * shares) } });
-            extend_series(series[0]);
+            // extend_series(series[0]);
 
             let cumulative = 0;
             // series[1].data = ohlc_data.map((v, i) => { cumulative += (v.d * shares); return { x: v.e, y: round2(cumulative) } });
@@ -662,7 +662,7 @@ class Chart {
                 //     ? new Date(series[0].data[series[0].data.length - 1].x).setHours(12,0)
                 //     : new Date(series[0].data[series[0].data.length - 1].x).setHours(20, 1);
                 // series[1].data.push({ x, y: undefined });
-                extend_series(series[1]);
+                // extend_series(series[1]);
             }
             const y_min = Math.min(...(series[1].data.slice(0, -1).map((v) => v.y)));
             const y_max = Math.max(...series[1].data.slice(0, -1).map((v) => v.y));
@@ -702,7 +702,7 @@ class Chart {
             //* FINISH UP */
             delete this.options_candlestick.tooltip.custom;
             this.options_candlestick.chart.type = 'line';
-            this.options_candlestick.chart.height = height - 75;
+            this.options_candlestick.chart.height = height;
             this.options_candlestick.series = series;
             this._render(this.options_candlestick);
             //#endregion
@@ -797,15 +797,15 @@ class Chart {
                 //#endregion
                 
                 const position = account_positions.find((v) => v.symbol === symbol.replace('-', ''));
-                if (position) {
-                    HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
-                    HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
-                    HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
-                } else {
+                // if (position) {
+                //     HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
+                //     HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
+                //     HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+                // } else {
                     HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
                     HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
                     HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
-                }
+                // }
 
                 // CONFIG.HA_SYMBOLS.forEach((s, i) => {
                 //     const p = ''
