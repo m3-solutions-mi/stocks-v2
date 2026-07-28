@@ -739,7 +739,7 @@ class Chart {
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
             // 0.00001 : 0.0001
-            let add = seed * (symbol.indexOf('-USD') > 0 || 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? 3 / seed : 10 / seed);
+            let add = seed * (symbol.indexOf('-USD') > 0 || 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? 2 / seed : 5 / seed);
             let increment = series[0].data[0].y;
             let increment_neg = series[0].data[0].y;
             series[1].data = data_m.map((v, i) => { increment += add; return { x: v.e, y: increment } });
