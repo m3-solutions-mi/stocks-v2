@@ -171,11 +171,11 @@ class Chart {
                         },
                         {
                             from: 0,
-                            to: 1.5,
-                            color: '#68d69a',
+                            to: 25,
+                            color: '#45d887',
                         },
                         {
-                            from: 1.5,
+                            from: 25,
                             to: 1500,
                             color: '#008f40',
                         },
