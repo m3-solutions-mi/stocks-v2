@@ -160,7 +160,7 @@ class Chart {
                 colors: {
                     ranges: [
                         {
-                            from: -500,
+                            from: -1500,
                             to: -1.5,
                             color: '#d80000',
                         },
@@ -176,7 +176,7 @@ class Chart {
                         },
                         {
                             from: 1.5,
-                            to: 500,
+                            to: 1500,
                             color: '#008f40',
                         },
                     ],
@@ -567,9 +567,11 @@ class Chart {
                 // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
             } else {
                 if (new Date(current_day).getDay() === dow) {
-                    if (hmm <= 900) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
-                    if (hmm >= 830) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 1130) { s = new Date(current_day).setHours(9, 15); }
+                    if (hmm < 400) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
+                    if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
+                    if (hmm >= 900) { s = new Date(current_day).setHours(8, 0); }
+                    if (hmm >= 929) { s = new Date(current_day).setHours(9, 0); }
+                    if (hmm >= 1200) { s = new Date(current_day).setHours(9, 15); }
                     // if (hmm >= 830) { s = new Date(current_day).setHours(8, 0); }
                     // if (hmm >= 1605) { s = new Date(current_day).setHours(9, 15); }
                     // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
@@ -637,16 +639,16 @@ class Chart {
                 // if (index === 2) {
                 //     series.data = series.data.slice(-90);
                 // } else {
-                    if (show_full_day && hmm < 2001) {
-                        const h = Math.ceil(hmm / 100);
-                        // const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
-                        // // const x = hmm < 1200
-                        // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
-                        // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
-                        const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? /*(hmm < 1100 ? 12 : 16)*/ 16 : 20), 1);
-                        series.data.push({ x, y: undefined });
-                        // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
-                    }
+                if (show_full_day && hmm < 2001) {
+                    const h = Math.ceil(hmm / 100);
+                    // const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
+                    // // const x = hmm < 1200
+                    // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
+                    // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
+                    const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? /*(hmm < 1100 ? 12 : 16)*/ 16 : 20), 1);
+                    series.data.push({ x, y: undefined });
+                    // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
+                }
                 // }
             }
             //#endregion
@@ -775,7 +777,7 @@ class Chart {
 
             HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
-            HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+            HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
 
             if (summarize) {
 
@@ -790,7 +792,7 @@ class Chart {
                 const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
                 const positions_change = round2(positions_gain - position_current_value);
                 const positions_change_pct = round3(positions_change / positions_cost_basis * 100);
-                console.log(position_current_value, positions_gain, positions_change, positions_change_pct);
+                // console.log(position_current_value, positions_gain, positions_change, positions_change_pct);
 
                 HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
                 HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
@@ -804,15 +806,21 @@ class Chart {
                 //#endregion
 
                 const position = account_positions.find((v) => v.symbol === symbol.replace('-', ''));
-                // if (position) {
-                //     HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
-                //     HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
-                //     HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
-                // } else {
-                HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
-                HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
-                HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
-                // }
+                if (position) {
+                    document.getElementById(`chart-card-symbol-${index}`).style.color = position.unrealized_pl > 0 ? 'green' : 'red';
+                    document.getElementById(`chart-card-symbol-${index}`).style.fontWeight = 'bold';
+
+                    // HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
+                    // HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
+                    // HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+                } else {
+                    document.getElementById(`chart-card-symbol-${index}`).style.color = 'grey';
+                    document.getElementById(`chart-card-symbol-${index}`).style.fontWeight = 'normal';
+
+                }
+                // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
+                // HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
+                // HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
 
                 // CONFIG.HA_SYMBOLS.forEach((s, i) => {
                 //     const p = ''

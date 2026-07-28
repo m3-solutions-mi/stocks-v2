@@ -56,8 +56,9 @@ class Account {
                 t_seed += round(v.cost_basis);
             });
             obj['_TOTAL_'] = { gain: t_gain, pct: round2(t_gain / t_seed * 100), seed: t_seed }
-            console.log(`TOTAL | ${obj._TOTAL_.gain} | ${obj._TOTAL_.pct} %`);
-            console.log(obj);
+            // ${new Date().toLocaleTimeString()} | 
+            console.log(`%cTOTAL | ${obj._TOTAL_.gain} | ${obj._TOTAL_.pct} %`,'color:orange');
+            // console.log(obj);
             return obj;
         } else {
             return { _TOTAL_: { gain: 0, pct: 0, seed: 0 } };
