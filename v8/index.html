@@ -891,7 +891,8 @@
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
                     let resp = null;
-                    if (false) {
+                    const use_m3 = hmm <= 930 || hmm >= 1600;
+                    if (use_m3) {
                         /* M3 */
                         const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
                         resp = await fetch(url, {
