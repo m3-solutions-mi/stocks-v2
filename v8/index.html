@@ -36,6 +36,7 @@
     <script src="./bollinger-bands.js"></script>
     <script src="./heikin-ashi.js"></script>
     <script src="./colors.js"></script>
+    <script src="./stock_symbols_detail.js"></script>
     <script src="./account.js"></script>
     <script src="./calendar.js"></script>
     <script src="./market.js"></script>
@@ -454,7 +455,7 @@
             document.getElementById('symbol').value = symbol;
             set_item(`symbol`, symbol);
             // set_item(`symbol-list`, symbol);
-            document.getElementById('chart-card-symbol-0').innerText = symbol;
+            document.getElementById('chart-card-symbol-0').innerText = `${symbol} | ${HELPERS.get_description(symbol)}`;
             CONFIG.SYMBOL = symbol;
             CONFIG.UPDATE_HA_SYMBOLS();
             // CONFIG.load_chart_cards();
@@ -593,18 +594,18 @@
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="w3-border-bottom">TODAY</div>
                             <b><div id="mobile-card-gain" class="w3-xxxlarge w3-wide">-</div></b>
-                            <div id="mobile-card-pct" class="w3-wide">-</div>
+                            <div id="mobile-card-pct" class="w3-wide w3-hide-small">-</div>
                         </span>
                         <span id="mobile-card-treemap" class="w3-hide w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:170px;"></span>
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="w3-border-bottom">POSITIONS</div>
                             <b><div id="mobile-card-position" class="w3-xxxlarge w3-wide">-</div></b>
-                            <div id="mobile-card-position-pct" class="w3-wide">-</div>
+                            <div id="mobile-card-position-pct" class="w3-wide w3-hide-small">-</div>
                         </span>
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="w3-border-bottom">CHANGE</div>
                             <b><div id="mobile-card-change" class="w3-xxxlarge w3-wide">-</div></b>
-                            <div id="mobile-card-change-pct" class="w3-wide">-</div>
+                            <div id="mobile-card-change-pct" class="w3-wide w3-hide-small">-</div>
                         </span>
                         <span>
                             <table id="mobile-card-table-rows">
@@ -628,7 +629,7 @@
                             <div class="w3-col s12 w3-padding">
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
-                                    <span id="chart-card-symbol-${i}" class="w3-wide">${s}</span><!--<span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>-->
+                                    <span id="chart-card-symbol-${i}" class="w3-wide">${s} | ${HELPERS.get_description(s)}</span><!--<span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>-->
                                     <!-- <i id="" class="fa fa-credit-card w3-left w3-text-grey pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 1000},'${s}')" style="padding-top:3px;"></i> -->
                                     <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${7.5 * 1000},'${s}')" style="padding-top:3px;"></i>
                                 </span>
@@ -674,6 +675,18 @@
         class Helpers {
             constructor() { }
 
+            get_description(name) {
+                // const nasdaq_description = nasdaq_symbols().filter((v) => v.symbol === name);
+                const alpaca_description = stock_symbols_detail.find((v) => v.symbol === name);
+                let description = '-';
+                // description = nasdaq_description && nasdaq_description.length > 0 ? nasdaq_description[0].name : description;
+                description = alpaca_description ? alpaca_description.name : description;
+                return description.slice(0, 30);
+                // let description = nasdaq_symbols().filter((v) => v.symbol === name);
+                // description = description.length === 0 ?
+                //     stock_symbols_detail.find((v) => v.symbol === name) :
+                //     description[0];
+            }
             //* UPDATE TEXT w/ COLOR */
             update_elem_text_colored(id, v, prefix = '$', postfix = 'K') {
                 const elem = document.getElementById(id);
