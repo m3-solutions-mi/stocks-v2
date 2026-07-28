@@ -587,7 +587,7 @@ class Chart {
             //* HEIKEN-ASHI DATA */
             //* MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
             //* Viewed data is filtered below - after this calculation! */
-            let ohlc_data = calculateHeikinAshi(data.filter((v) => v.e >= last_eod.e));
+            let ohlc_data = calculateHeikinAshi(data/*.filter((v) => v.e >= last_eod.e)*/);
 
             //* HEIKEN-ASHI CLOSE VALUE (seems to be to fast of an indicator!)
             // let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);

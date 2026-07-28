@@ -13,6 +13,7 @@ class Account {
     check_positions(account_positions) {
         const max_loss = -100;
         const max_loss_pct = -0.005;
+        const hmm = HELPERS.getHMM(new Date());
         if (account_positions.length > 0) {
             // let total = account_positions.map((v) => v.gain).reduce((p, c) => p + c);
             // let total_pct = account_positions.map((v) => v.gain_pct).reduce((p, c) => p + c);
@@ -32,10 +33,12 @@ class Account {
             let total_pct = account_positions.map((v) => +(v.unrealized_plpc)).reduce((p, c) => p + c) * 100;
             // console.log('POSITIONS TOTAL $', round2(total), ' | ', round3(total_pct), '%');
             account_positions.forEach((v) => {
-                if ((v.unrealized_plpc * 100) < -1.5) {
+                if ((v.unrealized_plpc * 100) < -0.5) {
                     //* SELL */
-                    console.log(`%c S E L L  |  ${v.symbol}`, 'background-color:red;color:white;');
-                    // this.sell(v.symbol);
+                    if (hmm >= 931 && hmm <= 1559) {
+                        console.log(`%c  S E L L  |  ${v.symbol}  `, 'background-color:red;color:white;');
+                        // this.sell(v.symbol);
+                    }
                 }
             });
             // console.table(account_positions.map((v)=>{return{s: v.symbol, g: round2(v.unrealized_pl), p: round3(v.unrealized_plpc * 100)}}))
@@ -239,15 +242,16 @@ class Account {
             const url = `${CONFIG.ACCOUNT_URL}/v2/account/portfolio/history?period=${period}&timeframe=${timeframe}&intraday_reporting=extended_hours&pnl_reset=per_day`;
             fetch(url, options)
                 .then(res => res.json())
-                .then(res => res.timestamp.map((v, i) => { 
-                    return { 
+                .then(res => res.timestamp.map((v, i) => {
+                    return {
                         // e: v * 1000,
                         t: new Date(v * 1000).toLocaleString(),
                         // hmm: HELPERS.getHMM(new Date(v * 1000)),
                         net: round(res.equity[i]),
                         pnl: round(res.profit_loss[i]),
                         pnl_pct: round3(res.profit_loss_pct[i] * 100),
-                    } }))
+                    }
+                }))
                 .then(res => { resolve(res); })
                 .catch(err => console.error('error in history()', err));
         });
