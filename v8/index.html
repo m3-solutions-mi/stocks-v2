@@ -681,7 +681,7 @@
                 let description = '-';
                 // description = nasdaq_description && nasdaq_description.length > 0 ? nasdaq_description[0].name : description;
                 description = alpaca_description ? alpaca_description.name : description;
-                return description.slice(0, 30);
+                return description.length > 20 ? description.slice(0, 20) + '...' : description;
                 // let description = nasdaq_symbols().filter((v) => v.symbol === name);
                 // description = description.length === 0 ?
                 //     stock_symbols_detail.find((v) => v.symbol === name) :
@@ -891,7 +891,7 @@
                     // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
 
                     let resp = null;
-                    const use_m3 = hmm <= 930 || hmm >= 1600;
+                    const use_m3 = true; //hmm <= 930 || hmm >= 1600;
                     if (use_m3) {
                         /* M3 */
                         const url = `${CONFIG.API_URL}/${name}/${timeframe}/${start_at}/${end_at}`;
@@ -1009,7 +1009,7 @@
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
 
-                    if (now || second === 3) {
+                    if (now || second === 3 || second === 20 || second === 40) {
                         // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
                         SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
                         // SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
