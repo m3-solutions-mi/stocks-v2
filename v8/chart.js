@@ -410,7 +410,7 @@ class Chart {
     }
     //#endregion
 
-    //#region /* ANNOTATIONS */
+    //#region /* ANNOTATION FUNCTIONS */
     add_annotation_x = (x, text = null, color = colors.black, offsetX = 0) => {
         const obj = { x, borderWidth: 1, borderColor: color, fillColor: color, opacity: 1, strokeDashArray: 0 };
         if (text) {
@@ -750,7 +750,7 @@ class Chart {
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
             // 0.00001 : 0.0001
-            const offset = symbol === 'QQQ' ? 75 : 500;
+            const offset = symbol === 'QQQ' ? 75 : (symbol.indexOf('-USD') > 0 ? 100 : 500);
             series[1].data = data_m.map((v, i) => { return { x: v.e, y: series[0].data[0].y + offset } });
             extend_series(series[1]);
             series[2].data = data_m.map((v, i) => { return { x: v.e, y: series[0].data[0].y - offset } });
@@ -771,11 +771,11 @@ class Chart {
             //* ANNOTATIONS */
             this.options.annotations.xaxis = annotations_x();
             this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y, colors.grey));
-            this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y * 1.005, colors.violet));
+            this.options.annotations.yaxis.push(this.add_annotation_y(series[0].data[series[0].data.length - 2].y * 1.01, colors.violet));
 
             //* OTHER OPTIONS */
             this.options.stroke.width = IS_SMALL ? [1, 2, 2] : [1, 2, 2];
-            this.options.tooltip.enabledOnSeries = [0, 1, 2];
+            this.options.tooltip.enabledOnSeries = [0/*, 1, 2*/];
 
             //* FINISH UP */
             // this.options.yaxis.max = Math.max(100, Math.max(...series[0].data.map((v) => v.y).slice(0, -1)));

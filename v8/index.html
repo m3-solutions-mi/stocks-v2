@@ -680,7 +680,7 @@
 
                 html = '';
                 CONFIG.HA_SYMBOLS.forEach((s, i)=>{
-                    html += `<span id="symbol-card-last-ha-${i}" class="w3-large w3-text-white" style="border:1px solid;width:78px;padding-top:25px;"><b>${s}</b></span>`;
+                    html += `<span id="symbol-card-last-ha-${i}" class="w3-large w3-text-white" style="border:1px solid;width:78px;padding-top:25px;"><b>${s.replace('-USD','')}</b></span>`;
                 });
                 document.getElementById('mobile-card-symbols-delta').innerHTML = html;
             }
