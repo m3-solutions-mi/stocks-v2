@@ -2,6 +2,21 @@ class Algorithms {
 
     constructor() { }
 
+    async buy_sell_bars(symbol, bars) {
+        // console.chart(bars.map((v) => v.y));
+        const hmm = HELPERS.getHMM(new Date);
+        const second = new Date().getSeconds();
+
+        if (hmm % 1 === 0 && second < 10) {
+            const last = bars[bars.length - 1].y;
+            if (last >= 0) {
+                console.log(`%c B U Y   |  ${symbol}  |  ${last}  `, 'background-color:lime;color:black;')
+            } else {
+                console.log(`%c S E L L |  ${symbol}  |  ${last}  `, 'background-color:red;color:black;')
+            }
+        }
+    }
+
     // iterate_days(callback, start = new Date('2026-07-01').getTime(), end = Date.now()) {
     async iterate_days(callback, num_days = 7) {
         // return new Promise((resolve) => {

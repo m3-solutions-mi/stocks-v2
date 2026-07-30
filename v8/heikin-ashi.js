@@ -21,6 +21,24 @@ function calculateHeikinAshiClose(data) {
     }
     return haData;
 }
+function calculateHeikinAshiCloseMinusOpen(data) {
+    if (!data || data.length === 0) return [];
+
+    const haData = [];
+    
+    for (let i = 0; i < data.length; i++) {
+        const current = data[i];
+
+        // 1. Calculate HA Close (Average of current bar)
+        const haClose = current.c - current.o;
+        haData.push({
+            e: current.e,
+            c: haClose,
+            d: i > 0 ? haClose - haData[i-1].c : 0,
+        })
+    }
+    return haData;
+}
 
 /**
  * Converts standard OHLC data to Heikin Ashi format.

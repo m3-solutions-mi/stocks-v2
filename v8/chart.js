@@ -467,6 +467,7 @@ class Chart {
                         obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink));
                         obj.push(this.add_annotation_x(new Date(date).setHours(10, 30), null, colors.teal));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(12, 0), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(16, 0), null, colors.deeppink));
                         obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal));
                     });
@@ -594,6 +595,9 @@ class Chart {
             //* HEIKEN-ASHI CLOSE VALUE (seems to be to fast of an indicator!)
             // let ohlc_data = calculateHeikinAshiClose(data/*.filter((v) => v.e >= s)*/);
 
+            //* HEIKEN-ASHI CLOSE - OPEN VALUE
+            // let ohlc_data = calculateHeikinAshiCloseMinusOpen(data/*.filter((v) => v.e >= s)*/);
+
             //#region FILTER DATA */
             ohlc_data = ohlc_data
                 .filter((v) => v.e >= s)
@@ -716,7 +720,13 @@ class Chart {
             this._render(this.options_candlestick);
             //#endregion
 
+            //#region BUY_SELL_BARS
+            // ALGOS.buy_sell_bars(symbol, series[0].data);
+            //#endregion
+
             //#region MINUTES CHART
+            const buy_sell = series[0].data[series[0].data.length - 1].y;
+
             // '#216d24', '#991010', '#4CAF50'
             // '#216d2485'
             // '#1c611e7a'
@@ -726,7 +736,7 @@ class Chart {
                 type: 'area',
                 // color: 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? '#1c611e' : '#4CAF50',
                 // color: '#1c611e',
-                color: '#4CAF50',
+                color: buy_sell > 0 ? '#4CAF50' : '#991010',
                 data: []
             });
             series.push({ name: '0.5 %', type: 'line', data: [] });
@@ -739,7 +749,7 @@ class Chart {
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
             // 0.00001 : 0.0001
-            const offset = symbol === 'QQQ' ? 50 : 500;
+            const offset = symbol === 'QQQ' ? 75 : 500;
             series[1].data = data_m.map((v, i) => { return { x: v.e, y: series[0].data[0].y + offset } });
             extend_series(series[1]);
             series[2].data = data_m.map((v, i) => { return { x: v.e, y: series[0].data[0].y - offset } });

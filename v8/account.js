@@ -25,20 +25,20 @@ class Account {
             //     }
             // });
 
-            // FETCH_DATA.get_data('^IXIC', '1D', 10).then((ixic) => {
-            //     console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `,'background-color:orange;color:black;');
-            // })
-
             let total = account_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c);
             let total_pct = account_positions.map((v) => +(v.unrealized_plpc)).reduce((p, c) => p + c) * 100;
             // console.log('POSITIONS TOTAL $', round2(total), ' | ', round3(total_pct), '%');
             account_positions.forEach((v) => {
                 if ((v.unrealized_plpc * 100) < -0.5) {
                     //* SELL */
-                    if (hmm >= 931 && hmm <= 1559) {
-                        console.log(`%c  S E L L  |  ${v.symbol}  `, 'background-color:red;color:white;');
+                    if (hmm >= 930 && hmm <= 1559) {
+                        console.log(`%c   S E L L  |  ${v.symbol}   `, 'background-color:red;color:white;');
                         // this.sell(v.symbol);
                     }
+                }
+                if (hmm >= 1559) {
+                    console.log(`%c   S E L L - EOD  |  ${v.symbol}   `, 'background-color:red;color:white;');
+                    // this.sell(v.symbol);
                 }
             });
             // console.table(account_positions.map((v)=>{return{s: v.symbol, g: round2(v.unrealized_pl), p: round3(v.unrealized_plpc * 100)}}))
@@ -57,7 +57,7 @@ class Account {
             });
             obj['_TOTAL_'] = { gain: t_gain, pct: round2(t_gain / t_seed * 100), seed: t_seed }
             // ${new Date().toLocaleTimeString()} | 
-            console.log(`%cTOTAL | ${obj._TOTAL_.gain} | ${obj._TOTAL_.pct} %`,'color:orange');
+            console.log(`%cTOTAL | ${obj._TOTAL_.gain} | ${obj._TOTAL_.pct} %`, 'color:orange');
             // console.log(obj);
             return obj;
         } else {
@@ -69,27 +69,31 @@ class Account {
         const spend = +(prompt(`BUY | ${symbol}`, amount));
         console.log(symbol, spend);
         if (spend > 10) {
-            const payload = {
-                side: 'buy',
-                type: 'market',
-                time_in_force: symbol.indexOf('/USD') > 0 ? 'ioc' : 'day',
-                symbol: symbol,
-                notional: round2(spend).toString(),
-            };
-            const options = {
-                method: 'POST',
-                headers: this._get_headers(),
-                body: JSON.stringify(payload),
-            };
-            let url = `${CONFIG.ACCOUNT_URL}/v2/orders`;
-            fetch(url, options)
-                .then(res => res.json())
-                .then(res => { console.log('BUY', symbol, res); })
-                .catch((err) => { console.error('error in buy()', err) });
+            this._buy(spend, symbol);
         } else {
             console.log('cancelled');
         }
     };
+    //* BUY - NO PROMPT */
+    _buy(spend, symbol) {
+        const payload = {
+            side: 'buy',
+            type: 'market',
+            time_in_force: symbol.indexOf('/USD') > 0 ? 'ioc' : 'day',
+            symbol: symbol,
+            notional: round2(spend).toString(),
+        };
+        const options = {
+            method: 'POST',
+            headers: this._get_headers(),
+            body: JSON.stringify(payload),
+        };
+        let url = `${CONFIG.ACCOUNT_URL}/v2/orders`;
+        fetch(url, options)
+            .then(res => res.json())
+            .then(res => { console.log('BUY', symbol, res); })
+            .catch((err) => { console.error('error in buy()', err) });
+    }
     /**
      * CONFIRM PROMPT b/f SELL
      * @param {*} symbol 
@@ -98,7 +102,14 @@ class Account {
         symbol = symbol.replace('-', '/');
         if (confirm(`SELL SHARES | ${symbol}`)) {
             console.log('confirmed');
-            const options = {
+            this._sell(symbol);            
+        } else {
+            console.log('cancelled');
+        }
+    };
+    //* SELL - NO PROMPT */
+    _sell(symbol) {
+        const options = {
                 method: 'DELETE',
                 headers: this._get_headers(),
             };
@@ -107,10 +118,7 @@ class Account {
                 .then(res => res.json())
                 .then(res => { console.log('SELL', symbol, res); })
                 .catch(err => console.error('error in sell()', err));
-        } else {
-            console.log('cancelled');
-        }
-    };
+    }
     // _sell(symbol = CONFIG.SYMBOL) {
     //     const options = {
     //         method: 'DELETE',

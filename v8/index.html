@@ -172,6 +172,17 @@
 
                         <!--@ OPTIONS -->
                         <div class="w3-col s12 w3-padding">
+                            <span class="w3-text-grey">Data Source</span>
+                            <div class="w3-right w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="datasource" value="m3">
+                                <label>M3</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="datasource" value="alpaca">
+                                <label>ALPACA</label>
+                                <!-- <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="0.25%">
+                                <label>0.25 %</label> -->
+                            </div>
+                        </div>
+                        <div class="w3-col s12 w3-padding">
                             <span class="w3-text-grey">Extend Chart Window</span>
                             <div class="w3-right w3-large">
                                 <input class="w3-radio w3-margin-left" type="radio" name="chart-type" value="minute">
@@ -630,8 +641,8 @@
                                 <span id="chart-card-banner-${i}" class="w3-border-top w3-col s12 w3-center">
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                                     <span id="chart-card-symbol-${i}" class="w3-wide">${s}${IS_SMALL ? '' : ` | ${HELPERS.get_description(s)}`}</span><!--<span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>-->
-                                    <!-- <i id="" class="fa fa-credit-card w3-left w3-text-grey pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 1000},'${s}')" style="padding-top:3px;"></i> -->
-                                    <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${7.5 * 1000},'${s}')" style="padding-top:3px;"></i>
+                                    <i id="" class="fa fa-credit-card w3-left w3-text-grey pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 100},'${s}')" style="padding-top:3px;"></i>
+                                    <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10 * 1000},'${s}')" style="padding-top:3px;"></i>
                                 </span>
                                 <span id="symbol-picker" class="w3-hide w3-col s12 w3-xlarge">
                                     <div class="w3-col s12 w3-padding _w3-margin-left w3-margin-bottom">
@@ -658,8 +669,8 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="${i % 2 !== 0 ? '_w3-hide' : ''} w3-col s12 m5 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-col s12 m7 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${i % 2 !== 0 ? '_w3-hide' : ''} w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-col s12 m8 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
@@ -946,7 +957,7 @@
                 const hmm = HELPERS.getHMM(new Date());
                 const second = dt.getSeconds();
 
-                if (now || [0, 3, 10, 20, 30, 40, 50].indexOf(second) >= 0) {
+                if (now || [3, 10, 20, 30, 40, 50].indexOf(second) >= 0) {
 
                     //* TABLE */
                     const seed = 35 * 1000; //** TODO: get from account activity **/
@@ -1014,6 +1025,12 @@
                         SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
                         // SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
                         // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
+
+                        if (hmm >= 930 && hmm <= 1600) {
+                            FETCH_DATA.get_data('^IXIC', '1D', 10).then((ixic) => {
+                                console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
+                            })
+                        }
                     }
 
 
