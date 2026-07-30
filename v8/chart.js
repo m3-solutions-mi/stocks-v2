@@ -726,6 +726,7 @@ class Chart {
 
             //#region MINUTES CHART
             const buy_sell = series[0].data[series[0].data.length - 1].y;
+            document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor = buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
 
             // '#216d24', '#991010', '#4CAF50'
             // '#216d2485'

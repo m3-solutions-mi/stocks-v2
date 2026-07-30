@@ -607,7 +607,6 @@
                             <b><div id="mobile-card-gain" class="w3-xxxlarge w3-wide">-</div></b>
                             <div id="mobile-card-pct" class="w3-wide w3-hide-small">-</div>
                         </span>
-                        <span id="mobile-card-treemap" class="w3-hide w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:170px;"></span>
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="w3-border-bottom">POSITIONS</div>
                             <b><div id="mobile-card-position" class="w3-xxxlarge w3-wide">-</div></b>
@@ -618,6 +617,8 @@
                             <b><div id="mobile-card-change" class="w3-xxxlarge w3-wide">-</div></b>
                             <div id="mobile-card-change-pct" class="w3-wide w3-hide-small">-</div>
                         </span>
+                        <span id="mobile-card-treemap" class="w3-hide w3-center w3-border w3-col s12 m12 w3-padding" style="min-height:75px;"></span>
+                        <span id="mobile-card-symbols-delta" class="w3-center w3-border w3-col s12 m12 w3-padding" style="min-height:100px;display:flex;flex-wrap: wrap;flex-direction: row;    justify-content: center;"></span>
                         <span>
                             <table id="mobile-card-table-rows">
                             </table>
@@ -676,6 +677,12 @@
                     });
 
                 document.getElementById('output-charts').innerHTML = html_table + html;
+
+                html = '';
+                CONFIG.HA_SYMBOLS.forEach((s, i)=>{
+                    html += `<span id="symbol-card-last-ha-${i}" class="w3-large w3-text-white" style="border:1px solid;width:78px;padding-top:25px;"><b>${s}</b></span>`;
+                });
+                document.getElementById('mobile-card-symbols-delta').innerHTML = html;
             }
         }
     </script>
