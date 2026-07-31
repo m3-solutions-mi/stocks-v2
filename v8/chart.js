@@ -750,10 +750,11 @@ class Chart {
 
             // let add = 1000 * 0.001 / (timeframe === 'day' ? 1 : 0.5);
             // 0.00001 : 0.0001
-            const offset = symbol === 'QQQ' ? 75 : (symbol.indexOf('-USD') > 0 ? 100 : 500);
-            series[1].data = data_m.map((v, i) => { return { x: v.e, y: series[0].data[0].y + offset } });
+            const base = series[0].data[0].y;
+            const offset = symbol === 'QQQ' ? 75 : (symbol.indexOf('-USD') > 0 ? 100 : 400);
+            series[1].data = data_m.map((v, i) => { return { x: v.e, y: base + offset } });
             extend_series(series[1]);
-            series[2].data = data_m.map((v, i) => { return { x: v.e, y: series[0].data[0].y - offset } });
+            series[2].data = data_m.map((v, i) => { return { x: v.e, y: base - offset } });
             extend_series(series[2]);
 
             // let add = seed * (symbol.indexOf('-USD') > 0 || 'QQQ,^IXIC,^NDX,ETH-USD,^VIX'.split(',').indexOf(symbol) >= 0 ? 2 / seed : 5 / seed);
@@ -796,13 +797,29 @@ class Chart {
             HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
             HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
 
+            const account_detail = SHARED.ACCOUNT_DETAIL;
+            const account_history_5d = SHARED.ACCOUNT_HISTORY;
+            const account_positions = SHARED.POSITIONS;
+
+            const position = account_positions.find((v) => v.symbol === symbol.replace('-', ''));
+            if (position) {
+                document.getElementById(`chart-card-symbol-${index}`).style.color = position.unrealized_pl > 0 ? 'green' : 'red';
+                document.getElementById(`chart-card-symbol-${index}`).style.fontWeight = 'bold';
+
+                // HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
+                // HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
+                // HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
+            } else {
+                document.getElementById(`chart-card-symbol-${index}`).style.color = 'grey';
+                document.getElementById(`chart-card-symbol-${index}`).style.fontWeight = 'normal';
+            }
+
             if (summarize) {
-
-                const account_detail = await ACCOUNT.detail();
-                const account_history_5d = await ACCOUNT.history('5D', '1D');
-                const account_positions = await ACCOUNT.positions();
-
                 //#region summary cards
+                // const account_detail = await ACCOUNT.detail();
+                // const account_history_5d = await ACCOUNT.history('5D', '1D');
+                // const account_positions = await ACCOUNT.positions();
+
                 const position_current_value = +(document.getElementById('mobile-card-position').innerText);
                 const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
                 const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
@@ -822,19 +839,6 @@ class Chart {
                 // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
                 //#endregion
 
-                const position = account_positions.find((v) => v.symbol === symbol.replace('-', ''));
-                if (position) {
-                    document.getElementById(`chart-card-symbol-${index}`).style.color = position.unrealized_pl > 0 ? 'green' : 'red';
-                    document.getElementById(`chart-card-symbol-${index}`).style.fontWeight = 'bold';
-
-                    // HELPERS.update_elem_text_colored(`chart-card-gain-${index}`, round2(position.unrealized_pl), '$', '');
-                    // HELPERS.update_elem_text_colored(`chart-card-pct-${index}`, round1(position.unrealized_plpc * 100), '', '%');
-                    // HELPERS.update_elem_text_colored(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');
-                } else {
-                    document.getElementById(`chart-card-symbol-${index}`).style.color = 'grey';
-                    document.getElementById(`chart-card-symbol-${index}`).style.fontWeight = 'normal';
-
-                }
                 // HELPERS.update_elem_text(`chart-card-gain-${index}`, round2(_last - _first), '$', '');
                 // HELPERS.update_elem_text(`chart-card-pct-${index}`, round1(_last / seed * 100), '', '%');
                 // HELPERS.update_elem_text(`chart-card-chg-${index}`, round2(_last - _last_minus_1), '', '');

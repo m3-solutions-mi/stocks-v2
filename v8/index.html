@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <link id="favicon" rel="icon" href="./favicon.ico" type="image/png" sizes="16x16">
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
     <meta http-equiv="Cache-Control" content="no-cache">
     <!-- <link rel="manifest" href="manifest.json"> -->
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
@@ -44,7 +44,7 @@
     <script src="./gemini.js"></script>
 
     <!--@ PAGE CONTENT -->
-    <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:1280px;"> <!-- 1450 -->
+    <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:1380px;"> <!-- 1450 -->
 
         <div class="w3-row-padding w3-white">
             <span class="">
@@ -594,7 +594,8 @@
             load_chart_cards() {
                 let html = '';
                 let html_table = `
-                    <span class="w3-col s12 w3-xlarge w3-margin-bottom">
+                    <span class="w3-col s12 w3-xlarge w3-center w3-margin-bottom" style="_max-width:1280px;">
+                        <!--<span class="w3-hide w3-center w3-border-bottom w3-col s12 _w3-padding" style="_min-height:100px;"></span>-->
                         <span class="w3-hide w3-center w3-border-bottom w3-col s12 _w3-padding" style="_min-height:100px;">
                             <b>
                                 <span id="mobile-card-gain-s" class="w3-xlarge w3-wide"></span>
@@ -643,6 +644,7 @@
                                     <i id="" class="fa fa-credit-card w3-right w3-text-red pointer" onclick="ACCOUNT.sell('${s}')" style="padding-top:3px;"></i>
                                     <span id="chart-card-symbol-${i}" class="w3-wide">${s}${IS_SMALL ? '' : ` | ${HELPERS.get_description(s)}`}</span><!--<span class="pointer" onclick="document.getElementById('symbol-picker').classList.toggle('w3-hide')"> ▼</span>-->
                                     <i id="" class="fa fa-credit-card w3-left w3-text-grey pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 100},'${s}')" style="padding-top:3px;"></i>
+                                    <i id="" class="fa fa-credit-card w3-left w3-text-teal pointer w3-margin-right" onclick="ACCOUNT.buy(${1 * 1000},'${s}')" style="padding-top:3px;"></i>
                                     <i id="" class="fa fa-credit-card w3-left w3-text-green pointer" onclick="ACCOUNT.buy(${10 * 1000},'${s}')" style="padding-top:3px;"></i>
                                 </span>
                                 <span id="symbol-picker" class="w3-hide w3-col s12 w3-xlarge">
@@ -670,8 +672,8 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="${i % 2 !== 0 ? '_w3-hide' : ''} w3-col s12 m4 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-col s12 m8 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${i % 2 !== 0 ? '_w3-hide' : ''} w3-col s12 m5 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-col s12 m7 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
@@ -679,8 +681,8 @@
                 document.getElementById('output-charts').innerHTML = html_table + html;
 
                 html = '';
-                CONFIG.HA_SYMBOLS.forEach((s, i)=>{
-                    html += `<span id="symbol-card-last-ha-${i}" class="w3-large w3-text-white" style="border:1px solid;width:78px;padding-top:25px;"><b>${s.replace('-USD','')}</b></span>`;
+                CONFIG.HA_SYMBOLS.forEach((s, i) => {
+                    html += `<span id="symbol-card-last-ha-${i}" class="w3-large w3-text-white" style="border:1px solid;width:78px;padding-top:25px;"><b>${s.replace('-USD', '')}</b></span>`;
                 });
                 document.getElementById('mobile-card-symbols-delta').innerHTML = html;
             }
@@ -1022,7 +1024,7 @@
                     const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
                     SHARED.POSITIONS = await ACCOUNT.positions();
                     SHARED.ACCOUNT_HISTORY = await ACCOUNT.history('14D', '1D');
-                    // const account_detail = await ACCOUNT.detail();
+                    SHARED.ACCOUNT_DETAIL = await ACCOUNT.detail();
 
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
@@ -1030,7 +1032,7 @@
                     if (now || second === 3 || second === 20 || second === 40) {
                         // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
                         SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
-                        // SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
+                        SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
                         // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
 
                         if (hmm >= 930 && hmm <= 1600) {
@@ -1038,6 +1040,9 @@
                                 console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
                             })
                         }
+                        FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
+                            console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
+                        })
                     }
 
 
@@ -1045,7 +1050,7 @@
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
                             if (SHARED.DATA_5M[s] /*&& SHARED.DATA_1M[s]*/) {
-                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_5M[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
+                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
                             } else {
                                 console.log(`%c${s} | NOT UPDATED`, 'color:orange')
                             }

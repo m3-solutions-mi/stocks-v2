@@ -33,12 +33,12 @@ class Account {
                     //* SELL */
                     if (hmm >= 930 && hmm <= 1559) {
                         console.log(`%c   S E L L  |  ${v.symbol}   `, 'background-color:red;color:white;');
-                        this._sell(v.symbol);
+                        // this._sell(v.symbol);
                     }
                 }
                 if (total <= -100) {
                     console.log(`%c   S E L L - TOTAL LOSS EXCEEDEED   `, 'background-color:red;color:white;');
-                    this.liquidate();
+                    // this.liquidate();
                 }
                 if (hmm >= 1559) {
                     // console.log(`%c   S E L L - EOD  |  ${v.symbol}   `, 'background-color:red;color:white;');
