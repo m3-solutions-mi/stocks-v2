@@ -38,11 +38,13 @@ class Account {
                 }
                 if (total <= -500) {
                     console.log(`%c   S E L L - TOTAL LOSS EXCEEDEED   `, 'background-color:red;color:white;');
-                    this.liquidate();
+                    //* LIQUIDATE */
+                    // this.liquidate();
                 }
                 if (hmm >= 1559) {
                     // console.log(`%c   S E L L - EOD  |  ${v.symbol}   `, 'background-color:red;color:white;');
-                    // this._sell(v.symbol);
+                    //* SELL */
+                    // this.liquidate();
                 }
             });
             // console.table(account_positions.map((v)=>{return{s: v.symbol, g: round2(v.unrealized_pl), p: round3(v.unrealized_plpc * 100)}}))
