@@ -647,20 +647,20 @@ class Chart {
             //#region FILTER DATA */
             bollinger_data = bollinger_data
                 .filter((v) => v.x >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
             delta_data = delta_data
                 .filter((v) => v.x >= s)
                 // .filter((v) => v.e <= e)
                 .map((v) => { return { x: v.x, y: round2(v.y) } });
             ohlc_data = ohlc_data
                 .filter((v) => v.e >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
             data = data
                 .filter((v) => v.e >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
             data_m = data_m
                 .filter((v) => v.e >= s)
-                // .filter((v) => v.e <= e);
+            // .filter((v) => v.e <= e);
             //#endregion
 
             //#region NORMALIZE DATA AFTER FILTER
@@ -788,8 +788,9 @@ class Chart {
             //#endregion
 
             //#region MINUTES CHART
-            const buy_sell = series[0].data[series[0].data.length - 1].y;
-            document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor = buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
+            let buy_sell = 0;
+            // const buy_sell = series[0].data[series[0].data.length - 1].y;
+            // document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor = buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
 
             // '#216d24', '#991010', '#4CAF50'
             // '#216d2485'
@@ -957,6 +958,10 @@ class Chart {
             this.options_candlestick.series = series;
             this._render_m2(this.options_candlestick);
             //#endregion
+
+            buy_sell = series[0].data[series[0].data.length - 2].y;
+            document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor = buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
+
 
             //#region SUMMARIES
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options_candlestick.series[1].data.slice(0, -1);
