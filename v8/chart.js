@@ -888,6 +888,7 @@ class Chart {
             //#region BOLLINGER DELTA
             series = [];
             series.push({ name: 'Bollinger Delta', type: 'bar', data: [] });
+            // series.push({ name: 'Gain', type: 'area', color: '#594caf55', data: [] });
             series.push({ name: 'Gain', type: 'area', color: '#0155022b', data: [] });
 
             //* DATA */
@@ -948,6 +949,10 @@ class Chart {
                 },
             ];
 
+            buy_sell = series[0].data[series[0].data.length - 2].y;
+            document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor =  buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
+            // series[1].color = buy_sell >= 0 ? '#4CAF50' : '#8217175b';
+
             //* FINISH UP */
             // this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 1.5 : 2), 2];
             this.options_candlestick.stroke.width = IS_SMALL ? [1, 2] : IS_MEDIUM ? [2.5, 2] : [4, 2];
@@ -959,8 +964,6 @@ class Chart {
             this._render_m2(this.options_candlestick);
             //#endregion
 
-            buy_sell = series[0].data[series[0].data.length - 2].y;
-            document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor = buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
 
 
             //#region SUMMARIES
