@@ -672,8 +672,9 @@
                                 </span>
                             </div>
                             <div class="w3-col s12 m12">
-                                <div id="chart-ha-${i}-1" class="${i % 2 !== 0 ? '_w3-hide' : ''} w3-col s12 m5 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
-                                <div id="chart-ha-${i}-2" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-col s12 m7 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-1" class="${i % 2 !== 0 ? '_w3-hide' : ''} w3-hide w3-col s12 m12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-3" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-col s12 m12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
+                                <div id="chart-ha-${i}-2" class="${i % 2 === 0 ? '_w3-hide' : ''} w3-hide w3-col s12 m12 w3-border-top w3-margin-bottom w3-padding" style="height:100px;"></div>
                             </div>
                         </span>`;
                     });
@@ -838,7 +839,57 @@
 
                 return Array.from(aggregated.values());
             }
-
+            clean_data(data) {
+                data = data.map((v) => {
+                    return {
+                        o: round2(v.o),
+                        h: round2(v.h),
+                        l: round2(v.l),
+                        c: round2(v.c),
+                        t: v.t,
+                    }
+                })
+                return data
+            }
+            extend_data(data) {
+                data.forEach((v) => {
+                    v.ymd = HELPERS.getYMD(new Date(v.t));
+                    v.hmm = HELPERS.getHMM(new Date(v.t));
+                    v.tl = new Date(v.t).toLocaleString();
+                    v.e = new Date(v.t).getTime();
+                })
+                return data;
+            }
+            normalize_data(data, seed = 10 * 1000) {
+                const shares = seed / data[0].o;
+                data.forEach((v) => {
+                    v.o = round2(v.o * shares);
+                    v.h = round2(v.h * shares);
+                    v.l = round2(v.l * shares);
+                    v.c = round2(v.c * shares);
+                });
+                return data;
+            }
+            add_side_to_data(data) {
+                data.forEach((v, i) => {
+                    let buy_sell = '-';
+                    const last = i > 0 ? data[i - 1].d : 0;
+                    const s = 935;
+                    const e = 1559;
+                    if (v.d > 0 && last < 0) {
+                        if (v.hmm > s && v.hmm < e) {
+                            buy_sell = 'BUY';
+                        }
+                    }
+                    else if (v.d < 0 && last > 0) {
+                        if (v.hmm > s && v.hmm < e) {
+                            buy_sell = 'SELL';
+                        }
+                    }
+                    v.side = buy_sell;
+                });
+                return data;
+            }
         };
     </script>
 
@@ -949,6 +1000,49 @@
                     resolve(resp.bars[name]);
                 });
             };
+
+            //* GET DATA */
+            async get_data_5min_day(name = CONFIG.SYMBOL, s = '2026-07-31') {
+                return new Promise(async (resolve, reject) => {
+                    const dow = new Date().getDay();
+                    const hmm = HELPERS.getHMM(new Date);
+                    // const start_at = new Date(Date.now() - ((dow === 0 ? 2.5 : (dow === 6 ? 0.75 : 3)) * 24 * 60 * 60 * 1000)).toISOString();
+                    // const start_at = new Date(Date.now() - ((hmm > 1200 ? 1.25 : 0.5) * 24 * 60 * 60 * 1000)).toISOString();
+                    // const start_at = new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString();
+                    // const start_at = name.indexOf('-USD') < 0
+                    //     ? new Date(Date.now() - (CONFIG.COMPARISON_NUM_DAYS() * 24 * 60 * 60 * 1000)).toISOString()
+                    //     : new Date(Date.now() - (12 * 60 * 60 * 1000)).toISOString();
+                    // const start_at = new Date(Date.now() - (1 * 24 * 60 * 60 * 1000)).toISOString();
+                    const start_at = new Date(s + 'T09:30:00').toISOString();
+                    const end_at = new Date(s + 'T16:00:00').toISOString();
+                    // const end_at = (new Date(new Date(start_at).getTime() + ( 12 * 60 * 60 * 1000))).toISOString();
+
+                    let resp = null;
+                    const use_m3 = true; //hmm <= 930 || hmm >= 1600;
+                    if (use_m3) {
+                        /* M3 */
+                        const url = `${CONFIG.API_URL}/${name}/5Min/${start_at}/${end_at}`;
+                        resp = await fetch(url, {
+                            method: 'GET',
+                        }).then((resp) => resp.json());
+                    } else {
+                        /* ALPACA */
+                        const url = `https://data.alpaca.markets/v2/stocks/bars?symbols=${name}&timeframe=5Min&start=${start_at}&end=${end_at}&feed=iex&limit=5000&sort=asc`;
+                        resp = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                accept: 'application/json',
+                                'APCA-API-KEY-ID': CONFIG.API_KEY,
+                                'APCA-API-SECRET-KEY': CONFIG.API_SECRET
+                            }
+                        }).then((resp) => resp.json());
+                    }
+                    // resp.bars[name].forEach((v) => {
+                    //     v.e = new Date(v.t).getTime();
+                    // })
+                    resolve(resp.bars[name]);
+                });
+            };
         }
     </script>
 
@@ -1050,7 +1144,7 @@
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
                         if (CONFIG.TIMEFRAME === 'minute') {
                             if (SHARED.DATA_5M[s] /*&& SHARED.DATA_1M[s]*/) {
-                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_1M[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
+                                eval(`CHARTS.CHART_V6_${i}`).update_2(s, CONFIG.TIMEFRAME, SHARED.DATA_5M[s], SHARED.DATA_5M[s], i, IS_LARGE ? 200 : (IS_MEDIUM ? 175 : 250), timeframe, i === 0);
                             } else {
                                 console.log(`%c${s} | NOT UPDATED`, 'color:orange')
                             }
@@ -1079,7 +1173,7 @@
         const FETCH_DATA = new FetchData();
         const CHARTS = {};
         CONFIG.HA_SYMBOLS.forEach((v, i) => {
-            CHARTS[`CHART_V6_${i}`] = new Chart(`chart-ha-${i}-1`, `chart-ha-${i}-2`, `mobile-card-treemap`);
+            CHARTS[`CHART_V6_${i}`] = new Chart(`chart-ha-${i}-1`, `chart-ha-${i}-2`, `chart-ha-${i}-3`, `mobile-card-treemap`);
             // CHARTS[`CHART_TABLE_${i}`] = new Chart(`chart-table-${i}`, `chart-table-${i}-2`, `mobile-card-treemap`);
         })
         const ACCOUNT = new Account();

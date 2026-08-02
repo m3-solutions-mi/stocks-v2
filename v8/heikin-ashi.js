@@ -69,6 +69,10 @@ function calculateHeikinAshi(data) {
         const haLow = Math.min(current.h, haOpen, haClose);
 
         haData.push({
+            t: current.t,
+            tl: current.tl,
+            hmm: current.hmm,
+            ymd: current.ymd,
             o: haOpen,
             h: haHigh,
             l: haLow,
@@ -84,12 +88,16 @@ function calculateHeikinAshi(data) {
 
     return haData.map((v) => {
         return {
+            hmm: v.hmm,
+            ymd: v.ymd,
+            d: round2(v.c - v.o),
             o: round2(v.o),
             h: round2(v.h),
             l: round2(v.l),
             c: round2(v.c),
-            d: round2(v.c - v.o),
-            e: v.e
+            e: v.e,
+            t: v.t,
+            tl: v.tl,
         }
     });
 }

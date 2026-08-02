@@ -2,20 +2,6 @@ class Algorithms {
 
     constructor() { }
 
-    async buy_sell_bars(symbol, bars) {
-        // console.chart(bars.map((v) => v.y));
-        const hmm = HELPERS.getHMM(new Date);
-        const second = new Date().getSeconds();
-
-        if (hmm % 1 === 0 && second < 10) {
-            const last = bars[bars.length - 1].y;
-            if (last >= 0) {
-                console.log(`%c B U Y   |  ${symbol}  |  ${last}  `, 'background-color:lime;color:black;')
-            } else {
-                console.log(`%c S E L L |  ${symbol}  |  ${last}  `, 'background-color:red;color:black;')
-            }
-        }
-    }
 
     // iterate_days(callback, start = new Date('2026-07-01').getTime(), end = Date.now()) {
     async iterate_days(callback, num_days = 7) {
@@ -31,6 +17,141 @@ class Algorithms {
         }
         callback(null);
         // });
+    }
+
+    async test_auto(symbols_list = 'SOXL', date = '2027-08-03', detail = false) {
+        console.log('%c------------------------------------------------------------', 'color:yellow;');
+
+        let g = 0;
+
+        // const symbols = 'MU,SNDK,NBIS,WDC,DRAM,SOXL'.split(',');
+        const symbols = symbols_list.split(',');
+
+        const days = [];
+        let e = new Date(date).getTime();
+        // days.push(date);
+        while (e <= Date.now()) {
+            const d = new Date(e);
+            const dow = d.getDay();
+            // if (dow !== 0 && dow !== 6) {
+                days.push(HELPERS.getYMD(d));
+            // }
+            e += (24 * 60 * 60 * 1000);
+        }
+        console.log(days);
+        const day_gains = [];
+        for await (const d of days) {
+            console.log(d);
+            await HELPERS.sleep(500);
+            let g_day = 0;
+            for await (const s of symbols) {
+                let data = await FETCH_DATA.get_data_5min_day(s, d);
+                if (data && data.length > 0) {
+                    data = HELPERS.clean_data(data);
+                    data = HELPERS.extend_data(data);
+                    data = HELPERS.normalize_data(data, 10*1000);
+
+                    // const seed = 10 * 1000;
+                    // const shares = seed / data[0].o;
+                    // data = data.map((v, i) => {
+                    //     return {
+                    //         // ymd: v.
+                    //         hmm: HELPERS.getHMM(new Date(v.t)),
+                    //         o: round2(v.o * shares),
+                    //         h: round2(v.h * shares),
+                    //         l: round2(v.l * shares),
+                    //         c: round2(v.c * shares),
+                    //         d: round2((v.c - v.o) * shares),
+                    //         ymd: HELPERS.getYMD(new Date(v.t)),
+                    //         e: new Date(v.t).getTime(),
+                    //         t: v.t,
+                    //         tl: new Date(v.t).toLocaleString(),
+                    //     };
+                    // });
+                    // data.forEach((v)=> {
+                    //     v.ymd = HELPERS.getYMD(new Date(v.t));
+                    //     v.hmm = HELPERS.getHMM(new Date(v.t));
+                    // })
+
+                    let ha_data = calculateHeikinAshi(data);
+                    // let ha_data = calculateHeikinAshiClose(data);
+                    ha_data = HELPERS.add_side_to_data(ha_data);
+
+                    data = data
+                        // .filter((v) => v.ymd === data[data.length - 1].ymd)
+                        .filter((v) => v.ymd === data[0].ymd)
+                        .filter((v) => v.hmm >= 930 && v.hmm <= 1600)
+                        ;
+                    if (detail) {
+                        console.log(data);
+                    }
+                    ha_data = ha_data
+                        // .filter((v) => v.ymd === ha_data[ha_data.length - 1].ymd)
+                        .filter((v) => v.ymd === ha_data[0].ymd)
+                        .filter((v) => v.hmm >= 930 && v.hmm <= 1600)
+                        ;
+                    if (detail) {
+                        console.log(ha_data);
+                    }
+
+                    ha_data.forEach((v, i) => {
+                        v.RC = data[i].c;
+                    })
+                    const filtered = ha_data.filter((v) => v.side !== '-');
+                    filtered.forEach((v, i) => {
+                        if (i > 0) {
+                            const diff = v.RC - filtered[i - 1].RC;
+                            const max_loss = -50
+                            if (v.side === 'SELL') {
+                                v.G = diff <= max_loss ? max_loss : diff;
+                            } else {
+                                v.G = 0;
+                            }
+                        } else {
+                            v.G = 0;
+                        }
+                        v.prev = i > 0 ? filtered[i-1].hmm : v.hmm;
+                    })
+                    if (detail) {
+                        console.log(filtered);
+                    }
+
+                    const analysis = filtered.filter((v,i) => v.G !== 0).map((v) => {
+                        return { 
+                            s,
+                            YMD: v.ymd,
+                            HMM_S: v.prev,
+                            HMM: v.hmm,
+                            G: round2(v.G),
+                        }
+                    });
+                    const gain = round2(HELPERS.reduce_safe(analysis.map((v) => v.G)));
+                    console.log(s, gain, analysis);
+                    g += gain;
+                    g_day += gain
+                }
+            }
+            day_gains.push({date: d, gain: round2(g_day)});
+            console.log(`%cDAY GAIN | ${d} | ${round2(g_day).toLocaleString()} `, 'color:aqua;');
+        };
+
+        console.table(day_gains);
+        console.log(`%cTOTAL GAIN | ${date} | ${round2(g).toLocaleString()} `, 'color:deeppink;');
+
+    }
+    async buy_sell_bars(symbol, bars) {
+        // console.chart(bars.map((v) => v.y));
+        const hmm = HELPERS.getHMM(new Date);
+        const second = new Date().getSeconds();
+
+        if (hmm % 1 === 0 && second < 10) {
+            const last = bars[bars.length - 1].y;
+            if (last >= 0) {
+                console.log(`% c B U Y | ${symbol}  | ${last} `, 'background-color:lime;color:black;')
+            } else {
+                console.log(`% c S E L L | ${symbol}  | ${last} `, 'background-color:red;color:black;')
+            }
+        }
     }
     async test(n = 7) {
         console.log('%c------------------------------------------------------------', 'color:yellow;');
@@ -69,7 +190,7 @@ class Algorithms {
             console.log(s, data, t);
             g += t < -250 ? -250 : t;
         }
-        console.log(`%cTOTAL GAIN | ${n}d | ${round2(g).toLocaleString()}`, 'color:yellow;');
+        console.log(`% cTOTAL GAIN | ${n} d | ${round2(g).toLocaleString()} `, 'color:yellow;');
         // }
     }
     async test_timeframe(n = 7) {
@@ -98,7 +219,7 @@ class Algorithms {
             console.log(s, data, delta);
             g += delta;
         }
-        console.log(`%cTOTAL GAIN | ${n}d | ${round2(g).toLocaleString()}`, 'color:yellow;');
+        console.log(`% cTOTAL GAIN | ${n} d | ${round2(g).toLocaleString()} `, 'color:yellow;');
         // }
     }
     async test_2(n = 7, symbol_list = 'DRAM,MU,NVDA,SOXX,SNDK,UMC,STX,WDC') {
@@ -146,11 +267,11 @@ class Algorithms {
                                 });
                             }
                         }
-                        console.log(`MARKET OPEN | %c${ymd} | %c${round2(t_d)} | ${round1(t_d / buy_power * 100)}%`, 'color:cyan;', 'color:yellow;');
+                        console.log(`MARKET OPEN | % c${ymd} | % c${round2(t_d)} | ${round1(t_d / buy_power * 100)}% `, 'color:cyan;', 'color:yellow;');
                     }
                     resolve();
                 } else {
-                    console.log(`%cTOTAL GAIN | ${n}d | ${round2(g).toLocaleString()}`, 'color:yellow;');
+                    console.log(`% cTOTAL GAIN | ${n} d | ${round2(g).toLocaleString()} `, 'color:yellow;');
                 }
             });
         }, n);
