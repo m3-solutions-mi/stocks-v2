@@ -888,8 +888,8 @@ class Chart {
             //#region BOLLINGER DELTA
             series = [];
             series.push({ name: 'Bollinger Delta', type: 'bar', data: [] });
-            // series.push({ name: 'Gain', type: 'area', color: '#594caf55', data: [] });
             series.push({ name: 'Gain', type: 'area', color: '#0155022b', data: [] });
+            // series.push({ name: 'Gain', type: 'area', color: '#594caf55', data: [] });
 
             //* DATA */
             // const delta = this.options.series[0].data.map((v, i) => { 
