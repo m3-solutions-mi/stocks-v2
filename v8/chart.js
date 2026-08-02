@@ -500,8 +500,9 @@ class Chart {
                         });
                         obj.push(this.add_annotation_x(new Date(date).setHours(4, 0), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(9, 30), null, colors.deeppink));
-                        obj.push(this.add_annotation_x(new Date(date).setHours(10, 30), null, colors.teal));
-                        obj.push(this.add_annotation_x(new Date(date).setHours(12, 0), null, colors.teal));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(10, 0), null, colors.teal));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(11, 30), null, colors.teal));
+                        obj.push(this.add_annotation_x(new Date(date).setHours(13, 30), null, colors.teal));
                         obj.push(this.add_annotation_x(new Date(date).setHours(16, 0), null, colors.deeppink));
                         obj.push(this.add_annotation_x(new Date(date).setHours(20, 0), null, colors.teal));
                     });
@@ -596,6 +597,8 @@ class Chart {
             // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
             // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
             // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
+
+            // s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
             if (symbol.indexOf('-USD') > 0) {
                 s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
                 // s = new Date(current_day).setHours(0, 0);
@@ -614,9 +617,11 @@ class Chart {
                     // if (hmm >= 1430) { s = new Date(current_day).setHours(12, 0); }
 
                     // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
+
+                    e = new Date(current_day).setHours(16, 30);
                 } else {
                     s = new Date(current_day).setHours(9, 0);
-                    // e = new Date(current_day).setHours(17, 0);
+                    e = new Date(current_day).setHours(20, 0);
                 }
             }
 
@@ -642,20 +647,25 @@ class Chart {
             //#region FILTER DATA */
             bollinger_data = bollinger_data
                 .filter((v) => v.x >= s)
-            // .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
             delta_data = delta_data
                 .filter((v) => v.x >= s)
-                // .filter((v) => v.e <= e);
-                .map((v) => { return { x: v.x, y: round2(v.y) } })
+                // .filter((v) => v.e <= e)
+                .map((v) => { return { x: v.x, y: round2(v.y) } });
             ohlc_data = ohlc_data
                 .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
             data = data
                 .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
             data_m = data_m
                 .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+                // .filter((v) => v.e <= e);
+            //#endregion
+
+            //#region NORMALIZE DATA AFTER FILTER
+            // data = HELPERS.normalize_data(data);
+            // data_m = HELPERS.normalize_data(data_m);
             //#endregion
 
 
@@ -949,7 +959,7 @@ class Chart {
             //#endregion
 
             //#region SUMMARIES
-            const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options_candlestick.series[1].data.slice(0,-1);
+            const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options_candlestick.series[1].data.slice(0, -1);
             const _last = chart_card_series[chart_card_series.length - 1].y - seed;
             const _last_minus_1 = chart_card_series[chart_card_series.length - 2].y - seed;
             const _max = Math.max(...(chart_card_series.slice(0, -1).map((v) => v.y - seed)));
