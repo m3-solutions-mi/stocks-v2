@@ -18,7 +18,97 @@ class Algorithms {
         callback(null);
         // });
     }
+    async test_auto_2(symbols_list = 'SOXL', date = '2027-08-03', detail = false) {
+        console.log('%c------------------------------------------------------------', 'color:yellow;');
 
+        let g = 0;
+
+        // const symbols = 'MU,SNDK,NBIS,WDC,DRAM,SOXL'.split(',');
+        const symbols = symbols_list.split(',');
+
+        const days = [];
+        let e = new Date(date).getTime();
+        // days.push(date);
+        while (e <= Date.now()) {
+            const d = new Date(e);
+            const dow = d.getDay();
+            // if (dow !== 0 && dow !== 6) {
+            days.push(HELPERS.getYMD(d));
+            // }
+            e += (24 * 60 * 60 * 1000);
+        }
+        // console.log(days);
+
+        const day_gains = [];
+        for await (const d of days) {
+            console.log(d);
+            await HELPERS.sleep(500);
+            let g_day = 0;
+            for await (const s of symbols) {
+                let data = await FETCH_DATA.get_data_5min_day(s, d);
+                if (data && data.length > 0) {
+                    data = HELPERS.clean_data(data);
+                    data = HELPERS.extend_data(data);
+                    data = HELPERS.normalize_data(data, 10 * 1000);
+
+
+                    //#region DATASETS
+                    //  applyBands(series[0].data.map((v) => { return { x: v.x, c: v.y } }), 6, 0.75)
+                    let bollinger_data = applyBands(data.map((v) => { return { x: v.e, c: v.c } }), 6, 0.75)
+                        .map((v, i) => { return { x: v.x, y: (v.bands_c.lowerBand !== 0 ? v.bands_c.lowerBand : data[i].c) } });
+                    let delta_data = data.map((v, i) => { return { x: v.e, y: v.c - bollinger_data[i].y } });
+                    let ohlc_data = calculateHeikinAshi(data/*.filter((v) => v.e >= last_eod.e)*/);
+                    //#endregion
+
+                    if (detail) {
+                        console.log(delta_data);
+                    }
+
+                    const results = [];
+                    let index_buy = null;
+                    delta_data.forEach((v, i) => {
+                        const hmm = HELPERS.getHMM(new Date(v.x));
+                        if (hmm >= 1000 && hmm < 1400) {
+                            if (v.y > 0) {
+                                if (!index_buy) {
+                                    index_buy = i;
+                                }
+                            } else {
+                                if (index_buy) {
+                                    const g = round2(data[i].c - data[index_buy].c);
+                                    results.push({
+                                        s,
+                                        hmm: HELPERS.getHMM(new Date(v.x)),
+                                        hmm_s: HELPERS.getHMM(new Date(delta_data[index_buy].x)),
+                                        g: g < -50 ? -50 : g
+                                    });
+                                    index_buy = null;
+                                }
+                            }
+                        }
+                        if (hmm >= 1559) {
+                            if (index_buy) {
+                                results.push({ s, hmm_s: delta_data[index_buy].hmm, hmm: v.hmm, g: round2(delta_data[index_buy].y - v.y) });
+                                index_buy = null;
+                            }
+                        }
+
+                    });
+
+                    const gain = round2(HELPERS.reduce_safe(results.map((v) => v.g)));
+                    console.log(s, gain, results);
+                    g += gain;
+                    g_day += gain
+                }
+            }
+            day_gains.push({ date: d, gain: round2(g_day) });
+            console.log(`%cDAY GAIN | ${d} | ${round2(g_day).toLocaleString()} `, 'color:aqua;');
+        };
+
+        console.table(day_gains);
+        console.log(`%cTOTAL GAIN | ${date} | ${round2(g).toLocaleString()} `, 'color:deeppink;');
+
+    }
     async test_auto(symbols_list = 'SOXL', date = '2027-08-03', detail = false) {
         console.log('%c------------------------------------------------------------', 'color:yellow;');
 
@@ -34,7 +124,7 @@ class Algorithms {
             const d = new Date(e);
             const dow = d.getDay();
             // if (dow !== 0 && dow !== 6) {
-                days.push(HELPERS.getYMD(d));
+            days.push(HELPERS.getYMD(d));
             // }
             e += (24 * 60 * 60 * 1000);
         }
@@ -49,7 +139,7 @@ class Algorithms {
                 if (data && data.length > 0) {
                     data = HELPERS.clean_data(data);
                     data = HELPERS.extend_data(data);
-                    data = HELPERS.normalize_data(data, 10*1000);
+                    data = HELPERS.normalize_data(data, 10 * 1000);
 
                     // const seed = 10 * 1000;
                     // const shares = seed / data[0].o;
@@ -110,14 +200,14 @@ class Algorithms {
                         } else {
                             v.G = 0;
                         }
-                        v.prev = i > 0 ? filtered[i-1].hmm : v.hmm;
+                        v.prev = i > 0 ? filtered[i - 1].hmm : v.hmm;
                     })
                     if (detail) {
                         console.log(filtered);
                     }
 
-                    const analysis = filtered.filter((v,i) => v.G !== 0).map((v) => {
-                        return { 
+                    const analysis = filtered.filter((v, i) => v.G !== 0).map((v) => {
+                        return {
                             s,
                             YMD: v.ymd,
                             HMM_S: v.prev,
@@ -131,7 +221,7 @@ class Algorithms {
                     g_day += gain
                 }
             }
-            day_gains.push({date: d, gain: round2(g_day)});
+            day_gains.push({ date: d, gain: round2(g_day) });
             console.log(`%cDAY GAIN | ${d} | ${round2(g_day).toLocaleString()} `, 'color:aqua;');
         };
 

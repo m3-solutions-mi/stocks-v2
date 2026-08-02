@@ -476,11 +476,11 @@ class Chart {
             //#region NORMALIZE DATA */
             data = HELPERS.clean_data(data);
             data = HELPERS.extend_data(data);
-            data = HELPERS.normalize_data(data);
+            // data = HELPERS.normalize_data(data);
 
             data_m = HELPERS.clean_data(data_m);
             data_m = HELPERS.extend_data(data_m);
-            data_m = HELPERS.normalize_data(data_m);
+            // data_m = HELPERS.normalize_data(data_m);
 
             // data = HELPERS.normalize_data(data);
             // data_m = HELPERS.normalize_data(data_m);
@@ -625,15 +625,6 @@ class Chart {
                 }
             }
 
-            //#region DATASETS
-            //  applyBands(series[0].data.map((v) => { return { x: v.x, c: v.y } }), 6, 0.75)
-            let bollinger_data = applyBands(data.map((v) => { return { x: v.e, c: v.c } }), 6, 0.75)
-                .map((v, i) => { return { x: v.x, y: (v.bands_c.lowerBand !== 0 ? v.bands_c.lowerBand : data[i].c) } });
-            let delta_data = data.map((v, i) => { return { x: v.e, y: v.c - bollinger_data[i].y } });
-            let ohlc_data = calculateHeikinAshi(data/*.filter((v) => v.e >= last_eod.e)*/);
-            //#endregion
-
-
             // * HEIKEN-ASHI DATA */
             // * MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
             // * Viewed data is filtered below - after this calculation! */
@@ -645,27 +636,38 @@ class Chart {
             // let ohlc_data = calculateHeikinAshiCloseMinusOpen(data/*.filter((v) => v.e >= s)*/);
 
             //#region FILTER DATA */
-            bollinger_data = bollinger_data
-                .filter((v) => v.x >= s)
-            // .filter((v) => v.e <= e);
-            delta_data = delta_data
-                .filter((v) => v.x >= s)
-                // .filter((v) => v.e <= e)
-                .map((v) => { return { x: v.x, y: round2(v.y) } });
-            ohlc_data = ohlc_data
-                .filter((v) => v.e >= s)
-            // .filter((v) => v.e <= e);
+            // bollinger_data = bollinger_data
+            //     .filter((v) => v.x >= s)
+            // // .filter((v) => v.e <= e);
+            // delta_data = delta_data
+            //     .filter((v) => v.x >= s)
+            //     // .filter((v) => v.e <= e)
+            //     .map((v) => { return { x: v.x, y: round2(v.y) } });
+            // ohlc_data = ohlc_data
+            //     .filter((v) => v.e >= s)
+            // // .filter((v) => v.e <= e);
             data = data
                 .filter((v) => v.e >= s)
+            // .map((v) => { return { e: v.e, c: round2(v.c) } });
             // .filter((v) => v.e <= e);
             data_m = data_m
                 .filter((v) => v.e >= s)
+            // .map((v) => { return { x: v.e, c: round2(v.c) } });
             // .filter((v) => v.e <= e);
             //#endregion
 
             //#region NORMALIZE DATA AFTER FILTER
-            // data = HELPERS.normalize_data(data);
-            // data_m = HELPERS.normalize_data(data_m);
+            data = HELPERS.normalize_data(data);
+            data_m = HELPERS.normalize_data(data_m);
+            //#endregion
+
+            //#region DATASETS
+            //  applyBands(series[0].data.map((v) => { return { x: v.x, c: v.y } }), 6, 0.75)
+            let bollinger_data = applyBands(data
+                .map((v) => { return { x: v.e, c: v.c } }), 6, 0.75)
+                .map((v, i) => { return { x: v.x, y: (v.bands_c.lowerBand !== 0 ? v.bands_c.lowerBand : data[i].c) } });
+            let delta_data = data.map((v, i) => { return { x: v.e, y: v.c - bollinger_data[i].y } });
+            let ohlc_data = calculateHeikinAshi(data/*.filter((v) => v.e >= last_eod.e)*/);
             //#endregion
 
 
@@ -895,7 +897,7 @@ class Chart {
             // const delta = this.options.series[0].data.map((v, i) => { 
             //     return { x: v.e, y: v.y - (this.options.series[2].data[i].y) } 
             // });
-            series[0].data = delta_data;//.map((v, i) => { return { x: v.e, y: round2(v.y) } });
+            series[0].data = delta_data.map((v, i) => { return { x: v.x, y: round2(v.y) } });
             extend_series(series[0]);
 
             // cumulative = 0;
@@ -905,7 +907,7 @@ class Chart {
             // });
             // extend_series(series[1]);
 
-            series[1].data = data.map((v, i) => { return { x: v.e, y: round2((v.c) - seed) } });
+            series[1].data = data.map((v, i) => { return { x: v.e, y: round2(v.c - seed) } });
             extend_series(series[1]);
 
             // // if (show_full_day && hmm < 2001) {
@@ -915,9 +917,10 @@ class Chart {
             // //     // series[1].data.push({ x, y: undefined });
             // //     // extend_series(series[1]);
             // // }
+            // // console.log(y_min, y_max);
+
             y_min = Math.min(...(series[1].data.slice(0, -1).map((v) => v.y)));
             y_max = Math.max(...series[1].data.slice(0, -1).map((v) => v.y));
-            // // console.log(y_min, y_max);
 
             //* ANNOTATIONS */
             this.options_candlestick.annotations.xaxis = annotations_x();
@@ -950,7 +953,7 @@ class Chart {
             ];
 
             buy_sell = series[0].data[series[0].data.length - 2].y;
-            document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor =  buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
+            document.getElementById(`symbol-card-last-ha-${index}`).style.backgroundColor = buy_sell >= 0 ? '#4CAF50' : '#e92d2d';
             // series[1].color = buy_sell >= 0 ? '#4CAF50' : '#8217175b';
 
             //* FINISH UP */
