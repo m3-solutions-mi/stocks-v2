@@ -122,7 +122,7 @@
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
                                 onchange="select_symbol_list(this)">
                             <label
-                                contenteditable="true">QQQ,MU,SOXL,SNDK,WDC,DRAM,STX,NBIS,GEV,PENG,AVGO,APH,MRVL,LITE,DELL</label>
+                                contenteditable="true">MU,SOXL,SNDK,WDC,DRAM,STX,NBIS,GEV,PENG,AVGO,APH,MRVL,LITE,DELL</label>
                             <!-- <label contenteditable="true">DRAM,MRVL,MU,UMC,SITM,SMCI,SNDK,SOXL,STX,TSEM,PENG,WDC</label> -->
                         </div>
                         <div class="w3-large">
@@ -874,8 +874,8 @@
                 })
                 return data;
             }
-            normalize_data(data, seed = 10 * 1000) {
-                const shares = seed / data[0].o;
+            normalize_data(data, first_value = null, seed = 10 * 1000) {
+                const shares = first_value ? seed / first_value : seed / data[0].o;
                 data.forEach((v) => {
                     v.o = round2(v.o * shares);
                     v.h = round2(v.h * shares);
@@ -1073,8 +1073,9 @@
                 const dt = new Date();
                 const hmm = HELPERS.getHMM(new Date());
                 const second = dt.getSeconds();
+                const minute = dt.getMinutes();
 
-                if (now || [3, 10, 20, 30, 40, 50].indexOf(second) >= 0) {
+                if (now || [0, 5, 10, 15, 20, 30, 40, 50].indexOf(second) >= 0) {
 
                     //* TABLE */
                     const seed = 35 * 1000; //** TODO: get from account activity **/
@@ -1172,6 +1173,11 @@
                 }
                 const elem = document.getElementById('clock');
                 elem.innerText = dt.toLocaleTimeString().split(' ')[0];
+                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0){
+                    elem.style.backgroundColor = 'white'
+                } else {
+                    elem.style.backgroundColor = ''
+                }
             }
         }
     </script>

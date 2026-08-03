@@ -49,7 +49,7 @@ class Algorithms {
                 if (data && data.length > 0) {
                     data = HELPERS.clean_data(data);
                     data = HELPERS.extend_data(data);
-                    data = HELPERS.normalize_data(data, 10 * 1000);
+                    data = HELPERS.normalize_data(data, null, 10 * 1000);
 
 
                     //#region DATASETS

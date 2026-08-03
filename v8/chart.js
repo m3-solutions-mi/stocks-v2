@@ -572,6 +572,88 @@ class Chart {
             }
             //#endregion
 
+            //#region EXTEND OUT CHART FOR CONSISTENT SCALING
+            // TODO: /* keep a rolling 8hr window */
+            // const extend_series = (series) => {
+
+            //     // if (index === 2) {
+            //     //     series.data = series.data.slice(-90);
+            //     // } else {
+            //     if (/*show_full_day &&*/ hmm < 2001) {
+            //         const h = Math.ceil(hmm / 100);
+            //         let x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
+            //         if (IS_MEDIUM || IS_LARGE) {
+            //             if (hmm < 1200) {
+            //                 x = new Date(series.data[series.data.length - 1].x).setHours(12, 0);
+            //             } else if (hmm < 1600) {
+            //                 x = new Date(series.data[series.data.length - 1].x).setHours(16, 30);
+            //             }
+            //         }
+            //         // // // const x = hmm < 1200
+            //         // // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
+            //         // // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
+            //         // const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? /*(hmm < 1100 ? 12 : 16)*/ 16 : 20), 1);
+            //         series.data.push({ x, y: undefined });
+            //         // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
+            //     }
+            //     // }
+            // }
+            const filter_series = (series) => {
+                //* FILTER */
+                let s = series[0].e;
+                if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
+                if (hmm >= 900) { s = new Date(current_day).setHours(8, 0); }
+                if (hmm >= 929) { s = new Date(current_day).setHours(8, 0); }
+                if (hmm >= 1200) { s = new Date(current_day).setHours(9, 15); }
+                series = series
+                    .filter((v) => v.e >= s)
+
+                return series;
+            }
+
+            const extend_series = (series) => {
+                //* EXTEND */
+                if (hmm < 2001) {
+                    const h = Math.ceil(hmm / 100);
+                    let x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
+                    if (IS_MEDIUM || IS_LARGE) {
+                        if (hmm < 1200) {
+                            x = new Date(series.data[series.data.length - 1].x).setHours(14, 0);
+                        } else if (hmm < 1600) {
+                            x = new Date(series.data[series.data.length - 1].x).setHours(16, 30);
+                        }
+                    }
+                    series.data.push({ x, y: undefined });
+                }
+                return series;
+            }
+            const check_buy_sell = (symbol, series) => {
+                // if (symbol === 'QQQ') {
+                const d = new Date();
+                const t = d.toLocaleTimeString();
+                const minute = d.getMinutes();
+                const second = d.getSeconds();
+                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0 && second > 13 && second < 17) {
+                // if ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].indexOf(minute) >= 0 && second < 5) {
+                    if (symbol === 'QQQ') {
+                        console.log(`%c CHECK BUY / SELL `, 'background-color:deeppink;color:black');
+                    }
+                    const last = series[0].data[series[0].data.length - 2].y;
+                    const last_minus_1 = series[0].data[series[0].data.length - 3].y;
+                    // console.log(symbol, last, last_minus_1);
+                    if (last > 0 && last_minus_1 < 0) {
+                        console.log(`%c ${t} | BUY | ${symbol} `, 'background-color:green;color:black');
+                    }
+                    if (last < 0 && last_minus_1 > 0) {
+                        console.log(`%c ${t} | SELL | ${symbol} `, 'background-color:red;color:black');
+                    }
+                }
+                // } else {
+                //     // console.log('skipped', symbol);
+                // }
+            }
+            //#endregion
+
             //* MOVE HA last timestamp to end of 5 minutes */
             if (CONFIG.TIMEFRAME === 'minute') {
                 data[data.length - 1].e = data[data.length - 2].e + (+(timeframe.replace('M', '')) * 60 * 1000);
@@ -587,43 +669,43 @@ class Chart {
             const hmm = HELPERS.getHMM(new Date());
 
             //* REFERENCE VALUE */
-            const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(0, 0)));
+            const last_eod = data.find((v) => v.e >= (new Date(previous_day).setHours(16, 0)));
             // const last_eod = data.find((v) => v.e >= (new Date(current_day).setHours(4, 0)));
             // const last_eod = data.find((v) => v.e >= hmm >= 210 ? (new Date(today).setHours(2, 10)) : (new Date(today).setHours(0, 0)));
             // let s = mode === 'day' ? data[0].e : new Date(current_day).setHours(4, 0);
 
-            let s = data[0].e;
-            let e = data[data.length - 1].e;
-            // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
-            // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
-            // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
+            // let s = data[0].e;
+            // let e = data[data.length - 1].e;
+            // // if (hmm <= 900) { s = data[data.length - 1].e - (1 * 24 * 60 * 60 * 1000); }
+            // // if (hmm < 900) { s = new Date(current_day).setHours(4, 0); }
+            // // if (hmm < 850) { s = new Date(previous_day).setHours(19, 55); }
 
-            // s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
-            if (symbol.indexOf('-USD') > 0) {
-                s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
-                // s = new Date(current_day).setHours(0, 0);
-                // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
-            } else {
-                if (new Date(current_day).getDay() === dow) {
-                    if (hmm < 400) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
-                    if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
-                    if (hmm >= 900) { s = new Date(current_day).setHours(8, 0); }
-                    if (hmm >= 929) { s = new Date(current_day).setHours(9, 0); }
-                    if (hmm >= 1200) { s = new Date(current_day).setHours(9, 15); }
-                    // if (hmm >= 830) { s = new Date(current_day).setHours(8, 0); }
-                    // if (hmm >= 1605) { s = new Date(current_day).setHours(9, 15); }
-                    // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
-                    // if (hmm >= 915) { s = new Date(current_day).setHours(9, 0); }
-                    // if (hmm >= 1430) { s = new Date(current_day).setHours(12, 0); }
+            // // s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
+            // if (symbol.indexOf('-USD') > 0) {
+            //     s = current_day - ((IS_SMALL ? 4 : 8) * 60 * 60 * 1000);
+            //     // s = new Date(current_day).setHours(0, 0);
+            //     // if (hmm >= 1400) { s = new Date(current_day).setHours(8, 0); }
+            // } else {
+            //     if (new Date(current_day).getDay() === dow) {
+            //         if (hmm < 400) { s = data[data.length - 1].e - (18 * 60 * 60 * 1000); }
+            //         if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
+            //         if (hmm >= 900) { s = new Date(current_day).setHours(8, 0); }
+            //         if (hmm >= 929) { s = new Date(current_day).setHours(9, 0); }
+            //         if (hmm >= 1200) { s = new Date(current_day).setHours(9, 15); }
+            //         // if (hmm >= 830) { s = new Date(current_day).setHours(8, 0); }
+            //         // if (hmm >= 1605) { s = new Date(current_day).setHours(9, 15); }
+            //         // if (hmm <= 400) { s = new Date(current_day).setHours(4, 0); }
+            //         // if (hmm >= 915) { s = new Date(current_day).setHours(9, 0); }
+            //         // if (hmm >= 1430) { s = new Date(current_day).setHours(12, 0); }
 
-                    // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
+            //         // if (hmm <= 1200) { e = new Date(current_day).setHours(16, 0); }
 
-                    e = new Date(current_day).setHours(16, 30);
-                } else {
-                    s = new Date(current_day).setHours(9, 0);
-                    e = new Date(current_day).setHours(20, 0);
-                }
-            }
+            //         e = new Date(current_day).setHours(16, 30);
+            //     } else {
+            //         s = new Date(current_day).setHours(9, 0);
+            //         e = new Date(current_day).setHours(20, 0);
+            //     }
+            // }
 
             // * HEIKEN-ASHI DATA */
             // * MUST use a consistent start, otherwise the bas change based on the filtered data [0] index */
@@ -635,31 +717,34 @@ class Chart {
             // * HEIKEN-ASHI CLOSE - OPEN VALUE
             // let ohlc_data = calculateHeikinAshiCloseMinusOpen(data/*.filter((v) => v.e >= s)*/);
 
-            //#region FILTER DATA */
-            // bollinger_data = bollinger_data
-            //     .filter((v) => v.x >= s)
-            // // .filter((v) => v.e <= e);
-            // delta_data = delta_data
-            //     .filter((v) => v.x >= s)
-            //     // .filter((v) => v.e <= e)
-            //     .map((v) => { return { x: v.x, y: round2(v.y) } });
-            // ohlc_data = ohlc_data
-            //     .filter((v) => v.e >= s)
-            // // .filter((v) => v.e <= e);
-            data = data
-                .filter((v) => v.e >= s)
-            // .map((v) => { return { e: v.e, c: round2(v.c) } });
-            // .filter((v) => v.e <= e);
-            data_m = data_m
-                .filter((v) => v.e >= s)
-            // .map((v) => { return { x: v.e, c: round2(v.c) } });
-            // .filter((v) => v.e <= e);
+            //#region NORMALIZE DATA
+            data = HELPERS.normalize_data(data, last_eod.c);//, Math.min(...data.map((v)=>v.o)));
+            data_m = HELPERS.normalize_data(data_m);//, Math.min(...data.map((v)=>v.o)));
+
+            data = filter_series(data);
+            data_m = filter_series(data_m);
             //#endregion
 
-            //#region NORMALIZE DATA AFTER FILTER
-            data = HELPERS.normalize_data(data);
-            data_m = HELPERS.normalize_data(data_m);
-            //#endregion
+            // //#region FILTER DATA */
+            // // bollinger_data = bollinger_data
+            // //     .filter((v) => v.x >= s)
+            // // // .filter((v) => v.e <= e);
+            // // delta_data = delta_data
+            // //     .filter((v) => v.x >= s)
+            // //     // .filter((v) => v.e <= e)
+            // //     .map((v) => { return { x: v.x, y: round2(v.y) } });
+            // // ohlc_data = ohlc_data
+            // //     .filter((v) => v.e >= s)
+            // // // .filter((v) => v.e <= e);
+            // data = data
+            //     .filter((v) => v.e >= s)
+            // // .map((v) => { return { e: v.e, c: round2(v.c) } });
+            // // .filter((v) => v.e <= e);
+            // data_m = data_m
+            //     .filter((v) => v.e >= s)
+            // // .map((v) => { return { x: v.e, c: round2(v.c) } });
+            // // .filter((v) => v.e <= e);
+            // //#endregion
 
             //#region DATASETS
             //  applyBands(series[0].data.map((v) => { return { x: v.x, c: v.y } }), 6, 0.75)
@@ -698,27 +783,6 @@ class Chart {
             const previous = data[data.length - 2];
             const last_m = data_m[data_m.length - 1];
             const previous_m = data_m[data_m.length - 2];
-            //#endregion
-
-            //#region EXTEND OUT CHART FOR CONSISTENT SCALING
-            // TODO: /* keep a rolling 8hr window */
-            const extend_series = (series) => {
-
-                // if (index === 2) {
-                //     series.data = series.data.slice(-90);
-                // } else {
-                if (/*show_full_day &&*/ hmm < 2001) {
-                    const h = Math.ceil(hmm / 100);
-                    // const x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
-                    // // const x = hmm < 1200
-                    // //     ? new Date(series.data[series.data.length - 1].x).setHours(12, 0)
-                    // //     : new Date(series.data[series.data.length - 1].x).setHours(20, 1);
-                    const x = new Date(series.data[series.data.length - 1].x).setHours((hmm < 1600 ? /*(hmm < 1100 ? 12 : 16)*/ 16 : 20), 1);
-                    series.data.push({ x, y: undefined });
-                    // series.data = series.data.filter((v) => hmm > 1600 ? v.x > new Date(x).setHours(9,0) : v.x > (x - (5 * 60 * 60 * 1000)));
-                }
-                // }
-            }
             //#endregion
 
             //#region BUY_SELL_BARS
@@ -967,7 +1031,7 @@ class Chart {
             this._render_m2(this.options_candlestick);
             //#endregion
 
-
+            check_buy_sell(symbol, series);
 
             //#region SUMMARIES
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options_candlestick.series[1].data.slice(0, -1);
