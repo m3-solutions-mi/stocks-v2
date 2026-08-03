@@ -68,9 +68,9 @@ class Algorithms {
                     let index_buy = null;
                     delta_data.forEach((v, i) => {
                         const hmm = HELPERS.getHMM(new Date(v.x));
-                        if (hmm >= 1000 && hmm < 1400) {
+                        if (hmm >= 1000 && hmm < 1359) { //@ BUY B/T 10:00 and 2:00 */
                             if (v.y > 0) {
-                                if (!index_buy) {
+                                if (!index_buy && delta_data[i-1].y < 0) {
                                     index_buy = i;
                                 }
                             } else {
@@ -80,13 +80,13 @@ class Algorithms {
                                         s,
                                         hmm: HELPERS.getHMM(new Date(v.x)),
                                         hmm_s: HELPERS.getHMM(new Date(delta_data[index_buy].x)),
-                                        g: g < -50 ? -50 : g
+                                        g: g < -75 ? -75 : g, //* MAX LOSS */
                                     });
                                     index_buy = null;
                                 }
                             }
                         }
-                        if (hmm >= 1559) {
+                        if (hmm >= 1559) { //@ SELL AT END OF DAY */
                             if (index_buy) {
                                 results.push({ s, hmm_s: delta_data[index_buy].hmm, hmm: v.hmm, g: round2(delta_data[index_buy].y - v.y) });
                                 index_buy = null;
