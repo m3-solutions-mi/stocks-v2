@@ -603,8 +603,8 @@ class Chart {
                 let s = series[0].e;
                 if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
                 if (hmm >= 900) { s = new Date(current_day).setHours(8, 0); }
-                if (hmm >= 929) { s = new Date(current_day).setHours(8, 0); }
-                if (hmm >= 1200) { s = new Date(current_day).setHours(9, 15); }
+                if (hmm >= 1100) { s = new Date(current_day).setHours(9, 0); }
+                // if (hmm >= 1200) { s = new Date(current_day).setHours(9, 15); }
                 series = series
                     .filter((v) => v.e >= s)
 
