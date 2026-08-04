@@ -620,17 +620,17 @@
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="w3-border-bottom">TODAY</div>
                             <b><div id="mobile-card-gain" class="w3-xxxlarge w3-wide">-</div></b>
-                            <div id="mobile-card-pct" class="w3-wide w3-hide-small">-</div>
+                            <div id="mobile-card-pct" class="w3-wide _w3-hide-small">-</div>
                         </span>
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="w3-border-bottom">POSITIONS</div>
                             <b><div id="mobile-card-position" class="w3-xxxlarge w3-wide">-</div></b>
-                            <div id="mobile-card-position-pct" class="w3-wide w3-hide-small">-</div>
+                            <div id="mobile-card-position-pct" class="w3-wide _w3-hide-small">-</div>
                         </span>
                         <span class="_w3-hide-small w3-center w3-border w3-col s12 m4 w3-padding" style="min-height:150px;">
                             <div class="w3-border-bottom">CHANGE</div>
                             <b><div id="mobile-card-change" class="w3-xxxlarge w3-wide">-</div></b>
-                            <div id="mobile-card-change-pct" class="w3-wide w3-hide-small">-</div>
+                            <div id="mobile-card-change-pct" class="w3-wide _w3-hide-small">-</div>
                         </span>
                         <span id="mobile-card-treemap" class="w3-hide w3-center w3-border w3-col s12 m12 w3-padding" style="min-height:75px;"></span>
                         <span id="mobile-card-symbols-delta" class="w3-center w3-border w3-col s12 m12 w3-padding" style="min-height:100px;display:flex;flex-wrap: wrap;flex-direction: row;    justify-content: center;"></span>
@@ -1137,12 +1137,13 @@
 
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
+                    
+                    // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
+                    SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
+                    SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
+                    // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
 
-                    // if (now || second === 3 || second === 20 || second === 40) {
-                        // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
-                        SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
-                        SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
-                        // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
+                    if (now || second === 3 || second === 20 || second === 40) {
 
                         if (hmm >= 930 && hmm <= 1600) {
                             FETCH_DATA.get_data('^IXIC', '1D', 5).then((ixic) => {
@@ -1152,7 +1153,7 @@
                         // FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
                         //     console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
                         // })
-                    // }
+                    }
 
 
 
