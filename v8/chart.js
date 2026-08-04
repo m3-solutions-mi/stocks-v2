@@ -636,7 +636,7 @@ class Chart {
                 const t = d.toLocaleTimeString();
                 const minute = d.getMinutes();
                 const second = d.getSeconds();
-                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0 && second > 13 && second < 17) {
+                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0 && second > 12 && second < 18) {
                     // if ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].indexOf(minute) >= 0 && second < 5) {
                     if (symbol === 'QQQ') {
                         console.log(`%c CHECK BUY / SELL `, 'background-color:deeppink;color:black');
