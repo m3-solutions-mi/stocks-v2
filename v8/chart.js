@@ -638,7 +638,7 @@ class Chart {
                 const second = d.getSeconds();
                 if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0 && second > 13 && second < 17) {
                     // if ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].indexOf(minute) >= 0 && second < 5) {
-                    if (index === 0) {
+                    if (symbol === 'QQQ') {
                         console.log(`%c CHECK BUY / SELL `, 'background-color:deeppink;color:black');
                     }
                     const last = series[0].data[series[0].data.length - 2].y;
@@ -791,25 +791,25 @@ class Chart {
             //#endregion
 
 
-            //#region summary cards
-            const position_current_value = +(document.getElementById('mobile-card-position').innerText);
-            const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
-            const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
-            const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
-            const positions_change = round2(positions_gain - position_current_value);
-            const positions_change_pct = round3(positions_change / positions_cost_basis * 100);
-            // console.log(position_current_value, positions_gain, positions_change, positions_change_pct);
-
-            HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
-            HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
-            HELPERS.update_elem_text_colored(`mobile-card-change`, positions_change, '', '');
-            HELPERS.update_elem_text_colored(`mobile-card-change-pct`, positions_change_pct, '', '');
+            // //#region summary cards
+            // const position_current_value = +(document.getElementById('mobile-card-position').innerText);
+            // const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
+            // const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
+            // const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
+            // const positions_change = round2(positions_gain - position_current_value);
+            // const positions_change_pct = round3(positions_change / positions_cost_basis * 100);
+            // // console.log(position_current_value, positions_gain, positions_change, positions_change_pct);
 
             // HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
             // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
-            // HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
-            // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
-            //#endregion
+            // HELPERS.update_elem_text_colored(`mobile-card-change`, positions_change, '', '');
+            // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, positions_change_pct, '', '');
+
+            // // HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
+            // // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
+            // // HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
+            // // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
+            // //#endregion
 
             //#region BUY_SELL_BARS
             // ALGOS.buy_sell_bars(symbol, series[0].data);
@@ -1088,29 +1088,29 @@ class Chart {
             }
 
             if (summarize) {
-                // //#region summary cards
-                // // const account_detail = await ACCOUNT.detail();
-                // // const account_history_5d = await ACCOUNT.history('5D', '1D');
-                // // const account_positions = await ACCOUNT.positions();
+                //#region summary cards
+                // const account_detail = await ACCOUNT.detail();
+                // const account_history_5d = await ACCOUNT.history('5D', '1D');
+                // const account_positions = await ACCOUNT.positions();
 
-                // const position_current_value = +(document.getElementById('mobile-card-position').innerText);
-                // const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
-                // const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
-                // const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
-                // const positions_change = round2(positions_gain - position_current_value);
-                // const positions_change_pct = round3(positions_change / positions_cost_basis * 100);
-                // // console.log(position_current_value, positions_gain, positions_change, positions_change_pct);
+                const position_current_value = +(document.getElementById('mobile-card-position').innerText);
+                const positions_cost_basis = SHARED.POSITIONS_SUMMARY._TOTAL_.seed;
+                const positions_gain = SHARED.POSITIONS_SUMMARY._TOTAL_.gain;
+                const positions_gain_pct = SHARED.POSITIONS_SUMMARY._TOTAL_.pct;
+                const positions_change = round2(positions_gain - position_current_value);
+                const positions_change_pct = round3(positions_change / positions_cost_basis * 100);
+                // console.log(position_current_value, positions_gain, positions_change, positions_change_pct);
+
+                HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
+                HELPERS.update_elem_text_colored(`mobile-card-change`, positions_change, '', '');
+                HELPERS.update_elem_text_colored(`mobile-card-change-pct`, positions_change_pct, '', '');
 
                 // HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
                 // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
-                // HELPERS.update_elem_text_colored(`mobile-card-change`, positions_change, '', '');
-                // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, positions_change_pct, '', '');
-
-                // // HELPERS.update_elem_text_colored(`mobile-card-position`, round1(positions_gain), '', '');
-                // // HELPERS.update_elem_text_colored(`mobile-card-position-pct`, round1(positions_gain_pct), '', '%');
-                // // HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
-                // // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
-                // //#endregion
+                // HELPERS.update_elem_text_colored(`mobile-card-change`, round1(positions_gain - position_current_value), '', '');
+                // HELPERS.update_elem_text_colored(`mobile-card-change-pct`, round2((positions_gain - position_current_value) / positions_cost_basis * 100), '', '');
+                //#endregion
 
 
 

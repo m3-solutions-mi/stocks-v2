@@ -1138,21 +1138,21 @@
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
 
-                    if (now || second === 3 || second === 20 || second === 40) {
+                    // if (now || second === 3 || second === 20 || second === 40) {
                         // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
                         SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
                         SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
                         // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
 
-                        // if (hmm >= 930 && hmm <= 1600) {
-                        //     FETCH_DATA.get_data('^IXIC', '1D', 10).then((ixic) => {
-                        //         console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
-                        //     })
-                        // }
+                        if (hmm >= 930 && hmm <= 1600) {
+                            FETCH_DATA.get_data('^IXIC', '1D', 5).then((ixic) => {
+                                console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
+                            })
+                        }
                         // FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
                         //     console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
                         // })
-                    }
+                    // }
 
 
 
