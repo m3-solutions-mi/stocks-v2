@@ -525,7 +525,7 @@
     <script>
         class Configuration {
             get_key = (name) => `m3-stocks-v6-${name}`;
-            DAY_TARGET_DOLLARS = 326.5;
+            DAY_TARGET_DOLLARS = 300;
             SYMBOL = localStorage.getItem(this.get_key('symbol'));// || 'QQQ';
             SYMBOL_LIST = localStorage.getItem(this.get_key('symbol-list'));// || 'AMAT,LASR,LITE,MU,UMC,STX,WDC,SNDK';
             API_KEY = localStorage.getItem(this.get_key('api-key')) || '';
@@ -1144,14 +1144,14 @@
                         SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
                         // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
 
-                        if (hmm >= 930 && hmm <= 1600) {
-                            FETCH_DATA.get_data('^IXIC', '1D', 10).then((ixic) => {
-                                console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
-                            })
-                        }
-                        FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
-                            console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
-                        })
+                        // if (hmm >= 930 && hmm <= 1600) {
+                        //     FETCH_DATA.get_data('^IXIC', '1D', 10).then((ixic) => {
+                        //         console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
+                        //     })
+                        // }
+                        // FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
+                        //     console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
+                        // })
                     }
 
 

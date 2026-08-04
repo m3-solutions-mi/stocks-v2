@@ -29,7 +29,7 @@ class Account {
             let total_pct = account_positions.map((v) => +(v.unrealized_plpc)).reduce((p, c) => p + c) * 100;
             // console.log('POSITIONS TOTAL $', round2(total), ' | ', round3(total_pct), '%');
             account_positions.forEach((v) => {
-                if ((v.unrealized_plpc * 100) < -0.5) {
+                if ((v.unrealized_plpc * 100) < -0.6) {
                     //* SELL */
                     if (hmm >= 930 && hmm <= 1559) {
                         console.log(`%c   S E L L  |  ${v.symbol}   `, 'background-color:red;color:white;');
@@ -52,7 +52,7 @@ class Account {
             let t_gain = 0;
             let t_seed = 0;
             account_positions.map((v) => {
-                console.log(`%c${v.symbol.padEnd(4, ' ')} | $ ${round2(v.unrealized_pl).toString().padEnd(7, ' ')} | ${round3(v.unrealized_plpc * 100)} % | $ ${round(v.cost_basis)}`, 'color:yellow;');
+                // console.log(`%c${v.symbol.padEnd(4, ' ')} | $ ${round2(v.unrealized_pl).toString().padEnd(7, ' ')} | ${round3(v.unrealized_plpc * 100)} % | $ ${round(v.cost_basis)}`, 'color:yellow;');
                 obj[v.symbol] = {
                     gain: round2(v.unrealized_pl),
                     pct: round1(v.unrealized_plpc * 100),
@@ -62,8 +62,7 @@ class Account {
                 t_seed += round(v.cost_basis);
             });
             obj['_TOTAL_'] = { gain: t_gain, pct: round2(t_gain / t_seed * 100), seed: t_seed }
-            // ${new Date().toLocaleTimeString()} | 
-            console.log(`%cTOTAL | ${obj._TOTAL_.gain} | ${obj._TOTAL_.pct} %`, 'color:orange');
+            // console.log(`%cTOTAL | ${obj._TOTAL_.gain} | ${obj._TOTAL_.pct} %`, 'color:orange');
             // console.log(obj);
             return obj;
         } else {
