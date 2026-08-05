@@ -23,7 +23,7 @@
 <style>
 </style>
 
-<body class="w3-light-grey w3-xxlarge" style="font-family:Raleway;">
+<body class="w3-xxlarge" style="font-family:Raleway;">
 
     <!--@ SCRIPT IMPORTS -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -44,7 +44,7 @@
     <script src="./gemini.js"></script>
 
     <!--@ PAGE CONTENT -->
-    <div class="w3-content w3-margin-top w3-lightgrey" style="max-width:1380px;"> <!-- 1450 -->
+    <div id="content-header" class="w3-lightgrey w3-content w3-margin-top w3-lightgrey" style="max-width:1380px;"> <!-- 1450 -->
 
         <div class="w3-row-padding w3-white">
             <span class="">
@@ -74,7 +74,7 @@
                             style="margin-top:15px;">
                             <b>
                                 <span id="clock" onclick="window.location.reload()">-</span>
-                                <div class="fa fa-ban w3-padding-top w3-text-pink" onclick="ACCOUNT.liquidate()"></div>
+                                
                                 <!-- <input class="w3-medium" type="date" value="2026-07-13" /> -->
                                 <input id="selected-date" class="w3-hide flatpickr flatpickr-input w3-input w3-border"
                                     style="font-size:18px;" type="text" value="2026-04-17"
@@ -92,12 +92,28 @@
                 </div>
 
                 <!--@ SETTINGS -->
-                <div id="settings" class="w3-col s12 w3-large w3-panel w3-border w3-white w3-margin-bottom w3-padding"
+                <div id="settings" class="w3-col s12 w3-large w3-panel w3-border w3-margin-bottom w3-padding"
                     style="display:none;">
+
                     <div class="w3-row-padding w3-wide">
                         <div class="w3-col s12 w3-wide w3-xlarge"><i class="fa fa-close w3-right w3-margin-top pointer"
                                 onclick="document.getElementById('settings').style.display = 'none'"></i><b>Settings</b>
                         </div>
+
+                        <!--@ FIELDS -->
+                        <div class="w3-col s6 w3-padding w3-text-grey">API KEY
+                            <input id="api-key" style="width:100%;" value="" />
+                        </div>
+                        <div class="w3-col s6 w3-padding w3-text-grey">API SECRET
+                            <input id="api-secret" style="width:100%;" value="" />
+                        </div>
+                        <div class="w3-col s6 w3-padding w3-text-grey">API URL
+                            <input id="api-url" style="width:100%;" value="" />
+                        </div>
+                        <div class="w3-col s6 w3-padding w3-text-grey">ACCOUNT URL
+                            <input id="account-url" style="width:100%;" value="" />
+                        </div>
+
                         <div class="w3-col s12 m12 w3-padding w3-text-grey w3-margin-top _w3-margin-left">
                             SYMBOL
                             <input id="symbol" style="width:100%;" value="" />
@@ -122,14 +138,13 @@
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
                                 onchange="select_symbol_list(this)">
                             <label
-                                contenteditable="true">MU,SOXL,SNDK,WDC,DRAM,STX,NBIS,GEV,PENG,AVGO,APH,MRVL,LITE,DELL</label>
+                                contenteditable="true">QQQ,SOXL,MU,SNDK,WDC,DRAM,STX,NBIS,GEV,PENG,AVGO,APH,MRVL,LITE,DELL</label>
                             <!-- <label contenteditable="true">DRAM,MRVL,MU,UMC,SITM,SMCI,SNDK,SOXL,STX,TSEM,PENG,WDC</label> -->
                         </div>
                         <div class="w3-large">
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
                                 onchange="select_symbol_list(this)">
-                            <label
-                                contenteditable="true">QQQ,DIA,SPY</label>
+                            <label contenteditable="true">^IXIC,QQQ,DIA,SPY</label>
                             <!-- <label contenteditable="true">DRAM,MRVL,MU,UMC,SITM,SMCI,SNDK,SOXL,STX,TSEM,PENG,WDC</label> -->
                         </div>
                         <div class="w3-large">
@@ -163,21 +178,26 @@
                             <label contenteditable="true">AAVE-USD,ETH-USD,BTC-USD,LTC-USD,SOL-USD</label>
                         </div>
 
-                        <!--@ FIELDS -->
-                        <div class="w3-col s6 w3-padding w3-text-grey">API KEY
-                            <input id="api-key" style="width:100%;" value="" />
-                        </div>
-                        <div class="w3-col s6 w3-padding w3-text-grey">API SECRET
-                            <input id="api-secret" style="width:100%;" value="" />
-                        </div>
-                        <div class="w3-col s6 w3-padding w3-text-grey">API URL
-                            <input id="api-url" style="width:100%;" value="" />
-                        </div>
-                        <div class="w3-col s6 w3-padding w3-text-grey">ACCOUNT URL
-                            <input id="account-url" style="width:100%;" value="" />
-                        </div>
-
                         <!--@ OPTIONS -->
+                        <div class="w3-col s12 w3-padding">
+                            <span class="w3-text-grey">Time Window Start</span>
+                            <div class="w3-right w3-large">
+                                <input class="w3-radio w3-margin-left" type="radio" name="time_window" value="auto">
+                                <label>Auto</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="time_window" value="last_eod">
+                                <label>4:00 AM</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="time_window" value="last_eod">
+                                <label>8:00 AM</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="time_window" value="last_eod">
+                                <label>9:15 AM</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="time_window" value="last_eod">
+                                <label>None</label>
+                                <input class="w3-radio w3-margin-left" type="radio" name="time_window" value="last_eod">
+                                <label>4 hr</label>
+                                <!-- <input class="w3-radio w3-margin-left" type="radio" name="timeframe" value="0.25%">
+                                <label>0.25 %</label> -->
+                            </div>
+                        </div>
                         <div class="w3-col s12 w3-padding">
                             <span class="w3-text-grey">Data Source</span>
                             <div class="w3-right w3-large">
@@ -314,6 +334,7 @@
                 <div class="w3-col s12 w3-large w3-wide w3-border-top w3-padding" style="margin-top:10px;">
                     <b>
                         <span id="mobile-account-net" class="w3-left">-</span>
+                        <div class="fa fa-ban w3-text-pink w3-right w3-xlarge w3-margin-left" style="padding-top:1px;" onclick="ACCOUNT.liquidate()"></div>
                         <span id="mobile-account-buying-power" class="w3-right w3-text-blue">-</span>
                     </b>
                 </div>
@@ -1137,23 +1158,23 @@
 
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
-                    
+
                     // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
                     SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
                     SHARED.DATA_1M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('1Min') : [];
                     // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
 
-                    if (now || second === 3 || second === 20 || second === 40) {
+                    // if (now || second === 5 || second === 20 || second === 40) {
 
-                        if (hmm >= 930 && hmm <= 1600) {
-                            FETCH_DATA.get_data('^IXIC', '1D', 5).then((ixic) => {
-                                console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
-                            })
-                        }
-                        // FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
-                        //     console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
-                        // })
+                    if (hmm >= 930 && hmm <= 1600) {
+                        FETCH_DATA.get_data('^IXIC', '1D', 5).then((ixic) => {
+                            console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
+                        })
                     }
+                    // FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
+                    //     console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
+                    // })
+                    // }
 
 
 
@@ -1174,10 +1195,10 @@
                 }
                 const elem = document.getElementById('clock');
                 elem.innerText = dt.toLocaleTimeString().split(' ')[0];
-                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0){
-                    elem.style.backgroundColor = 'white'
+                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0) {
+                    elem.parentElement.parentElement.style.backgroundColor = 'white'
                 } else {
-                    elem.style.backgroundColor = ''
+                    elem.parentElement.parentElement.style.backgroundColor = ''
                 }
             }
         }
@@ -1200,6 +1221,12 @@
         const ACCOUNT = new Account();
         const CHART_ACCOUNT_HISTORY = new Chart('chart-account-history');
         const ALGOS = new Algorithms();
+
+        //theme
+        // if (true) {
+        //     document.body.style.backgroundColor = '#2a2a2a';
+        //     document.getElementById('content-header').classList.replace('w3-lightgrey','w3-black');
+        // }
 
         //* INTERVAL */
         const INTERVAL = new Interval();

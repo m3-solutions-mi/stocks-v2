@@ -29,14 +29,19 @@ class Account {
             let total_pct = account_positions.map((v) => +(v.unrealized_plpc)).reduce((p, c) => p + c) * 100;
             // console.log('POSITIONS TOTAL $', round2(total), ' | ', round3(total_pct), '%');
             account_positions.forEach((v) => {
-                if ((v.unrealized_plpc * 100) < -0.6) {
+                if ((v.unrealized_plpc * 100) < -0.5) {
                     //* SELL */
                     if (hmm >= 930 && hmm <= 1559) {
                         console.log(`%c   S E L L  |  ${v.symbol}   `, 'background-color:red;color:white;');
-                        // this._sell(v.symbol);
+                        this._sell(v.symbol);
                     }
                 }
-                if (total <= -500) {
+                if (total_pct <= -0.5) {
+                    console.log(`%c   S E L L - TOTAL LOSS EXCEEDEED   `, 'background-color:red;color:white;');
+                    //* LIQUIDATE */
+                    // this.liquidate();
+                }
+                if (total <= -150) {
                     console.log(`%c   S E L L - TOTAL LOSS EXCEEDEED   `, 'background-color:red;color:white;');
                     //* LIQUIDATE */
                     // this.liquidate();
