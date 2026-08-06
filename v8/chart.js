@@ -600,16 +600,32 @@ class Chart {
             // }
             const filter_series = (series) => {
                 //* FILTER */
+                const hmm = HELPERS.getHMM(new Date())
+                const current_day = new Date(series[series.length-1].e);
                 let s = series[0].e;
                 if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
-                if (hmm >= 900) { s = new Date(current_day).setHours(6, 0); }
-                if (hmm >= 1100) { s = new Date(current_day).setHours(9, 0); }
-                // if (hmm >= 1200) { s = new Date(current_day).setHours(9, 15); }
+                // if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
+                if (hmm >= 1100) { s = new Date(current_day).setHours(8, 30); }
+                // if (hmm >= 1200) { s = new Date(current_day).setHours(4, 0); }
+
                 series = series
                     .filter((v) => v.e >= s)
-
                 return series;
             }
+            // const filter_series_post = (series) => {
+            //     //* FILTER */
+            //     const hmm = HELPERS.getHMM(new Date())
+            //     const current_day = new Date(series[series.length-1].e);
+            //     let s = series[0].e;
+            //     if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
+            //     if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
+            //     if (hmm >= 1100) { s = new Date(current_day).setHours(9, 0); }
+            //     // if (hmm >= 1200) { s = new Date(current_day).setHours(4, 0); }
+
+            //     series = series
+            //         .filter((v) => v.e >= s)
+            //     return series;
+            // }
 
             const extend_series = (series) => {
                 //* EXTEND */
@@ -638,17 +654,18 @@ class Chart {
                 const second = d.getSeconds();
                 if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0 && second > 12 && second < 18) {
                     // if ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].indexOf(minute) >= 0 && second < 5) {
-                    if (symbol === 'QQQ') {
+                    if (symbol === 'QQQ' || symbol === 'AAVE-USD') {
                         console.log(`%c CHECK BUY / SELL `, 'background-color:deeppink;color:black');
+                        console.log(series);
                     }
                     const last = series[0].data[series[0].data.length - 2].y;
                     const last_minus_1 = series[0].data[series[0].data.length - 3].y;
-                    if (hmm >= 1000 && hmm <= 1300) {
-                        // console.log(symbol, last, last_minus_1);
+                    // if (hmm >= 1000 && hmm <= 1300) {
+                        console.log(symbol, last, last_minus_1);
                         if (last > 0 && last_minus_1 < 0) {
                             console.log(`%c ${t} | BUY | ${symbol} `, 'background-color:green;color:black');
                         }
-                    }
+                    // }
                     if (last < 0 && last_minus_1 > 0) {
                         console.log(`%c ${t} | SELL | ${symbol} `, 'background-color:red;color:black');
                     }
@@ -754,12 +771,18 @@ class Chart {
             //#region DATASETS
             //  applyBands(series[0].data.map((v) => { return { x: v.x, c: v.y } }), 6, 0.75)
             let bollinger_data = applyBands(data
-                .map((v) => { return { x: v.e, c: v.c } }), 6, 0.75)
+                .map((v) => { return { x: v.e, c: v.c } }), 6, 0.25)
                 .map((v, i) => { return { x: v.x, y: (v.bands_c.lowerBand !== 0 ? v.bands_c.lowerBand : data[i].c) } });
+            // let bollinger_bollinger_data = applyBands(bollinger_data
+            //     .map((v) => { return { x: v.x, c: v.y } }), 3, 0.5)
+            //     .map((v, i) => { return { x: v.x, y: (v.bands_c.lowerBand !== 0 ? v.bands_c.lowerBand : data[i].c) } });
             let delta_data = data.map((v, i) => { return { x: v.e, y: v.c - bollinger_data[i].y } });
             let ohlc_data = calculateHeikinAshi(data/*.filter((v) => v.e >= last_eod.e)*/);
-            //#endregion
 
+            // bollinger_data = filter_series_post(bollinger_data);
+            // delta_data = filter_series_post(delta_data);
+            // ohlc_data = filter_series_post(ohlc_data);
+            //#endregion
 
             //#region SEED & START & REUSED VARS
             const seed = 10 * 1000;
@@ -981,7 +1004,7 @@ class Chart {
             series = [];
             series.push({ name: 'Bollinger Delta', type: 'bar', data: [] });
             series.push({ name: 'Gain', type: 'area', color: '#0155022b', data: [] });
-            // series.push({ name: 'Gain', type: 'area', color: '#594caf55', data: [] });
+            series.push({ name: 'BB', type: 'line', color: '#186dff', data: [] });
 
             //* DATA */
             // const delta = this.options.series[0].data.map((v, i) => { 
@@ -999,6 +1022,11 @@ class Chart {
 
             series[1].data = data.map((v, i) => { return { x: v.e, y: round2(v.c - seed) } });
             extend_series(series[1]);
+
+            // const bol = applyBands(series[1].data.map((v)=>{ return {c: v.y}}));
+            // console.log(bollinger_bollinger_data.map((v)=> {return {x: v.x, y: v.y - seed}}));
+            series[2].data = bollinger_data.map((v)=> {return {x: v.x, y: round2(v.y - seed)}})
+            extend_series(series[2]);
 
             // // if (show_full_day && hmm < 2001) {
             // //     // const x = hmm <1200
@@ -1040,6 +1068,17 @@ class Chart {
                     min: y_min,
                     max: y_max,
                 },
+                {
+                    seriesName: 'BB',
+                    alignZero: true,
+                    opposite: true,
+                    axisTicks: { show: false },
+                    axisBorder: { show: false, color: '#00E396' },
+                    labels: { style: { colors: '#00E396' } },
+                    title: { text: 'Units (positive only)', style: { color: '#00E396' } },
+                    min: y_min,
+                    max: y_max,
+                },
             ];
 
             buy_sell = series[0].data[series[0].data.length - 2].y;
@@ -1048,7 +1087,7 @@ class Chart {
 
             //* FINISH UP */
             // this.options_candlestick.stroke.width = [IS_SMALL ? 2.5 : (IS_MEDIUM ? 1.5 : 2), 2];
-            this.options_candlestick.stroke.width = IS_SMALL ? [1, 2] : IS_MEDIUM ? [2.5, 2] : [4, 2];
+            this.options_candlestick.stroke.width = IS_SMALL ? [1, 2, 2] : IS_MEDIUM ? [2.5, 2, 2.5] : [4, 2, 2.5];
             this.options_candlestick.stroke.colors = [undefined, '#000'];
             delete this.options_candlestick.tooltip.custom;
             this.options_candlestick.chart.type = 'line';
@@ -1141,6 +1180,8 @@ class Chart {
                 // });
 
                 const account_today_gain = account_detail.equity - account_history_5d[account_history_5d.length - 1].net
+                const d = new Date();
+                document.title = `M3 | V8 | $${round(account_today_gain)} | ${HELPERS.getYMD(d)}_${HELPERS.getHMM(d)}`
                 HELPERS.update_elem_text_colored('account-today-gain', round2(account_today_gain), '$', '');
                 HELPERS.update_elem_text_colored('account-today-pct', round1((account_today_gain) / CONFIG.DAY_TARGET_DOLLARS * 100), '', '%');
 
