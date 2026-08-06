@@ -33,7 +33,7 @@ class Account {
                     //* SELL */
                     if (hmm >= 930 && hmm <= 1559) {
                         console.log(`%c   S E L L  |  ${v.symbol}   `, 'background-color:red;color:white;');
-                        this._sell(v.symbol);
+                        // this._sell(v.symbol);
                     }
                 }
                 if (total_pct <= -0.5) {
