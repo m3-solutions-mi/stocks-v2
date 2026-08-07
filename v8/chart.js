@@ -602,9 +602,11 @@ class Chart {
                 //* FILTER */
                 const hmm = HELPERS.getHMM(new Date())
                 const current_day = new Date(series[series.length-1].e);
+                const previous_day = new Date(series[series.length-1].e - (24*60*60*1000));
                 let s = series[0].e;
-                if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
-                // if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
+                if (hmm <= 900) { s = new Date(previous_day).setHours(15, 0); }
+                // if (hmm >= 400) { s = new Date(current_day).setHours(4, 0); }
+                if (hmm >= 900) { s = new Date(current_day).setHours(7, 0); }
                 if (hmm >= 1100) { s = new Date(current_day).setHours(8, 30); }
                 // if (hmm >= 1200) { s = new Date(current_day).setHours(4, 0); }
 
@@ -634,7 +636,7 @@ class Chart {
                     let x = new Date(series.data[series.data.length - 1].x).setHours(h, 0);
                     if (IS_MEDIUM || IS_LARGE) {
                         if (hmm < 1200) {
-                            x = new Date(series.data[series.data.length - 1].x).setHours(14, 0);
+                            x = new Date(series.data[series.data.length - 1].x).setHours(13, 0);
                         } else if (hmm < 1600) {
                             x = new Date(series.data[series.data.length - 1].x).setHours(16, 30);
                         } else {
@@ -645,35 +647,35 @@ class Chart {
                 }
                 return series;
             }
-            const check_buy_sell = (symbol, series) => {
-                // if (symbol === 'QQQ') {
-                const d = new Date();
-                const hmm = HELPERS.getHMM(d);
-                const t = d.toLocaleTimeString();
-                const minute = d.getMinutes();
-                const second = d.getSeconds();
-                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0 && second > 12 && second < 18) {
-                    // if ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].indexOf(minute) >= 0 && second < 5) {
-                    if (symbol === 'QQQ' || symbol === 'AAVE-USD') {
-                        console.log(`%c CHECK BUY / SELL `, 'background-color:deeppink;color:black');
-                        console.log(series);
-                    }
-                    const last = series[0].data[series[0].data.length - 2].y;
-                    const last_minus_1 = series[0].data[series[0].data.length - 3].y;
-                    // if (hmm >= 1000 && hmm <= 1300) {
-                        console.log(symbol, last, last_minus_1);
-                        if (last > 0 && last_minus_1 < 0) {
-                            console.log(`%c ${t} | BUY | ${symbol} `, 'background-color:green;color:black');
-                        }
-                    // }
-                    if (last < 0 && last_minus_1 > 0) {
-                        console.log(`%c ${t} | SELL | ${symbol} `, 'background-color:red;color:black');
-                    }
-                }
-                // } else {
-                //     // console.log('skipped', symbol);
-                // }
-            }
+            // const check_buy_sell = (symbol, series) => {
+            //     // if (symbol === 'QQQ') {
+            //     const d = new Date();
+            //     const hmm = HELPERS.getHMM(d);
+            //     const t = d.toLocaleTimeString();
+            //     const minute = d.getMinutes();
+            //     const second = d.getSeconds();
+            //     if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0 && second > 12 && second < 18) {
+            //         // if ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].indexOf(minute) >= 0 && second < 5) {
+            //         if (symbol === 'QQQ' || symbol === 'AAVE-USD') {
+            //             console.log(`%c CHECK BUY / SELL `, 'background-color:deeppink;color:black');
+            //             console.log(series);
+            //         }
+            //         const last = series[0].data[series[0].data.length - 2].y;
+            //         const last_minus_1 = series[0].data[series[0].data.length - 3].y;
+            //         // if (hmm >= 1000 && hmm <= 1300) {
+            //             console.log(symbol, last, last_minus_1);
+            //             if (last > 0 && last_minus_1 < 0) {
+            //                 console.log(`%c ${t} | BUY | ${symbol} `, 'background-color:green;color:black');
+            //             }
+            //         // }
+            //         if (last < 0 && last_minus_1 > 0) {
+            //             console.log(`%c ${t} | SELL | ${symbol} `, 'background-color:red;color:black');
+            //         }
+            //     }
+            //     // } else {
+            //     //     // console.log('skipped', symbol);
+            //     // }
+            // }
             //#endregion
 
             //* MOVE HA last timestamp to end of 5 minutes */
@@ -1005,6 +1007,8 @@ class Chart {
             series.push({ name: 'Bollinger Delta', type: 'bar', data: [] });
             series.push({ name: 'Gain', type: 'area', color: '#0155022b', data: [] });
             series.push({ name: 'BB', type: 'line', color: '#186dff', data: [] });
+            // series.push({ name: 'H', type: 'line', color: '#ffffff', data: [] });
+            // series.push({ name: 'L', type: 'line', color: '#ffffff', data: [] });
 
             //* DATA */
             // const delta = this.options.series[0].data.map((v, i) => { 
@@ -1027,6 +1031,12 @@ class Chart {
             // console.log(bollinger_bollinger_data.map((v)=> {return {x: v.x, y: v.y - seed}}));
             series[2].data = bollinger_data.map((v)=> {return {x: v.x, y: round2(v.y - seed)}})
             extend_series(series[2]);
+
+            // const range = 500;
+            // series[3].data = data.map((v)=> {return {x: v.x, y: range}})
+            // extend_series(series[3]);
+            // series[4].data = data.map((v)=> {return {x: v.x, y: -range}})
+            // extend_series(series[4]);
 
             // // if (show_full_day && hmm < 2001) {
             // //     // const x = hmm <1200
@@ -1079,6 +1089,28 @@ class Chart {
                     min: y_min,
                     max: y_max,
                 },
+                {
+                    seriesName: 'H',
+                    alignZero: true,
+                    opposite: true,
+                    axisTicks: { show: false },
+                    axisBorder: { show: false, color: '#00E396' },
+                    labels: { style: { colors: '#00E396' } },
+                    title: { text: 'Units (positive only)', style: { color: '#00E396' } },
+                    min: y_min,
+                    max: y_max,
+                },
+                {
+                    seriesName: 'L',
+                    alignZero: true,
+                    opposite: true,
+                    axisTicks: { show: false },
+                    axisBorder: { show: false, color: '#00E396' },
+                    labels: { style: { colors: '#00E396' } },
+                    title: { text: 'Units (positive only)', style: { color: '#00E396' } },
+                    min: y_min,
+                    max: y_max,
+                },
             ];
 
             buy_sell = series[0].data[series[0].data.length - 2].y;
@@ -1096,7 +1128,7 @@ class Chart {
             this._render_m2(this.options_candlestick);
             //#endregion
 
-            check_buy_sell(symbol, series);
+            // check_buy_sell(symbol, series);
 
             //#region SUMMARIES
             const chart_card_series = eval(`CHARTS.CHART_V6_${index}`).options_candlestick.series[1].data.slice(0, -1);

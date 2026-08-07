@@ -1106,68 +1106,21 @@
                 const second = dt.getSeconds();
                 const minute = dt.getMinutes();
 
-                if (now || [0, 5, 15, 25, 35, 45, 55].indexOf(second) >= 0) {
+                if (now || [0, 15, 30, 45].indexOf(second) >= 0) {
+                    //* CHECK POSITIONS */
+                    SHARED.POSITIONS = await ACCOUNT.positions();
+                    SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
+                }
+                if (now || [15].indexOf(second) >= 0) {
 
-                    //* TABLE */
                     const seed = 35 * 1000; //** TODO: get from account activity **/
-                    // const rows = CONFIG.HA_SYMBOLS.map((s, i) => {
-                    //     return {
-                    //         symbol: s,
-                    //         delta: i,
-                    //         pct: `${i}`,
-                    //         chg: `${i}`,
-                    //     }
-                    // });
-                    // const totals = {
-                    //     delta: rows.map((v) => v.delta).reduce((p, c) => p + c),
-                    // }
-                    // const table_template = `
-                    //         <table class="w3-hide-small w3-table w3-striped">
-                    //             <thead id="thead" class="w3-border-bottom">
-                    //                 ${'Symbol,Delta, Pct,Change,Position'.split(',').map((v, i) => `
-                    //                 <th style="${i === 5 ? 'width:30%' : ''}">${v}</th>`
-                    // ).join('')}
-                    //             </thead>
-
-                    //             <tbody id="tbody">
-                    //                 <tr class="w3-border-top w3-border-bottom w3-text-blue w3-xlarge">
-                    //                     <td class=""><b>TODAY</b></td>
-                    //                     <td>${totals.delta}</td>
-                    //                     <td>-</td>
-                    //                     <td>-</td>
-                    //                     <td>-</td>
-                    //                 </tr>
-                    //                 ${rows.map((v, i) => `
-                    //                 <tr>
-                    //                     <td class="">${v.symbol}</td>
-                    //                     <td>${v.delta}</td>
-                    //                     <td>-</td>
-                    //                     <td>-</td>
-                    //                     <td>-</td>
-                    //                 </tr>`
-                    // ).join('')}
-                    //                 <tr class="w3-border-top w3-border-bottom">
-                    //                     <td class=""><b>POSITIONS</b></td>
-                    //                     <td>${totals.delta}</td>
-                    //                     <td>-</td>
-                    //                     <td>-</td>
-                    //                     <td>-</td>
-                    //                 </tr>
-                    //             <tbody>
-                    //         </table>
-                    //     `;
-                    // // console.log(rows);
-                    // // console.log(rows);
-                    // // console.log(table_template);
-                    // document.getElementById('output-table').innerHTML = table_template;
 
                     const timeframe = '5M'; //* 1M, 5M, 15M, 30M */
-                    SHARED.POSITIONS = await ACCOUNT.positions();
                     SHARED.ACCOUNT_HISTORY = await ACCOUNT.history('14D', '1D');
                     SHARED.ACCOUNT_DETAIL = await ACCOUNT.detail();
 
-                    //* CHECK POSITIONS */
-                    SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
+                    // //* CHECK POSITIONS */
+                    // SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
 
                     // SHARED.DATA_15M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('15Min') : [];
                     SHARED.DATA_5M = CONFIG.TIMEFRAME === 'minute' ? await FETCH_DATA.get_symbols('5Min') : [];
@@ -1205,10 +1158,15 @@
                 }
                 const elem = document.getElementById('clock');
                 elem.innerText = dt.toLocaleTimeString().split(' ')[0];
-                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0) {
-                    elem.parentElement.parentElement.style.backgroundColor = 'white'
+                if (second > 11 && second < 19) {
+                    elem.style.color = 'white'
                 } else {
-                    elem.parentElement.parentElement.style.backgroundColor = ''
+                    elem.style.color = ''
+                }
+                if ([1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56].indexOf(minute) >= 0) {
+                    elem.parentElement.parentElement.style.border = '3px solid white'
+                } else {
+                    elem.parentElement.parentElement.style.border = ''
                 }
             }
         }
