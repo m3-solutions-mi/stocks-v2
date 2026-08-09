@@ -999,7 +999,7 @@
                     //         ? new Date(Date.now() - (2 * 24 * 60 * 60 * 1000)).toISOString()
                     //         : new Date(calendar[calendar.map((v) => v.date).findIndex((v) => v > HELPERS.getYMD(new Date())) - 2].date).toISOString()
                     //     ;
-                    const start_at = new Date(Date.now() - (2 * 24 * 60 * 60 * 1000)).toISOString();
+                    const start_at = new Date(Date.now() - ((dow === 0 ? 3 : 2) * 24 * 60 * 60 * 1000)).toISOString();
                     // const start_at = new Date('2026-08-05').toISOString();
                     // const start_at = new Date(new Date().setHours(0,0)).toISOString();
                     const end_at = new Date().toISOString();
