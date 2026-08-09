@@ -51,7 +51,7 @@
             <span class="">
 
                 <!--@ Header -->
-                <div class="w3-col s12" _style="margin-bottom:20px;">
+                <div class="w3-col s12 sticky" _style="margin-bottom:20px;max-width:1380px;">
 
                     <!-- LOGO -->
                     <div class="w3-large w3-container w3-card" style="background-color:#6dc573;">
@@ -77,8 +77,8 @@
                                 <span id="clock" onclick="window.location.reload()">-</span>
 
                                 <!-- <input class="w3-medium" type="date" value="2026-07-13" /> -->
-                                <input id="selected-date" class="w3-hide flatpickr flatpickr-input w3-input w3-border"
-                                    style="font-size:18px;" type="text" value="2026-04-17"
+                                <input id="selected-date" class="flatpickr flatpickr-input w3-input w3-border"
+                                    style="font-size:18px;_width:125px;" type="text" value="2026-08-07"
                                     onchange="load_day(this.value)">
                             </b>
                         </div>
@@ -138,7 +138,7 @@
                         <div class="w3-large">
                             <input class="w3-radio w3-margin-left" type="radio" name="group-symbols-list" value=""
                                 onchange="select_symbol_list(this)">
-                            <label contenteditable="true">QQQ,SOXL,MU,SNDK,WDC,DRAM,STX,AVGO</label>
+                            <label contenteditable="true" class="w3-text-green"><b>QQQ,SOXL,MU,SNDK,WDC,DRAM,STX,AVGO</b></label>
                             <!-- <label contenteditable="true">DRAM,MRVL,MU,UMC,SITM,SMCI,SNDK,SOXL,STX,TSEM,PENG,WDC</label> -->
                         </div>
                         <div class="w3-large">
@@ -181,7 +181,7 @@
                         <div class="w3-large">
                             <input class="w3-radio w3-margin-left w3-margin-bottom" type="radio"
                                 name="group-symbols-list" value="" onchange="select_symbol_list(this)">
-                            <label contenteditable="true">AAVE-USD,ETH-USD,BTC-USD,LTC-USD,SOL-USD</label>
+                            <label contenteditable="true" class="w3-text-blue">AAVE-USD,ETH-USD,BTC-USD,LTC-USD,SOL-USD</label>
                         </div>
 
                         <!--@ OPTIONS -->
@@ -337,10 +337,10 @@
                     </span>
                 </span>
 
-                <div class="w3-col s12 w3-large w3-wide w3-border-top w3-padding" style="margin-top:10px;">
+                <div class="w3-col s12 w3-xxlarge w3-wide w3-border-top w3-padding" style="margin-top:10px;">
                     <b>
                         <span id="mobile-account-net" class="w3-left">-</span>
-                        <div class="fa fa-ban w3-text-pink w3-right w3-xlarge w3-margin-left" style="padding-top:1px;"
+                        <div class="fa fa-ban w3-text-pink w3-right w3-margin-left" style="padding-top:15px;"
                             onclick="ACCOUNT.liquidate()"></div>
                         <span id="mobile-account-buying-power" class="w3-right w3-text-blue">-</span>
                     </b>
@@ -1110,8 +1110,19 @@
                     //* CHECK POSITIONS */
                     SHARED.POSITIONS = await ACCOUNT.positions();
                     SHARED.POSITIONS_SUMMARY = ACCOUNT.check_positions(SHARED.POSITIONS);
+                    
+                    if (hmm >= 930 && hmm <= 1600) {
+                        FETCH_DATA.get_data('^IXIC', '1D', 5).then((ixic) => {
+                            console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
+                        })
+                    }
+                    // FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
+                    //     console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
+                    // })
+                    // }
                 }
-                if (now || [15].indexOf(second) >= 0) {
+                // if (now || [15].indexOf(second) >= 0) {
+                if (now || [1, 15, 30, 45].indexOf(second) >= 0) {
 
                     const seed = 35 * 1000; //** TODO: get from account activity **/
 
@@ -1128,17 +1139,6 @@
                     // SHARED.DATA_1D = CONFIG.TIMEFRAME === 'day' ? await FETCH_DATA.get_symbols('1D') : [];
 
                     // if (now || second === 5 || second === 20 || second === 40) {
-
-                    if (hmm >= 930 && hmm <= 1600) {
-                        FETCH_DATA.get_data('^IXIC', '1D', 5).then((ixic) => {
-                            console.log(`%c ^IXIC | ${round3((ixic[ixic.length - 1].c - ixic[ixic.length - 2].c) / ixic[ixic.length - 2].c * 100)} % `, 'background-color:orange;color:black;');
-                        })
-                    }
-                    // FETCH_DATA.get_data('NQ=F', '1D', 10).then((nqf) => {
-                    //     console.log(`%c NQ=F | ${round3((nqf[nqf.length - 1].c - nqf[nqf.length - 2].c) / nqf[nqf.length - 2].c * 100)} % `, 'background-color:teal;color:white;');
-                    // })
-                    // }
-
 
 
                     CONFIG.HA_SYMBOLS.forEach((s, i) => {
@@ -1158,7 +1158,7 @@
                 }
                 const elem = document.getElementById('clock');
                 elem.innerText = dt.toLocaleTimeString().split(' ')[0];
-                if (second > 11 && second < 19) {
+                if (second > 28 && second < 32) {
                     elem.style.color = 'white'
                 } else {
                     elem.style.color = ''
