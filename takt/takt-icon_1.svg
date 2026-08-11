@@ -1,0 +1,40 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B2027"/>
+      <stop offset="100%" stop-color="#232A33"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect x="0" y="0" width="256" height="256" rx="56" fill="url(#bgGrad)"/>
+
+  <!-- ===== Gauge cluster ===== -->
+  <g transform="translate(128,128)">
+    <!-- track rings -->
+    <circle r="88" fill="none" stroke="#2E3642" stroke-width="16"/>
+    <circle r="70" fill="none" stroke="#2E3642" stroke-width="16"/>
+    <circle r="52" fill="none" stroke="#2E3642" stroke-width="16"/>
+    <circle r="34" fill="none" stroke="#2E3642" stroke-width="16"/>
+
+    <!-- OEE ring: 72% -->
+    <circle r="88" fill="none" stroke="#5B7FA6" stroke-width="16" stroke-linecap="round"
+            stroke-dasharray="552.92 552.92" stroke-dashoffset="154.82"
+            transform="rotate(-90)"/>
+    <!-- TEEP ring: 58% -->
+    <circle r="70" fill="none" stroke="#2E8B8B" stroke-width="16" stroke-linecap="round"
+            stroke-dasharray="439.82 439.82" stroke-dashoffset="184.73"
+            transform="rotate(-90)"/>
+    <!-- Yield ring: 85% -->
+    <circle r="52" fill="none" stroke="#8C6A9C" stroke-width="16" stroke-linecap="round"
+            stroke-dasharray="326.73 326.73" stroke-dashoffset="49.01"
+            transform="rotate(-90)"/>
+    <!-- CoQ ring: 35% -->
+    <circle r="34" fill="none" stroke="#9C8A66" stroke-width="16" stroke-linecap="round"
+            stroke-dasharray="213.63 213.63" stroke-dashoffset="138.86"
+            transform="rotate(-90)"/>
+
+    <!-- center hub -->
+    <circle r="8" fill="#ECE8E1"/>
+  </g>
+</svg>
