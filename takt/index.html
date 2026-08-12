@@ -9,17 +9,17 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
 <style>
   :root{
-    --bg:#1B2027;
-    --bg2:#232A33;
-    --panel:#20262E;
-    --track:#2E3642;
-    --ink:#ECE8E1;
-    --muted:#8B93A1;
-    --line:#3A424E;
-    --oee:#5B7FA6;
-    --teep:#2E8B8B;
-    --yield:#8C6A9C;
-    --coq:#9C8A66;
+    --bg:#12161C;
+    --bg2:#1A2029;
+    --panel:#1E252E;
+    --track:#313A46;
+    --ink:#F5F3EF;
+    --muted:#9FA8B5;
+    --line:#3C4552;
+    --oee:#5C89B9;
+    --teep:#20A8A8;
+    --yield:#996FAC;
+    --coq:#AD966A;
   }
   *{box-sizing:border-box;}
   body{
@@ -88,7 +88,7 @@
   .chip:hover{ background:color-mix(in srgb, var(--c) 15%, transparent); }
   .chip.active{
     background:var(--c);
-    color:#12151A;
+    color:#0F1319;
   }
   .chip-settings{
     font-size:15px;
@@ -135,7 +135,7 @@
   }
   .loc-chip.active{
     background:var(--ink);
-    color:#12151A;
+    color:#0F1319;
     border-color:var(--ink);
   }
   .loc-chip:hover:not(.active){border-color:var(--muted); color:var(--ink);}
@@ -234,6 +234,8 @@
     z-index:50;
     align-items:center;
     justify-content:center;
+    padding:16px;
+    box-sizing:border-box;
   }
   .modal-overlay.open{display:flex;}
   .modal-box{
@@ -242,6 +244,9 @@
     border-radius:10px;
     width:460px;
     max-width:92vw;
+    max-height:85vh;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
     padding:22px 24px;
   }
   .modal-header{
@@ -328,7 +333,7 @@
   }
   .btn-cancel{background:transparent; color:var(--muted);}
   .btn-cancel:hover{color:var(--ink); border-color:var(--muted);}
-  .btn-save{background:var(--ink); color:#12151A; border-color:var(--ink);}
+  .btn-save{background:var(--ink); color:#0F1319; border-color:var(--ink);}
   .btn-save:hover{opacity:.9;}
 
   /* ---------- Help modal ---------- */
@@ -353,7 +358,7 @@
   }
   .help-tab.active{
     background:var(--ink);
-    color:#12151A;
+    color:#0F1319;
     border-color:var(--ink);
   }
   .help-tab:hover:not(.active){border-color:var(--muted); color:var(--ink);}
@@ -426,7 +431,7 @@
   }
   .timeframe-bar .w3-button.active, .view-toggle .w3-button.active{
     background:var(--ink);
-    color:#12151A;
+    color:#0F1319;
     border-color:var(--ink);
   }
   .view-toggle{margin-top:4px;}
@@ -476,8 +481,8 @@
     font-size:12px;
     margin-top:4px;
   }
-  .up{color:#7FA872;}
-  .down{color:#B96B6B;}
+  .up{color:#83B573;}
+  .down{color:#C96A6A;}
 
   .mobile-controls{ display:none; } /* shown only on phone, see media query below */
   .mobile-select{
@@ -536,8 +541,8 @@
   }
   .loc-pop-row:hover{ background:var(--bg2); }
   .loc-pop-row input, .loc-pop-area-header input{
-    width:18px; height:18px;
-    accent-color:var(--ink);
+    width:20px; height:20px;
+    accent-color:#5C89B9;
     cursor:pointer;
     flex-shrink:0;
   }
@@ -641,7 +646,7 @@
       <div class="help-panel" id="helpPanelMetrics">
 
       <div class="help-section">
-        <p class="help-heading"><span class="help-swatch" style="background:#5B7FA6"></span>OEE — Overall Equipment Effectiveness</p>
+        <p class="help-heading"><span class="help-swatch" style="background:#5C89B9"></span>OEE — Overall Equipment Effectiveness</p>
         <div class="help-formula">OEE = Availability × Performance × Quality</div>
         <p class="help-desc">
           Availability = Run Time ÷ Planned Time, where Run Time = Planned Time − Downtime.
@@ -651,7 +656,7 @@
       </div>
 
       <div class="help-section">
-        <p class="help-heading"><span class="help-swatch" style="background:#2E8B8B"></span>TEEP — Total Effective Equipment Performance</p>
+        <p class="help-heading"><span class="help-swatch" style="background:#20A8A8"></span>TEEP — Total Effective Equipment Performance</p>
         <div class="help-formula">TEEP = OEE × Utilization</div>
         <p class="help-desc">
           Utilization = Planned Time ÷ Calendar Time (1,440 minutes in a day). TEEP measures OEE against
@@ -660,7 +665,7 @@
       </div>
 
       <div class="help-section">
-        <p class="help-heading"><span class="help-swatch" style="background:#8C6A9C"></span>Yield</p>
+        <p class="help-heading"><span class="help-swatch" style="background:#996FAC"></span>Yield</p>
         <div class="help-formula">Yield = Good Units ÷ Total Units × 100</div>
         <p class="help-desc">
           The share of units produced that were good on the first pass. It's the same ratio used as
@@ -669,7 +674,7 @@
       </div>
 
       <div class="help-section">
-        <p class="help-heading"><span class="help-swatch" style="background:#9C8A66"></span>CoQ — Cost of Quality</p>
+        <p class="help-heading"><span class="help-swatch" style="background:#AD966A"></span>CoQ — Cost of Quality</p>
         <div class="help-formula">CoQ = Cost of Poor Quality ÷ Revenue × 100</div>
         <p class="help-desc">
           The cost of scrap, rework, and defects as a percentage of revenue. Unlike the other three metrics,
@@ -1006,10 +1011,10 @@
 
   // ---------- Metric definitions (targets match the banner rings) ----------
   const METRICS = {
-    OEE:   { label: "Overall Equipment Effectiveness", sub: "Availability × Performance × Quality", color: "#5B7FA6", baseline: 72, unit: "%", betterUp: true },
-    TEEP:  { label: "Total Effective Equipment Performance", sub: "OEE against fully loaded calendar time", color: "#2E8B8B", baseline: 58, unit: "%", betterUp: true },
-    Yield: { label: "Yield", sub: "Good units produced ÷ total units started", color: "#8C6A9C", baseline: 85, unit: "%", betterUp: true },
-    CoQ:   { label: "Cost of Quality", sub: "Cost of poor quality as % of revenue", color: "#9C8A66", baseline: 35, unit: "%", betterUp: false }
+    OEE:   { label: "Overall Equipment Effectiveness", sub: "Availability × Performance × Quality", color: "#5C89B9", baseline: 72, unit: "%", betterUp: true },
+    TEEP:  { label: "Total Effective Equipment Performance", sub: "OEE against fully loaded calendar time", color: "#20A8A8", baseline: 58, unit: "%", betterUp: true },
+    Yield: { label: "Yield", sub: "Good units produced ÷ total units started", color: "#996FAC", baseline: 85, unit: "%", betterUp: true },
+    CoQ:   { label: "Cost of Quality", sub: "Cost of poor quality as % of revenue", color: "#AD966A", baseline: 35, unit: "%", betterUp: false }
   };
 
   // ---------- Locations ----------
@@ -1121,9 +1126,11 @@
   // The raw store only holds 14 days, so Month/YTD reuse the full window available.
   const LOCATION_VIEW_SPAN = { Day: 1, Week: 7, Month: 14, YTD: 14 };
 
-  // Distinct per-location colors for the Polar Area view — cycles if more locations are added.
-  // Kept in the same cool/muted family as the metric colors (no red/yellow/green).
-  const LOCATION_COLORS = ["#5B7FA6", "#2E8B8B", "#8C6A9C", "#9C8A66", "#6C7BA6", "#4F8FA0", "#7A6C9C", "#A67C8C"];
+  // Distinct per-location colors for the Polar Area view — deliberately NOT the same hues as
+  // the metric colors (OEE/TEEP/Yield/CoQ), since reusing those would make a location's wedge
+  // color look like it means something metric-related when it's really just "which location."
+  // No red/orange/yellow/green either, to stay out of "stop light" territory.
+  const LOCATION_COLORS = ["#5770AD", "#AD5791", "#6C95A8", "#AD576C", "#6C57AD", "#5797AD", "#97826C", "#6CA895"];
 
   // ---------- Seeded RNG so the demo looks the same every load ----------
   function mulberry32(seed) {
@@ -1234,7 +1241,7 @@
 
     // Deterministic sample generator for one location/date — swapped out entirely in API mode.
     _generateSampleRecord(loc, rand) {
-      const downtime = Math.round(20 + rand() * 110);                      // minutes of unplanned downtime
+      const downtime = Math.round(20 + rand() * 110);                              // minutes of unplanned downtime
       const planned = Math.round(loc.plannedTime + (rand() - 0.5) * 20);   // varies around configured planned time
       const totalUnits = Math.max(10, Math.round(loc.totalUnits * (0.85 + rand() * 0.3)));
       const qualityFactor = 0.86 + rand() * 0.13;
@@ -1428,15 +1435,31 @@
     const groupBaseline = dayValues.reduce((a, b) => a + b, 0) / dayValues.length;
 
     const n = tf.points;
-    let value = groupBaseline - 10 + rand() * 20;
+    // A believable shape across the period — a gradual improvement/decline plus a soft cyclical
+    // wave (e.g. shift patterns) — rather than pure noise pulled straight back to one flat line,
+    // which read as too flat for a demo. The wave still centers on the real measured baseline,
+    // it just doesn't sit dead flat on it the whole way through.
+    const trendSlope = (rand() - 0.5) * 2.6;      // gentle overall drift across the series
+    const waveAmp = 2.5 + rand() * 3.5;           // 2.5–6 point wave
+    const wavePeriod = 3 + rand() * 3;            // 3–6 points per cycle
+    const wavePhase = rand() * Math.PI * 2;
+
+    let value = groupBaseline - 4 + rand() * 8;
     const raw = [];
     for (let i = 0; i < n; i++) {
-      let step = (rand() - 0.5) * 18;
+      const target = groupBaseline
+        + trendSlope * (i - (n - 1) / 2)
+        + waveAmp * Math.sin((i / wavePeriod) * Math.PI * 2 + wavePhase);
+      let step = (rand() - 0.5) * 5;
       // occasional outlier — a bad shift, a scrap event, a maintenance save
-      if (rand() < 0.18) {
-        step += (rand() - 0.5) * 34;
+      if (rand() < 0.13) {
+        step += (rand() - 0.5) * 9;
       }
-      value += step;
+      // pull back toward the shaped target each step — without this the walk just drifts
+      // unboundedly and tends to get pinned at the 2%/99% clamp, especially for metrics with
+      // a naturally low baseline like TEEP or CoQ.
+      const reversion = (target - value) * 0.5;
+      value += step + reversion;
       value = Math.max(2, Math.min(99, value));
       raw.push(value);
     }
@@ -1566,15 +1589,15 @@
       chart: {
         height: 300,
         toolbar: { show: false },
-        foreColor: "#8B93A1",
+        foreColor: "#9FA8B5",
         background: "transparent",
         animations: { easing: "easeinout", speed: 400 }
       },
       series: [{ name: currentMetric, data }],
       xaxis: {
         categories,
-        axisBorder: { color: "#3A424E" },
-        axisTicks: { color: "#3A424E" }
+        axisBorder: { color: "#3C4552" },
+        axisTicks: { color: "#3C4552" }
       },
       yaxis: {
         min: 0, max: 100,
@@ -1582,7 +1605,7 @@
       },
       colors: [m.color],
       dataLabels: { enabled: false },
-      grid: { borderColor: "#2E3642", strokeDashArray: 3 },
+      grid: { borderColor: "#313A46", strokeDashArray: 3 },
       tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + m.unit } }
     };
 
@@ -1595,15 +1618,15 @@
         chart: { ...baseOptions.chart, type: "polarArea", height: 320 },
         series: data,
         labels: categories,
-        colors: LOCATION_COLORS.slice(0, categories.length),
-        stroke: { colors: ["#1B2027"], width: 2 },
+        colors: categories.map((_, i) => LOCATION_COLORS[i % LOCATION_COLORS.length]),
+        stroke: { colors: ["#12161C"], width: 2 },
         fill: { opacity: 0.85 },
         yaxis: { show: false },
         legend: {
           show: true,
           position: "right",
           fontSize: "12.5px",
-          labels: { colors: "#ECE8E1" },
+          labels: { colors: "#F5F3EF" },
           markers: { width: 10, height: 10, radius: 3 },
           itemMargin: { vertical: 6 },
           // Legend shows each location's real metric value (unlike the wedge labels below,
@@ -1615,8 +1638,8 @@
         },
         plotOptions: {
           polarArea: {
-            rings: { strokeColor: "#2E3642" },
-            spokes: { strokeColor: "#2E3642" }
+            rings: { strokeColor: "#313A46" },
+            spokes: { strokeColor: "#313A46" }
           }
         },
         dataLabels: {
@@ -1651,19 +1674,33 @@
           enabled: true,
           formatter: v => v.toFixed(1) + "%",
           offsetY: -20,
-          style: { colors: ["#ECE8E1"], fontSize: "12px", fontWeight: 700 }
+          style: { colors: ["#F5F3EF"], fontSize: "12px", fontWeight: 700 }
         }
       };
     } else {
+      // Trend-only: scale the axis to fit this metric's actual range. A fixed 0–100 axis
+      // makes a naturally-low metric like TEEP (~20-30%) or CoQ (~5%) look almost flat even
+      // when the real variation is meaningful — Locations/Overview keep the fixed 0–100 scale
+      // since those are about comparing locations against each other, not reading a trend shape.
+      const lo = Math.min(...data), hi = Math.max(...data);
+      const pad = Math.max(4, (hi - lo) * 0.25);
+      let axisMin = Math.max(0, Math.floor((lo - pad) / 5) * 5);
+      let axisMax = Math.min(100, Math.ceil((hi + pad) / 5) * 5);
+      if (axisMax - axisMin < 15) { // guarantee enough vertical room even for a near-flat series
+        const mid = (axisMax + axisMin) / 2;
+        axisMin = Math.max(0, mid - 7.5);
+        axisMax = Math.min(100, mid + 7.5);
+      }
       options = {
         ...baseOptions,
         chart: { ...baseOptions.chart, type: "area" },
+        yaxis: { min: axisMin, max: axisMax, labels: { formatter: v => v.toFixed(0) + "%" } },
         stroke: { curve: "smooth", width: 3 },
         fill: {
           type: "gradient",
           gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0, stops: [0, 90, 100] }
         },
-        markers: { size: 4, colors: [m.color], strokeColors: "#1B2027", strokeWidth: 2 }
+        markers: { size: 4, colors: [m.color], strokeColors: "#12161C", strokeWidth: 2 }
       };
     }
 
