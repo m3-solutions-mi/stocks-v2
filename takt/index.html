@@ -409,6 +409,15 @@
     padding:12px 14px;
     margin-top:4px;
   }
+  .help-benchmark{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.5;
+    margin:8px 0 0 0;
+    padding-left:10px;
+    border-left:2px solid var(--line);
+  }
+  .help-benchmark strong{ color:var(--ink); }
 
   /* ---------- Layout ---------- */
   .wrap{max-width:1200px;margin:0 auto;padding:26px 20px 50px;}
@@ -653,6 +662,12 @@
           Performance = (Total Units × Ideal Cycle Time) ÷ Run Time — how close output ran to the ideal rate.
           Quality = Good Units ÷ Total Units.
         </p>
+        <p class="help-benchmark">
+          <strong>Industry benchmark:</strong> 85%+ is generally considered "world class."
+          40–60% is typical for manufacturers who haven't focused on OEE improvement yet;
+          60–85% is a solid, actively-managed operation. The commonly cited world-class split
+          is roughly 90% Availability × 95% Performance × 99% Quality ≈ 85% OEE.
+        </p>
       </div>
 
       <div class="help-section">
@@ -661,6 +676,13 @@
         <p class="help-desc">
           Utilization = Planned Time ÷ Calendar Time (1,440 minutes in a day). TEEP measures OEE against
           all available time, not just scheduled time — so it's usually lower than OEE.
+        </p>
+        <p class="help-benchmark">
+          <strong>Industry benchmark:</strong> there's no single standard figure the way OEE has 85% —
+          TEEP depends heavily on how many shifts a site chooses to run. A single-shift operation at a
+          world-class 85% OEE only reaches roughly 35% TEEP just from running ~1/3 of the calendar day;
+          the number matters more as a trend over time, or as a case for adding capacity, than as a
+          fixed target.
         </p>
       </div>
 
@@ -671,6 +693,11 @@
           The share of units produced that were good on the first pass. It's the same ratio used as
           Quality inside the OEE formula above.
         </p>
+        <p class="help-benchmark">
+          <strong>Industry benchmark:</strong> varies widely by sector — Six Sigma quality (99.99966%)
+          is the aspirational ceiling, general discrete manufacturing often targets 95–99%, and
+          anything trending under ~90% is usually treated as a quality escape worth investigating.
+        </p>
       </div>
 
       <div class="help-section">
@@ -679,6 +706,11 @@
         <p class="help-desc">
           The cost of scrap, rework, and defects as a percentage of revenue. Unlike the other three metrics,
           lower is better here.
+        </p>
+        <p class="help-benchmark">
+          <strong>Industry benchmark:</strong> world-class organizations typically run CoQ around 1–2%
+          of revenue; 5–10% is common for an average operation; above ~15% usually signals a systemic
+          quality problem worth prioritizing.
         </p>
       </div>
 
@@ -782,6 +814,10 @@
         </p>
       </div>
 
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-save" id="helpCloseBottom" style="width:100%;">Close</button>
       </div>
     </div>
   </div>
@@ -2138,6 +2174,7 @@
     lockPageScroll();
   });
   document.getElementById("helpClose").addEventListener("click", () => { helpModal.classList.remove("open"); unlockPageScroll(); });
+  document.getElementById("helpCloseBottom").addEventListener("click", () => { helpModal.classList.remove("open"); unlockPageScroll(); });
   helpModal.addEventListener("click", (e) => { if (e.target === helpModal) { helpModal.classList.remove("open"); unlockPageScroll(); } });
 
   document.querySelectorAll("#helpTabs .help-tab").forEach(tab => {
