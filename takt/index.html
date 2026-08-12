@@ -723,6 +723,7 @@
           <div class="view-toggle w3-bar">
             <button class="w3-button" data-view="trend"><i class="fa fa-line-chart" style="margin-right:6px;"></i>Trend</button>
             <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>By Location</button>
+            <button class="w3-button" data-view="polar"><i class="fa fa-pie-chart" style="margin-right:6px;"></i>Polar Area</button>
           </div>
         </div>
       </div>
@@ -920,6 +921,10 @@
   // Roughly how many days of raw history feed the "By Location" view for each timeframe.
   // The raw store only holds 14 days, so Month/YTD reuse the full window available.
   const LOCATION_VIEW_SPAN = { Day: 1, Week: 7, Month: 14, YTD: 14 };
+
+  // Distinct per-location colors for the Polar Area view — cycles if more locations are added.
+  // Kept in the same cool/muted family as the metric colors (no red/yellow/green).
+  const LOCATION_COLORS = ["#5B7FA6", "#2E8B8B", "#8C6A9C", "#9C8A66", "#6C7BA6", "#4F8FA0", "#7A6C9C", "#A67C8C"];
 
   // ---------- Seeded RNG so the demo looks the same every load ----------
   function mulberry32(seed) {
@@ -1259,7 +1264,7 @@
   let chartType = null;
   let currentMetric = (savedUIState && METRICS[savedUIState.metric]) ? savedUIState.metric : "OEE";
   let currentTf = (savedUIState && TIMEFRAMES[savedUIState.tf]) ? savedUIState.tf : "Day";
-  let currentView = (savedUIState && ["trend", "byLocation"].includes(savedUIState.view)) ? savedUIState.view : "trend";
+  let currentView = (savedUIState && ["trend", "byLocation", "polar"].includes(savedUIState.view)) ? savedUIState.view : "trend";
 
   // Current value for a metric under whatever timeframe/view/group is currently selected —
   // shared by the main chart's "Current" stat and the banner chip numbers, so they always agree.
@@ -1284,7 +1289,8 @@
 
   function render() {
     const m = METRICS[currentMetric];
-    const { categories, data, mode } = currentView === "byLocation"
+    const usesLocationData = currentView === "byLocation" || currentView === "polar";
+    const { categories, data, mode } = usesLocationData
       ? generateByLocationSeries(currentMetric, currentTf)
       : generateSeries(currentMetric, currentTf);
 
@@ -1344,28 +1350,64 @@
       tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + m.unit } }
     };
 
-    const options = mode === "byLocation"
-      ? {
-          ...baseOptions,
-          chart: { ...baseOptions.chart, type: "bar" },
-          plotOptions: { bar: { borderRadius: 6, columnWidth: "45%", distributed: false } },
-          dataLabels: {
-            enabled: true,
-            formatter: v => v.toFixed(1) + "%",
-            offsetY: -20,
-            style: { colors: ["#ECE8E1"], fontSize: "12px", fontWeight: 700 }
+    let options;
+    if (currentView === "polar") {
+      // Polar charts are circular, so a plain wide container leaves dead space on either
+      // side. A right-hand legend (with each location's real value alongside its color)
+      // fills that space with something useful instead of leaving it blank.
+      options = {
+        chart: { ...baseOptions.chart, type: "polarArea", height: 320 },
+        series: data,
+        labels: categories,
+        colors: LOCATION_COLORS.slice(0, categories.length),
+        stroke: { colors: ["#1B2027"], width: 2 },
+        fill: { opacity: 0.85 },
+        yaxis: { show: false },
+        legend: {
+          show: true,
+          position: "right",
+          fontSize: "12.5px",
+          labels: { colors: "#ECE8E1" },
+          markers: { width: 10, height: 10, radius: 3 },
+          itemMargin: { vertical: 6 },
+          formatter: (label, opts) => {
+            const v = opts.w.globals.series[opts.seriesIndex];
+            return `${label}: ${v.toFixed(1)}%`;
           }
+        },
+        plotOptions: {
+          polarArea: {
+            rings: { strokeColor: "#2E3642" },
+            spokes: { strokeColor: "#2E3642" }
+          }
+        },
+        dataLabels: { enabled: false },
+        tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + "%" } }
+      };
+    } else if (mode === "byLocation") {
+      options = {
+        ...baseOptions,
+        chart: { ...baseOptions.chart, type: "bar" },
+        plotOptions: { bar: { borderRadius: 6, columnWidth: "45%", distributed: false } },
+        dataLabels: {
+          enabled: true,
+          formatter: v => v.toFixed(1) + "%",
+          offsetY: -20,
+          style: { colors: ["#ECE8E1"], fontSize: "12px", fontWeight: 700 }
         }
-      : {
-          ...baseOptions,
-          chart: { ...baseOptions.chart, type: "area" },
-          stroke: { curve: "smooth", width: 3 },
-          fill: {
-            type: "gradient",
-            gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0, stops: [0, 90, 100] }
-          },
-          markers: { size: 4, colors: [m.color], strokeColors: "#1B2027", strokeWidth: 2 }
-        };
+      };
+    } else {
+      options = {
+        ...baseOptions,
+        chart: { ...baseOptions.chart, type: "area" },
+        stroke: { curve: "smooth", width: 3 },
+        fill: {
+          type: "gradient",
+          gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0, stops: [0, 90, 100] }
+        },
+        markers: { size: 4, colors: [m.color], strokeColors: "#1B2027", strokeWidth: 2 }
+      };
+    }
 
     if (chart && chartType === options.chart.type) {
       chart.updateOptions(options, true, true);
