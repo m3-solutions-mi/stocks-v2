@@ -529,6 +529,7 @@
 
       <div class="help-tabs" id="helpTabs">
         <button type="button" class="help-tab active" data-tab="metrics">Metrics</button>
+        <button type="button" class="help-tab" data-tab="edit">Edit Data</button>
         <button type="button" class="help-tab" data-tab="settings">Settings</button>
       </div>
 
@@ -578,6 +579,49 @@
           across every selected location for that day, then computes the ratios once from the totals.
           Averaging each location's percentage instead would overweight smaller lines — summing first
           keeps the group number accurate to actual production volume.
+        </p>
+      </div>
+
+      </div>
+
+      <div class="help-panel" id="helpPanelEdit" style="display:none;">
+
+      <div class="help-section">
+        <p class="help-heading">Date and location</p>
+        <p class="help-desc">
+          Pick a date (defaults to today, limited to the last 14 days) and a location. The location
+          list only shows whatever's currently in your Area/Group selection on the main screen —
+          change that selection first if the location you want isn't listed.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">The seven inputs</p>
+        <p class="help-desc">
+          <strong>Planned Time</strong> — planned production minutes for the day.<br>
+          <strong>Downtime</strong> — unplanned downtime minutes; Run Time = Planned Time − Downtime.<br>
+          <strong>Total Units</strong> — total units produced, good and bad.<br>
+          <strong>Good Units</strong> — units that passed quality; must be ≤ Total Units.<br>
+          <strong>Ideal Cycle Time</strong> — minutes per unit at the ideal rate for this location.<br>
+          <strong>Cost of Poor Quality ($)</strong> — cost of scrap, rework, and defects for the day.<br>
+          <strong>Revenue ($)</strong> — revenue for the day, used as CoQ's denominator.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Live preview</p>
+        <p class="help-desc">
+          The panel below the table recalculates OEE, TEEP, Yield, and CoQ as you type, using the
+          same formulas shown on the Metrics tab — so you can see the effect of an edit before saving it.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Saving</p>
+        <p class="help-note">
+          Save writes this one location's numbers for this one date. It doesn't touch any other
+          location or day, and only affects the Day view and anything built from it — Week/Month/YTD
+          trends are separate synthetic data in this demo.
         </p>
       </div>
 
@@ -636,6 +680,9 @@
       </div>
 
       <select class="edit-select" id="editLocation"></select>
+      <p style="color:var(--muted); font-size:11.5px; margin:-8px 0 12px 0;">
+        Showing locations from your current Area/Group selection.
+      </p>
       <input type="date" class="edit-date" id="editDate">
 
       <table class="edit-table">
@@ -1265,7 +1312,7 @@
   // Current value for a metric under whatever timeframe/view/group is currently selected —
   // shared by the main chart's "Current" stat and the banner chip numbers, so they always agree.
   function computeCurrentValue(metricKey) {
-    if (currentView === "byLocation") {
+    if (currentView === "byLocation" || currentView === "polar") {
       const span = LOCATION_VIEW_SPAN[currentTf] || 1;
       const dates = dailyDates.slice(-span);
       const records = LOCATIONS.filter(l => selectedLocations.has(l.id))
@@ -1502,11 +1549,21 @@
 
   function rebuildEditLocationOptions() {
     editLocationSelect.innerHTML = "";
-    LOCATIONS.forEach(loc => {
-      const opt = document.createElement("option");
-      opt.value = loc.id;
-      opt.textContent = loc.name;
-      editLocationSelect.appendChild(opt);
+    const inGroup = LOCATIONS.filter(l => selectedLocations.has(l.id));
+    const list = inGroup.length ? inGroup : LOCATIONS; // never leave the dropdown empty
+
+    AREAS.forEach(area => {
+      const locsInArea = list.filter(l => l.areaId === area.id);
+      if (!locsInArea.length) return;
+      const group = document.createElement("optgroup");
+      group.label = area.name;
+      locsInArea.forEach(loc => {
+        const opt = document.createElement("option");
+        opt.value = loc.id;
+        opt.textContent = loc.name;
+        group.appendChild(opt);
+      });
+      editLocationSelect.appendChild(group);
     });
   }
 
@@ -1808,11 +1865,18 @@
 
   // ---------- Help modal ----------
   const helpModal = document.getElementById("helpModal");
+  const HELP_TABS = ["metrics", "edit", "settings"];
+
+  function showHelpTab(tabName) {
+    document.querySelectorAll("#helpTabs .help-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tabName));
+    HELP_TABS.forEach(name => {
+      const panel = document.getElementById(`helpPanel${name.charAt(0).toUpperCase()}${name.slice(1)}`);
+      if (panel) panel.style.display = name === tabName ? "" : "none";
+    });
+  }
+
   document.getElementById("helpChip").addEventListener("click", () => {
-    document.querySelectorAll("#helpTabs .help-tab").forEach(t => t.classList.remove("active"));
-    document.querySelector('#helpTabs .help-tab[data-tab="metrics"]').classList.add("active");
-    document.getElementById("helpPanelMetrics").style.display = "";
-    document.getElementById("helpPanelSettings").style.display = "none";
+    showHelpTab("metrics");
     helpModal.classList.add("open");
     lockPageScroll();
   });
@@ -1820,12 +1884,7 @@
   helpModal.addEventListener("click", (e) => { if (e.target === helpModal) { helpModal.classList.remove("open"); unlockPageScroll(); } });
 
   document.querySelectorAll("#helpTabs .help-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll("#helpTabs .help-tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById("helpPanelMetrics").style.display = tab.dataset.tab === "metrics" ? "" : "none";
-      document.getElementById("helpPanelSettings").style.display = tab.dataset.tab === "settings" ? "" : "none";
-    });
+    tab.addEventListener("click", () => showHelpTab(tab.dataset.tab));
   });
 
   // ---------- Area & location group filters ----------
@@ -1966,7 +2025,9 @@
     editDateInput.min = minDate;
     editDateInput.max = maxDate;
     editDateInput.value = maxDate; // defaults to today
-    editLocationSelect.value = LOCATIONS[0].id;
+    rebuildEditLocationOptions(); // reflect the current Area/Group selection
+    const firstOption = editLocationSelect.querySelector("option");
+    if (firstOption) editLocationSelect.value = firstOption.value;
     populateEditTable();
     editModal.classList.add("open");
     lockPageScroll();
