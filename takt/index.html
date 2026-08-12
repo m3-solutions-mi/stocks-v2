@@ -300,6 +300,28 @@
     border-bottom:1px solid var(--line);
     font-size:14px;
   }
+
+  .data-table{width:100%; border-collapse:collapse;}
+  .data-table th{
+    text-align:left;
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--muted);
+    text-transform:uppercase;
+    padding:0 0 10px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .data-table td{
+    padding:11px 4px;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .data-table tbody tr:hover{ background:var(--bg2); }
+  .data-table tbody tr:last-child td{ border-bottom:none; }
+  .data-table td:last-child, .data-table th:last-child{ text-align:right; font-weight:700; }
+  .data-table .dt-up{ color:#83B573; }
+  .data-table .dt-down{ color:#C96A6A; }
+  .data-table .dt-delta{ font-size:11.5px; font-weight:600; margin-left:8px; }
   .edit-swatch{
     display:inline-block;
     width:10px;height:10px;
@@ -935,6 +957,7 @@
             <button class="w3-button" data-view="trend"><i class="fa fa-line-chart" style="margin-right:6px;"></i>Trend</button>
             <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>Locations</button>
             <button class="w3-button" data-view="polar"><i class="fa fa-pie-chart" style="margin-right:6px;"></i>Overview</button>
+            <button class="w3-button" data-view="table"><i class="fa fa-table" style="margin-right:6px;"></i>Table</button>
           </div>
         </div>
       </div>
@@ -951,6 +974,7 @@
           <option value="trend">Trend</option>
           <option value="byLocation">Locations</option>
           <option value="polar">Overview</option>
+          <option value="table">Table</option>
         </select>
       </div>
 
@@ -970,6 +994,14 @@
       </button>
 
       <div id="chart" style="margin-top:10px;"></div>
+      <div id="dataTableWrap" style="display:none; margin-top:10px;">
+        <table class="data-table">
+          <thead>
+            <tr><th id="dataTableCol1">Period</th><th style="text-align:right;">Value</th></tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
 
       <div class="w3-row-padding stat-row">
         <div class="w3-col m3 s6">
@@ -1559,7 +1591,7 @@
   let chartType = null;
   let currentMetric = (savedUIState && METRICS[savedUIState.metric]) ? savedUIState.metric : "OEE";
   let currentTf = (savedUIState && TIMEFRAMES[savedUIState.tf]) ? savedUIState.tf : "Day";
-  let currentView = (savedUIState && ["trend", "byLocation", "polar"].includes(savedUIState.view)) ? savedUIState.view : "trend";
+  let currentView = (savedUIState && ["trend", "byLocation", "polar", "table"].includes(savedUIState.view)) ? savedUIState.view : "trend";
 
   // Current value for a metric under whatever timeframe/view/group is currently selected —
   // shared by the main chart's "Current" stat and the banner chip numbers, so they always agree.
@@ -1579,6 +1611,27 @@
     Object.keys(METRICS).forEach(key => {
       const el = document.querySelector(`.chip-value[data-value="${key}"]`);
       if (el) el.textContent = computeCurrentValue(key).toFixed(1) + "%";
+    });
+  }
+
+  function renderDataTable(metricLabel, categories, data, m) {
+    document.getElementById("chart").style.display = "none";
+    document.getElementById("dataTableWrap").style.display = "block";
+    document.getElementById("dataTableCol1").textContent = "Period";
+
+    const tbody = document.getElementById("dataTableBody");
+    tbody.innerHTML = "";
+    data.forEach((v, i) => {
+      const prev = i > 0 ? data[i - 1] : null;
+      let deltaHtml = "";
+      if (prev !== null) {
+        const d = v - prev;
+        const positive = m.betterUp ? d >= 0 : d <= 0;
+        deltaHtml = `<span class="dt-delta ${positive ? "dt-up" : "dt-down"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d).toFixed(1)}</span>`;
+      }
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${categories[i]}</td><td>${v.toFixed(1)}${m.unit}${deltaHtml}</td>`;
+      tbody.appendChild(row);
     });
   }
 
@@ -1620,6 +1673,14 @@
     deltaEl.className = "stat-delta " + (positive ? "up" : "down");
 
     renderChipValues();
+
+    if (currentView === "table") {
+      if (chart) { chart.destroy(); chart = null; chartType = null; }
+      renderDataTable(m.label, categories, data, m);
+      return;
+    }
+    document.getElementById("dataTableWrap").style.display = "none";
+    document.getElementById("chart").style.display = "block";
 
     const baseOptions = {
       chart: {
