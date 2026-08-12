@@ -272,7 +272,14 @@
     padding:8px 10px;
     font-size:14px;
     margin-bottom:16px;
+    color-scheme:dark; /* tells the browser to render the popup calendar in dark colors */
   }
+  .edit-date::-webkit-calendar-picker-indicator{
+    filter:invert(1) brightness(1.4); /* the icon is black by default and invisible on dark bg */
+    cursor:pointer;
+    opacity:0.8;
+  }
+  .edit-date::-webkit-calendar-picker-indicator:hover{opacity:1;}
   .edit-table{width:100%; border-collapse:collapse;}
   .edit-table th{
     text-align:left;
@@ -1413,6 +1420,8 @@
           labels: { colors: "#ECE8E1" },
           markers: { width: 10, height: 10, radius: 3 },
           itemMargin: { vertical: 6 },
+          // Legend shows each location's real metric value (unlike the wedge labels below,
+          // which show share of the group total) so both readings are available at a glance.
           formatter: (label, opts) => {
             const v = opts.w.globals.series[opts.seriesIndex];
             return `${label}: ${v.toFixed(1)}%`;
@@ -1426,11 +1435,26 @@
         },
         dataLabels: {
           enabled: true,
-          formatter: v => v.toFixed(1) + "%",
+          // Distribute the group's real calculated total (`current`, computed the correct
+          // way from summed raw inputs) across locations by their relative share, so the
+          // labels on the chart add up to the actual metric percentage — not 100%, and not
+          // each location's own independent value.
+          formatter: (val, opts) => {
+            const series = opts.w.globals.series;
+            const sum = series.reduce((a, b) => a + b, 0);
+            const share = sum > 0 ? series[opts.seriesIndex] / sum : 0;
+            return (share * current).toFixed(1) + "%";
+          },
           style: { fontSize: "12px", fontWeight: 700, colors: ["#FFFFFF"] },
           dropShadow: { enabled: false }
         },
-        tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + "%" } }
+        tooltip: {
+          theme: "dark",
+          y: { formatter: (val, opts) => {
+            const v = opts && opts.seriesIndex != null ? opts.w.globals.series[opts.seriesIndex] : val;
+            return v.toFixed(1) + "%";
+          } }
+        }
       };
     } else if (mode === "byLocation") {
       options = {
