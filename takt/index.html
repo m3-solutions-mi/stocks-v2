@@ -1,440 +1,407 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <title>TAKT — Production Intelligence</title>
-    <link id="favicon" rel="icon" href="./takt-icon_1.svg" type="image/png" sizes="256x256">
-    <link rel="icon" type="image/x-icon" href="./takt-icon_1.svg">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.0/css/font-awesome.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
-  <style>
-    :root {
-      --bg: #1B2027;
-      --bg2: #232A33;
-      --panel: #20262E;
-      --track: #2E3642;
-      --ink: #ECE8E1;
-      --muted: #8B93A1;
-      --line: #3A424E;
-      --oee: #5B7FA6;
-      --teep: #2E8B8B;
-      --yield: #8C6A9C;
-      --coq: #9C8A66;
-    }
+<meta charset="UTF-8">
+<title>TAKT — Production Intelligence</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.0/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
+<style>
+  :root{
+    --bg:#1B2027;
+    --bg2:#232A33;
+    --panel:#20262E;
+    --track:#2E3642;
+    --ink:#ECE8E1;
+    --muted:#8B93A1;
+    --line:#3A424E;
+    --oee:#5B7FA6;
+    --teep:#2E8B8B;
+    --yield:#8C6A9C;
+    --coq:#9C8A66;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:Arial, Helvetica, sans-serif;
+    margin:0;
+  }
+  .w3-bar-item, .w3-button{font-family:inherit;}
 
-    * {
-      box-sizing: border-box;
-    }
+  /* ---------- Banner ---------- */
+  .banner{
+    background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+    padding:22px 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .banner-inner{
+    display:flex;
+    align-items:center;
+    gap:22px;
+    flex-wrap:wrap;
+    max-width:1200px;
+    margin:0 auto;
+  }
+  .wordmark{
+    font-weight:900;
+    font-size:40px;
+    letter-spacing:1px;
+    line-height:1;
+    margin:0;
+  }
+  .subtitle{
+    font-size:11px;
+    letter-spacing:3px;
+    color:var(--muted);
+    margin:4px 0 0 0;
+    font-weight:600;
+  }
+  .word-block{margin-right:6px;}
 
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 0;
-    }
+  .chip{
+    font-family:Consolas,'Courier New',monospace;
+    padding:6px 16px;
+    border-radius:14px;
+    border:1.5px solid var(--c);
+    color:var(--c);
+    background:transparent;
+    cursor:pointer;
+    transition:all .15s ease;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:1px;
+    line-height:1.15;
+  }
+  .chip-label{
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:1px;
+    opacity:.85;
+  }
+  .chip-value{
+    font-size:16px;
+    font-weight:800;
+  }
+  .chip:hover{ background:color-mix(in srgb, var(--c) 15%, transparent); }
+  .chip.active{
+    background:var(--c);
+    color:#12151A;
+  }
+  .chip-settings{
+    font-size:15px;
+    padding:8px 12px;
+    border-radius:16px;
+    border:1.5px solid var(--line);
+    color:var(--muted);
+    background:transparent;
+    cursor:pointer;
+    transition:all .15s ease;
+    line-height:1;
+  }
+  .chip-settings:hover{
+    border-color:var(--muted);
+    color:var(--ink);
+    background:color-mix(in srgb, var(--muted) 12%, transparent);
+  }
 
-    .w3-bar-item,
-    .w3-button {
-      font-family: inherit;
-    }
+  /* ---------- Location filter ---------- */
+  .location-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .location-label{
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-right:4px;
+  }
+  .loc-chip{
+    font-size:12.5px;
+    font-weight:600;
+    padding:6px 14px;
+    border-radius:14px;
+    border:1.5px solid var(--line);
+    color:var(--muted);
+    background:transparent;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .loc-chip.active{
+    background:var(--ink);
+    color:#12151A;
+    border-color:var(--ink);
+  }
+  .loc-chip:hover:not(.active){border-color:var(--muted); color:var(--ink);}
 
-    /* ---------- Banner ---------- */
-    .banner {
-      background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
-      padding: 22px 28px;
-      border-bottom: 1px solid var(--line);
-    }
+  .edit-select{
+    width:100%;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    padding:8px 10px;
+    font-size:14px;
+    margin-bottom:12px;
+  }
+  .edit-preview{
+    margin-top:16px;
+    padding:12px 14px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    text-align:center;
+  }
+  .edit-preview div p:first-child{
+    font-size:10px;
+    letter-spacing:1px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin:0 0 4px 0;
+  }
+  .edit-preview div p:last-child{
+    font-size:16px;
+    font-weight:800;
+    margin:0;
+  }
 
-    .banner-inner {
-      display: flex;
-      align-items: center;
-      gap: 22px;
-      flex-wrap: wrap;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+  /* ---------- Edit modal ---------- */
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(10,12,15,.6);
+    z-index:50;
+    align-items:center;
+    justify-content:center;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    width:460px;
+    max-width:92vw;
+    padding:22px 24px;
+  }
+  .modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .modal-title{
+    font-size:17px;
+    font-weight:800;
+    margin:0;
+  }
+  .modal-close{
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-size:16px;
+    cursor:pointer;
+  }
+  .modal-close:hover{color:var(--ink);}
+  .edit-date{
+    width:100%;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    padding:8px 10px;
+    font-size:14px;
+    margin-bottom:16px;
+  }
+  .edit-table{width:100%; border-collapse:collapse;}
+  .edit-table th{
+    text-align:left;
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--muted);
+    text-transform:uppercase;
+    padding:0 0 8px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .edit-table td{
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .edit-swatch{
+    display:inline-block;
+    width:10px;height:10px;
+    border-radius:50%;
+    margin-right:8px;
+  }
+  .edit-input{
+    width:80px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    padding:6px 8px;
+    font-size:14px;
+    text-align:right;
+  }
+  .edit-input:focus{outline:none; border-color:var(--muted);}
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:18px;
+  }
+  .btn-cancel, .btn-save{
+    padding:9px 18px;
+    border-radius:7px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    border:1px solid var(--line);
+  }
+  .btn-cancel{background:transparent; color:var(--muted);}
+  .btn-cancel:hover{color:var(--ink); border-color:var(--muted);}
+  .btn-save{background:var(--ink); color:#12151A; border-color:var(--ink);}
+  .btn-save:hover{opacity:.9;}
 
-    .wordmark {
-      font-weight: 900;
-      font-size: 40px;
-      letter-spacing: 1px;
-      line-height: 1;
-      margin: 0;
-    }
+  /* ---------- Help modal ---------- */
+  .help-box{width:520px;}
+  .help-section{
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .help-section:last-child{border-bottom:none; padding-bottom:0;}
+  .help-heading{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:0 0 6px 0;
+    font-size:15px;
+    font-weight:800;
+  }
+  .help-swatch{
+    display:inline-block;
+    width:10px;height:10px;
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  .help-formula{
+    font-family:Consolas,'Courier New',monospace;
+    font-size:12.5px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 10px;
+    margin:6px 0 8px 0;
+    color:var(--ink);
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+  .help-desc{
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.5;
+    margin:0;
+  }
+  .help-note{
+    font-size:12.5px;
+    color:var(--muted);
+    line-height:1.5;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-top:4px;
+  }
 
-    .subtitle {
-      font-size: 11px;
-      letter-spacing: 3px;
-      color: var(--muted);
-      margin: 4px 0 0 0;
-      font-weight: 600;
-    }
-
-    .word-block {
-      margin-right: 6px;
-    }
-
-    .chip {
-      font-family: Consolas, 'Courier New', monospace;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 7px 16px;
-      border-radius: 16px;
-      border: 1.5px solid var(--c);
-      color: var(--c);
-      background: transparent;
-      cursor: pointer;
-      transition: all .15s ease;
-      letter-spacing: .5px;
-    }
-
-    .chip:hover {
-      background: color-mix(in srgb, var(--c) 15%, transparent);
-    }
-
-    .chip.active {
-      background: var(--c);
-      color: #12151A;
-    }
-
-    .chip-settings {
-      font-size: 15px;
-      padding: 8px 12px;
-      border-radius: 16px;
-      border: 1.5px solid var(--line);
-      color: var(--muted);
-      background: transparent;
-      cursor: pointer;
-      transition: all .15s ease;
-      line-height: 1;
-    }
-
-    .chip-settings:hover {
-      border-color: var(--muted);
-      color: var(--ink);
-      background: color-mix(in srgb, var(--muted) 12%, transparent);
-    }
-
-    /* ---------- Location filter ---------- */
-    .location-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .location-label {
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-right: 4px;
-    }
-
-    .loc-chip {
-      font-size: 12.5px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 14px;
-      border: 1.5px solid var(--line);
-      color: var(--muted);
-      background: transparent;
-      cursor: pointer;
-      transition: all .15s ease;
-    }
-
-    .loc-chip.active {
-      background: var(--ink);
-      color: #12151A;
-      border-color: var(--ink);
-    }
-
-    .loc-chip:hover:not(.active) {
-      border-color: var(--muted);
-      color: var(--ink);
-    }
-
-    .edit-select {
-      width: 100%;
-      background: var(--bg2);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      color: var(--ink);
-      padding: 8px 10px;
-      font-size: 14px;
-      margin-bottom: 12px;
-    }
-
-    .edit-preview {
-      margin-top: 16px;
-      padding: 12px 14px;
-      background: var(--bg2);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      text-align: center;
-    }
-
-    .edit-preview div p:first-child {
-      font-size: 10px;
-      letter-spacing: 1px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin: 0 0 4px 0;
-    }
-
-    .edit-preview div p:last-child {
-      font-size: 16px;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    /* ---------- Edit modal ---------- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(10, 12, 15, .6);
-      z-index: 50;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-overlay.open {
-      display: flex;
-    }
-
-    .modal-box {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      width: 460px;
-      max-width: 92vw;
-      padding: 22px 24px;
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    .modal-title {
-      font-size: 17px;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    .modal-close {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .modal-close:hover {
-      color: var(--ink);
-    }
-
-    .edit-date {
-      width: 100%;
-      background: var(--bg2);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      color: var(--ink);
-      padding: 8px 10px;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-
-    .edit-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .edit-table th {
-      text-align: left;
-      font-size: 11px;
-      letter-spacing: 1px;
-      color: var(--muted);
-      text-transform: uppercase;
-      padding: 0 0 8px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .edit-table td {
-      padding: 10px 0;
-      border-bottom: 1px solid var(--line);
-      font-size: 14px;
-    }
-
-    .edit-swatch {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-
-    .edit-input {
-      width: 80px;
-      background: var(--bg2);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      color: var(--ink);
-      padding: 6px 8px;
-      font-size: 14px;
-      text-align: right;
-    }
-
-    .edit-input:focus {
-      outline: none;
-      border-color: var(--muted);
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .btn-cancel,
-    .btn-save {
-      padding: 9px 18px;
-      border-radius: 7px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid var(--line);
-    }
-
-    .btn-cancel {
-      background: transparent;
-      color: var(--muted);
-    }
-
-    .btn-cancel:hover {
-      color: var(--ink);
-      border-color: var(--muted);
-    }
-
-    .btn-save {
-      background: var(--ink);
-      color: #12151A;
-      border-color: var(--ink);
-    }
-
-    .btn-save:hover {
-      opacity: .9;
-    }
-
-    /* ---------- Layout ---------- */
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 26px 20px 50px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 20px 22px;
-    }
-
-    .timeframe-bar .w3-button {
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      margin-right: 8px;
-      padding: 8px 18px;
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: .5px;
-    }
-
-    .timeframe-bar .w3-button.active {
-      background: var(--ink);
-      color: #12151A;
-      border-color: var(--ink);
-    }
-
-    .metric-title {
-      font-size: 20px;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    .metric-sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin: 2px 0 0 0;
-    }
-
-    .stat-row {
-      margin-top: 18px;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .stat-row>.w3-col {
-      flex: 1 1 200px;
-      width: auto !important;
-      padding: 0 !important;
-      display: flex;
-    }
-
-    .stat-card {
-      background: var(--bg2);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px 16px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin: 0 0 6px 0;
-    }
-
-    .stat-value {
-      font-size: 26px;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    .stat-delta {
-      font-size: 12px;
-      margin-top: 4px;
-    }
-
-    .up {
-      color: #7FA872;
-    }
-
-    .down {
-      color: #B96B6B;
-    }
-  </style>
+  /* ---------- Layout ---------- */
+  .wrap{max-width:1200px;margin:0 auto;padding:26px 20px 50px;}
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 22px;
+  }
+  .timeframe-bar .w3-button, .view-toggle .w3-button{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-right:8px;
+    padding:8px 18px;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.5px;
+  }
+  .timeframe-bar .w3-button.active, .view-toggle .w3-button.active{
+    background:var(--ink);
+    color:#12151A;
+    border-color:var(--ink);
+  }
+  .view-toggle{margin-top:4px;}
+  .view-toggle .w3-button{padding:6px 14px; font-size:12.5px;}
+  .metric-title{
+    font-size:20px;
+    font-weight:800;
+    margin:0;
+  }
+  .metric-sub{
+    color:var(--muted);
+    font-size:13px;
+    margin:2px 0 0 0;
+  }
+  .stat-row{
+    margin-top:18px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:16px;
+  }
+  .stat-row > .w3-col{
+    flex:0 1 220px;
+    width:220px !important;
+    padding:0 !important;
+    display:flex;
+  }
+  .stat-card{
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+  }
+  .stat-label{
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin:0 0 6px 0;
+  }
+  .stat-value{
+    font-size:26px;
+    font-weight:800;
+    margin:0;
+  }
+  .stat-delta{
+    font-size:12px;
+    margin-top:4px;
+  }
+  .up{color:#7FA872;}
+  .down{color:#B96B6B;}
+</style>
 </head>
-
 <body>
 
   <!-- ===== Banner ===== -->
@@ -442,19 +409,19 @@
     <div class="banner-inner">
       <svg width="72" height="72" viewBox="0 0 220 220">
         <g transform="translate(110,110)">
-          <circle r="70" fill="none" stroke="var(--track)" stroke-width="8" />
-          <circle r="56" fill="none" stroke="var(--track)" stroke-width="8" />
-          <circle r="42" fill="none" stroke="var(--track)" stroke-width="8" />
-          <circle r="28" fill="none" stroke="var(--track)" stroke-width="8" />
+          <circle r="70" fill="none" stroke="var(--track)" stroke-width="8"/>
+          <circle r="56" fill="none" stroke="var(--track)" stroke-width="8"/>
+          <circle r="42" fill="none" stroke="var(--track)" stroke-width="8"/>
+          <circle r="28" fill="none" stroke="var(--track)" stroke-width="8"/>
           <circle r="70" fill="none" stroke="var(--oee)" stroke-width="8" stroke-linecap="round"
-            stroke-dasharray="439.82 439.82" stroke-dashoffset="123.15" transform="rotate(-90)" />
+                  stroke-dasharray="439.82 439.82" stroke-dashoffset="123.15" transform="rotate(-90)"/>
           <circle r="56" fill="none" stroke="var(--teep)" stroke-width="8" stroke-linecap="round"
-            stroke-dasharray="351.86 351.86" stroke-dashoffset="147.78" transform="rotate(-90)" />
+                  stroke-dasharray="351.86 351.86" stroke-dashoffset="147.78" transform="rotate(-90)"/>
           <circle r="42" fill="none" stroke="var(--yield)" stroke-width="8" stroke-linecap="round"
-            stroke-dasharray="263.89 263.89" stroke-dashoffset="39.58" transform="rotate(-90)" />
+                  stroke-dasharray="263.89 263.89" stroke-dashoffset="39.58" transform="rotate(-90)"/>
           <circle r="28" fill="none" stroke="var(--coq)" stroke-width="8" stroke-linecap="round"
-            stroke-dasharray="175.93 175.93" stroke-dashoffset="114.35" transform="rotate(-90)" />
-          <circle r="5" fill="var(--ink)" />
+                  stroke-dasharray="175.93 175.93" stroke-dashoffset="114.35" transform="rotate(-90)"/>
+          <circle r="5" fill="var(--ink)"/>
         </g>
       </svg>
 
@@ -464,10 +431,13 @@
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:auto;">
-        <button class="chip" data-metric="OEE" style="--c:var(--oee)">OEE</button>
-        <button class="chip" data-metric="TEEP" style="--c:var(--teep)">TEEP</button>
-        <button class="chip" data-metric="Yield" style="--c:var(--yield)">YIELD</button>
-        <button class="chip" data-metric="CoQ" style="--c:var(--coq)">CoQ</button>
+        <button class="chip" data-metric="OEE"   style="--c:var(--oee)"><span class="chip-label">OEE</span><span class="chip-value" data-value="OEE">—</span></button>
+        <button class="chip" data-metric="TEEP"  style="--c:var(--teep)"><span class="chip-label">TEEP</span><span class="chip-value" data-value="TEEP">—</span></button>
+        <button class="chip" data-metric="Yield" style="--c:var(--yield)"><span class="chip-label">YIELD</span><span class="chip-value" data-value="Yield">—</span></button>
+        <button class="chip" data-metric="CoQ"   style="--c:var(--coq)"><span class="chip-label">CoQ</span><span class="chip-value" data-value="CoQ">—</span></button>
+        <button class="chip-settings" id="helpChip" title="How these are calculated" aria-label="Help">
+          <i class="fa fa-info-circle"></i>
+        </button>
         <button class="chip-settings" id="editChip" title="Edit daily data" aria-label="Edit daily data">
           <i class="fa fa-pencil-square-o"></i>
         </button>
@@ -477,6 +447,63 @@
       </div>
     </div>
   </header>
+
+  <!-- ===== Help modal ===== -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-box help-box">
+      <div class="modal-header">
+        <p class="modal-title">How these are calculated</p>
+        <button class="modal-close" id="helpClose" aria-label="Close"><i class="fa fa-times"></i></button>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading"><span class="help-swatch" style="background:#5B7FA6"></span>OEE — Overall Equipment Effectiveness</p>
+        <div class="help-formula">OEE = Availability × Performance × Quality</div>
+        <p class="help-desc">
+          Availability = Run Time ÷ Planned Time, where Run Time = Planned Time − Downtime.
+          Performance = (Total Units × Ideal Cycle Time) ÷ Run Time — how close output ran to the ideal rate.
+          Quality = Good Units ÷ Total Units.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading"><span class="help-swatch" style="background:#2E8B8B"></span>TEEP — Total Effective Equipment Performance</p>
+        <div class="help-formula">TEEP = OEE × Utilization</div>
+        <p class="help-desc">
+          Utilization = Planned Time ÷ Calendar Time (1,440 minutes in a day). TEEP measures OEE against
+          all available time, not just scheduled time — so it's usually lower than OEE.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading"><span class="help-swatch" style="background:#8C6A9C"></span>Yield</p>
+        <div class="help-formula">Yield = Good Units ÷ Total Units × 100</div>
+        <p class="help-desc">
+          The share of units produced that were good on the first pass. It's the same ratio used as
+          Quality inside the OEE formula above.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading"><span class="help-swatch" style="background:#9C8A66"></span>CoQ — Cost of Quality</p>
+        <div class="help-formula">CoQ = Cost of Poor Quality ÷ Revenue × 100</div>
+        <p class="help-desc">
+          The cost of scrap, rework, and defects as a percentage of revenue. Unlike the other three metrics,
+          lower is better here.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Combining locations into a group</p>
+        <p class="help-note">
+          When more than one location is selected, TAKT sums the raw inputs (time, units, cost, revenue)
+          across every selected location for that day, then computes the ratios once from the totals.
+          Averaging each location's percentage instead would overweight smaller lines — summing first
+          keeps the group number accurate to actual production volume.
+        </p>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== Edit data modal ===== -->
   <div class="modal-overlay" id="editModal">
@@ -491,10 +518,7 @@
 
       <table class="edit-table">
         <thead>
-          <tr>
-            <th>Input</th>
-            <th style="text-align:right;">Value</th>
-          </tr>
+          <tr><th>Input</th><th style="text-align:right;">Value</th></tr>
         </thead>
         <tbody id="editTableBody"></tbody>
       </table>
@@ -519,11 +543,19 @@
         </div>
         <div class="w3-col m5" style="text-align:right;">
           <div class="timeframe-bar w3-bar">
-            <button class="w3-button" data-tf="Today">Today</button>
             <button class="w3-button" data-tf="Day">Day</button>
             <button class="w3-button" data-tf="Week">Week</button>
             <button class="w3-button" data-tf="Month">Month</button>
             <button class="w3-button" data-tf="YTD">YTD</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="w3-row-padding" style="align-items:center; margin-top:2px;">
+        <div class="w3-col m12" style="text-align:right;">
+          <div class="view-toggle w3-bar">
+            <button class="w3-button" data-view="trend"><i class="fa fa-line-chart" style="margin-right:6px;"></i>Trend</button>
+            <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>By Location</button>
           </div>
         </div>
       </div>
@@ -565,459 +597,565 @@
     </div>
 
     <p style="color:var(--muted); font-size:12px; margin-top:14px;">
-      Sample data shown for demonstration. Toggle locations above to change the group the metrics are calculated
-      from, or use the pencil icon to edit a location's raw shift data for a given day.
+      Sample data shown for demonstration. Switch between Trend and By Location above to change how the chart
+      is grouped, toggle locations to change who's in the group, or use the pencil icon to edit a location's
+      raw shift data for a given day — edits are saved in this browser and persist across reloads.
+      <a href="#" id="resetEdits" style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved edits</a>
     </p>
   </div>
 
-  <script>
-    // ---------- Metric definitions (targets match the banner rings) ----------
-    const METRICS = {
-      OEE: { label: "Overall Equipment Effectiveness", sub: "Availability × Performance × Quality", color: "#5B7FA6", baseline: 72, unit: "%", betterUp: true },
-      TEEP: { label: "Total Effective Equipment Performance", sub: "OEE against fully loaded calendar time", color: "#2E8B8B", baseline: 58, unit: "%", betterUp: true },
-      Yield: { label: "Yield", sub: "Good units produced ÷ total units started", color: "#8C6A9C", baseline: 85, unit: "%", betterUp: true },
-      CoQ: { label: "Cost of Quality", sub: "Cost of poor quality as % of revenue", color: "#9C8A66", baseline: 35, unit: "%", betterUp: false }
+<script>
+  // ---------- Metric definitions (targets match the banner rings) ----------
+  const METRICS = {
+    OEE:   { label: "Overall Equipment Effectiveness", sub: "Availability × Performance × Quality", color: "#5B7FA6", baseline: 72, unit: "%", betterUp: true },
+    TEEP:  { label: "Total Effective Equipment Performance", sub: "OEE against fully loaded calendar time", color: "#2E8B8B", baseline: 58, unit: "%", betterUp: true },
+    Yield: { label: "Yield", sub: "Good units produced ÷ total units started", color: "#8C6A9C", baseline: 85, unit: "%", betterUp: true },
+    CoQ:   { label: "Cost of Quality", sub: "Cost of poor quality as % of revenue", color: "#9C8A66", baseline: 35, unit: "%", betterUp: false }
+  };
+
+  // ---------- Locations ----------
+  // Each location's shift length, cycle time, and typical daily scale is configured here.
+  // Change these values to model a different site — everything downstream (sample data,
+  // edit-modal defaults) is generated from these numbers.
+  const LOCATIONS = [
+    {
+      id: "line1",
+      name: "Line 1 — Mesa, AZ",
+      idealCycleTime: 0.42,     // minutes per unit at ideal rate
+      plannedTime: 480,         // planned production minutes per day
+      totalUnits: 900,          // typical total units produced per day
+      coqCost: 1800,            // typical $ cost of poor quality per day
+      revenue: 32000            // typical $ revenue per day
+    },
+    {
+      id: "line2",
+      name: "Line 2 — Dayton, OH",
+      idealCycleTime: 0.55,
+      plannedTime: 480,
+      totalUnits: 700,
+      coqCost: 2200,
+      revenue: 41000
+    },
+    {
+      id: "line3",
+      name: "Line 3 — Querétaro, MX",
+      idealCycleTime: 0.38,
+      plannedTime: 450,
+      totalUnits: 1000,
+      coqCost: 1200,
+      revenue: 28000
+    }
+  ];
+
+  const TIMEFRAMES = {
+    Day:   { points: 14, unitLabel: "day"   },
+    Week:  { points: 12, unitLabel: "week"  },
+    Month: { points: 8,  unitLabel: "month" }, // Jan–Aug, YTD through current month
+    YTD:   { points: 8,  unitLabel: "month", cumulative: true }
+  };
+
+  // Roughly how many days of raw history feed the "By Location" view for each timeframe.
+  // The raw store only holds 14 days, so Month/YTD reuse the full window available.
+  const LOCATION_VIEW_SPAN = { Day: 1, Week: 7, Month: 14, YTD: 14 };
+
+  // ---------- Seeded RNG so the demo looks the same every load ----------
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
+  }
 
-    // ---------- Locations ----------
-    // Each location's shift length, cycle time, and typical daily scale is configured here.
-    // Change these values to model a different site — everything downstream (sample data,
-    // edit-modal defaults) is generated from these numbers.
-    const LOCATIONS = [
-      {
-        id: "line1",
-        name: "Line 1 — Mesa, AZ",
-        idealCycleTime: 0.42,     // minutes per unit at ideal rate
-        plannedTime: 480,         // planned production minutes per day
-        totalUnits: 900,          // typical total units produced per day
-        coqCost: 1800,            // typical $ cost of poor quality per day
-        revenue: 32000            // typical $ revenue per day
-      },
-      {
-        id: "line2",
-        name: "Line 2 — Dayton, OH",
-        idealCycleTime: 0.55,
-        plannedTime: 480,
-        totalUnits: 700,
-        coqCost: 2200,
-        revenue: 41000
-      },
-      {
-        id: "line3",
-        name: "Line 3 — Querétaro, MX",
-        idealCycleTime: 0.38,
-        plannedTime: 450,
-        totalUnits: 1000,
-        coqCost: 1200,
-        revenue: 28000
-      },
-      {
-        id: "QA01",
-        name: "QA01",
-        idealCycleTime: 0.38,
-        plannedTime: 450,
-        totalUnits: 1000,
-        coqCost: 1200,
-        revenue: 28000
-      }
-    ];
+  function isoDate(d) {
+    const off = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - off * 60000);
+    return local.toISOString().slice(0, 10);
+  }
 
-    const TIMEFRAMES = {
-      Today: { hourly: true, unitLabel: "hour" },
-      Day: { points: 14, unitLabel: "day" },
-      Week: { points: 12, unitLabel: "week" },
-      Month: { points: 8, unitLabel: "month" }, // Jan–Aug, YTD through current month
-      YTD: { points: 8, unitLabel: "month", cumulative: true }
-    };
+  function friendlyDate(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
 
-    // ---------- Seeded RNG so the demo looks the same every load ----------
-    function mulberry32(seed) {
-      return function () {
-        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  // ---------- Daily data store (the "manual daily input" the app is built around) ----------
+  // Backs the Day view and the edit-data table. Editing here changes what the chart shows.
+  const DAY_COUNT = 14;
+  const dailyDates = (() => {
+    const dates = [];
+    const today = new Date();
+    for (let i = DAY_COUNT - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      dates.push(isoDate(d));
+    }
+    return dates;
+  })();
+
+  // ---------- Persistence ----------
+  // Edits made in the modal are saved to localStorage so they survive a page reload.
+  // Only the fields a user has actually edited are stored — everything else keeps
+  // coming from the generated sample data above.
+  const STORAGE_KEY = "takt-edits-v1";
+
+  function loadOverrides() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      console.warn("Could not read saved edits:", e);
+      return {};
+    }
+  }
+
+  function saveOverrides(overrides) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+    } catch (e) {
+      console.warn("Could not save edit:", e);
+    }
+  }
+
+  const overrides = loadOverrides();
+
+  // ---------- Raw daily shift data (the "manual daily input" the app is built around) ----------
+  // Stored per location, per date. OEE/TEEP/Yield/CoQ are CALCULATED from this, never stored directly.
+  // A "group" of locations is aggregated by summing raw inputs first, then computing ratios —
+  // this is the correct way to combine OEE across lines, not averaging percentages.
+
+  const rawStore = {};
+  LOCATIONS.forEach(loc => {
+    rawStore[loc.id] = {};
+    const rand = mulberry32(loc.id.charCodeAt(0) * 131 + loc.id.length * 41);
+    dailyDates.forEach(dateStr => {
+      const downtime = Math.round(20 + rand() * 110);                        // minutes of unplanned downtime
+      const planned = Math.round(loc.plannedTime + (rand() - 0.5) * 20);     // varies slightly around configured planned time
+      const totalUnits = Math.max(10, Math.round(loc.totalUnits * (0.85 + rand() * 0.3)));   // ±15% of configured total units
+      const qualityFactor = 0.86 + rand() * 0.13;                            // good-unit rate
+      const goodUnits = Math.max(1, Math.round(totalUnits * qualityFactor));
+      const coqCost = Math.max(0, Math.round(loc.coqCost * (0.7 + rand() * 0.6)));           // ±30% of configured CoQ cost
+      const revenue = Math.max(0, Math.round(loc.revenue * (0.85 + rand() * 0.3)));          // ±15% of configured revenue
+
+      rawStore[loc.id][dateStr] = {
+        planned, downtime, totalUnits, goodUnits,
+        idealCycleTime: loc.idealCycleTime, coqCost, revenue
       };
-    }
-
-    function todayHourCount() {
-      // how many hours of "today" have elapsed — keeps the demo feeling live
-      return Math.max(6, new Date().getHours() + 1);
-    }
-
-    function hourLabel(h) {
-      const period = h < 12 ? "AM" : "PM";
-      let hour12 = h % 12;
-      if (hour12 === 0) hour12 = 12;
-      return `${hour12} ${period}`;
-    }
-
-    function isoDate(d) {
-      const off = d.getTimezoneOffset();
-      const local = new Date(d.getTime() - off * 60000);
-      return local.toISOString().slice(0, 10);
-    }
-
-    function friendlyDate(dateStr) {
-      const d = new Date(dateStr + "T00:00:00");
-      return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    }
-
-    // ---------- Daily data store (the "manual daily input" the app is built around) ----------
-    // Backs the Day view and the edit-data table. Editing here changes what the chart shows.
-    const DAY_COUNT = 14;
-    const dailyDates = (() => {
-      const dates = [];
-      const today = new Date();
-      for (let i = DAY_COUNT - 1; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        dates.push(isoDate(d));
-      }
-      return dates;
-    })();
-
-    // ---------- Raw daily shift data (the "manual daily input" the app is built around) ----------
-    // Stored per location, per date. OEE/TEEP/Yield/CoQ are CALCULATED from this, never stored directly.
-    // A "group" of locations is aggregated by summing raw inputs first, then computing ratios —
-    // this is the correct way to combine OEE across lines, not averaging percentages.
-
-    const rawStore = {};
-    LOCATIONS.forEach(loc => {
-      rawStore[loc.id] = {};
-      const rand = mulberry32(loc.id.charCodeAt(0) * 131 + loc.id.length * 41);
-      dailyDates.forEach(dateStr => {
-        const downtime = Math.round(20 + rand() * 110);                        // minutes of unplanned downtime
-        const planned = Math.round(loc.plannedTime + (rand() - 0.5) * 20);     // varies slightly around configured planned time
-        const totalUnits = Math.max(10, Math.round(loc.totalUnits * (0.85 + rand() * 0.3)));   // ±15% of configured total units
-        const qualityFactor = 0.86 + rand() * 0.13;                            // good-unit rate
-        const goodUnits = Math.max(1, Math.round(totalUnits * qualityFactor));
-        const coqCost = Math.max(0, Math.round(loc.coqCost * (0.7 + rand() * 0.6)));           // ±30% of configured CoQ cost
-        const revenue = Math.max(0, Math.round(loc.revenue * (0.85 + rand() * 0.3)));          // ±15% of configured revenue
-
-        rawStore[loc.id][dateStr] = {
-          planned, downtime, totalUnits, goodUnits,
-          idealCycleTime: loc.idealCycleTime, coqCost, revenue
-        };
-      });
     });
 
-    function round1(v) { return Math.round(v * 10) / 10; }
-
-    // Combines any number of location raw records for the same date into one set of metrics.
-    function computeAggregateMetrics(records) {
-      if (!records.length) return { OEE: 0, TEEP: 0, Yield: 0, CoQ: 0 };
-      let planned = 0, downtime = 0, totalUnits = 0, goodUnits = 0, coqCost = 0, revenue = 0, idealUnitsWeighted = 0;
-      records.forEach(r => {
-        planned += r.planned;
-        downtime += r.downtime;
-        totalUnits += r.totalUnits;
-        goodUnits += r.goodUnits;
-        coqCost += r.coqCost;
-        revenue += r.revenue;
-        idealUnitsWeighted += r.totalUnits * r.idealCycleTime;
-      });
-      const runTime = Math.max(1, planned - downtime);
-      const availability = Math.min(1, runTime / planned);
-      const performance = Math.min(1.1, idealUnitsWeighted / runTime);
-      const quality = totalUnits > 0 ? goodUnits / totalUnits : 0;
-      const oee = availability * performance * quality * 100;
-      const calendarTotal = 1440 * records.length; // full calendar minutes for each location's day
-      const utilization = Math.min(1, planned / calendarTotal);
-      const teep = (oee / 100) * utilization * 100;
-      const yieldPct = quality * 100;
-      const coq = revenue > 0 ? (coqCost / revenue) * 100 : 0;
-      return { OEE: round1(oee), TEEP: round1(teep), Yield: round1(yieldPct), CoQ: round1(coq) };
-    }
-
-    // ---------- Group selection ----------
-    const selectedLocations = new Set(LOCATIONS.map(l => l.id)); // default: all locations
-
-    function labelsFor(metricKey, tfKey) {
-      const tf = TIMEFRAMES[tfKey];
-      if (tf.hourly) {
-        const n = todayHourCount();
-        return Array.from({ length: n }, (_, i) => hourLabel(i));
-      }
-      if (tf.unitLabel === "day") {
-        return dailyDates.map(friendlyDate);
-      }
-      if (tf.unitLabel === "week") {
-        return Array.from({ length: tf.points }, (_, i) => `Wk ${i + 1}`);
-      }
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
-      return months.slice(0, tf.points);
-    }
-
-    function generateSeries(metricKey, tfKey) {
-      const m = METRICS[metricKey];
-      const tf = TIMEFRAMES[tfKey];
-
-      if (tf.unitLabel === "day") {
-        const data = dailyDates.map(d => {
-          const records = LOCATIONS.filter(l => selectedLocations.has(l.id)).map(l => rawStore[l.id][d]);
-          return computeAggregateMetrics(records)[metricKey];
-        });
-        return { categories: labelsFor(metricKey, tfKey), data };
-      }
-
-      const rand = mulberry32(metricKey.charCodeAt(0) * 97 + tfKey.length * 13);
-      const n = tf.hourly ? todayHourCount() : tf.points;
-      let value = m.baseline - 10 + rand() * 20;
-      const raw = [];
-      for (let i = 0; i < n; i++) {
-        let step = (rand() - 0.5) * 18;
-        // occasional outlier — a bad shift, a scrap event, a maintenance save
-        if (rand() < 0.18) {
-          step += (rand() - 0.5) * 34;
+    // apply any saved edits for this location on top of the generated sample data
+    if (overrides[loc.id]) {
+      Object.keys(overrides[loc.id]).forEach(dateStr => {
+        if (rawStore[loc.id][dateStr]) {
+          Object.assign(rawStore[loc.id][dateStr], overrides[loc.id][dateStr]);
         }
-        value += step;
-        value = Math.max(2, Math.min(99, value));
-        raw.push(value);
-      }
-      let data = raw;
-      if (tf.cumulative) {
-        // running average, trending toward target — a "YTD" style view
-        data = raw.map((_, i) => {
-          const slice = raw.slice(0, i + 1);
-          return slice.reduce((a, b) => a + b, 0) / slice.length;
-        });
-      }
-      return { categories: labelsFor(metricKey, tfKey), data: data.map(v => Math.round(v * 10) / 10) };
+      });
+    }
+  });
+
+  function round1(v) { return Math.round(v * 10) / 10; }
+
+  // Combines any number of location raw records for the same date into one set of metrics.
+  function computeAggregateMetrics(records) {
+    if (!records.length) return { OEE: 0, TEEP: 0, Yield: 0, CoQ: 0 };
+    let planned = 0, downtime = 0, totalUnits = 0, goodUnits = 0, coqCost = 0, revenue = 0, idealUnitsWeighted = 0;
+    records.forEach(r => {
+      planned += r.planned;
+      downtime += r.downtime;
+      totalUnits += r.totalUnits;
+      goodUnits += r.goodUnits;
+      coqCost += r.coqCost;
+      revenue += r.revenue;
+      idealUnitsWeighted += r.totalUnits * r.idealCycleTime;
+    });
+    const runTime = Math.max(1, planned - downtime);
+    const availability = Math.min(1, runTime / planned);
+    const performance = Math.min(1.1, idealUnitsWeighted / runTime);
+    const quality = totalUnits > 0 ? goodUnits / totalUnits : 0;
+    const oee = availability * performance * quality * 100;
+    const calendarTotal = 1440 * records.length; // full calendar minutes for each location's day
+    const utilization = Math.min(1, planned / calendarTotal);
+    const teep = (oee / 100) * utilization * 100;
+    const yieldPct = quality * 100;
+    const coq = revenue > 0 ? (coqCost / revenue) * 100 : 0;
+    return { OEE: round1(oee), TEEP: round1(teep), Yield: round1(yieldPct), CoQ: round1(coq) };
+  }
+
+  // ---------- Group selection ----------
+  const selectedLocations = new Set(LOCATIONS.map(l => l.id)); // default: all locations
+
+  function labelsFor(metricKey, tfKey) {
+    const tf = TIMEFRAMES[tfKey];
+    if (tf.unitLabel === "day") {
+      return dailyDates.map(friendlyDate);
+    }
+    if (tf.unitLabel === "week") {
+      return Array.from({length: tf.points}, (_, i) => `Wk ${i + 1}`);
+    }
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"];
+    return months.slice(0, tf.points);
+  }
+
+  function generateSeries(metricKey, tfKey) {
+    const m = METRICS[metricKey];
+    const tf = TIMEFRAMES[tfKey];
+
+    if (tf.unitLabel === "day") {
+      const data = dailyDates.map(d => {
+        const records = LOCATIONS.filter(l => selectedLocations.has(l.id)).map(l => rawStore[l.id][d]);
+        return computeAggregateMetrics(records)[metricKey];
+      });
+      return { categories: labelsFor(metricKey, tfKey), data, mode: "trend" };
     }
 
-    // ---------- Chart ----------
-    let chart;
-    let currentMetric = "OEE";
-    let currentTf = "Today";
+    const rand = mulberry32(metricKey.charCodeAt(0) * 97 + tfKey.length * 13);
+    const n = tf.points;
+    let value = m.baseline - 10 + rand() * 20;
+    const raw = [];
+    for (let i = 0; i < n; i++) {
+      let step = (rand() - 0.5) * 18;
+      // occasional outlier — a bad shift, a scrap event, a maintenance save
+      if (rand() < 0.18) {
+        step += (rand() - 0.5) * 34;
+      }
+      value += step;
+      value = Math.max(2, Math.min(99, value));
+      raw.push(value);
+    }
+    let data = raw;
+    if (tf.cumulative) {
+      // running average, trending toward target — a "YTD" style view
+      data = raw.map((_, i) => {
+        const slice = raw.slice(0, i + 1);
+        return slice.reduce((a, b) => a + b, 0) / slice.length;
+      });
+    }
+    return { categories: labelsFor(metricKey, tfKey), data: data.map(v => Math.round(v * 10) / 10), mode: "trend" };
+  }
 
-    function render() {
-      const m = METRICS[currentMetric];
-      const { categories, data } = generateSeries(currentMetric, currentTf);
+  // Compares locations side by side for whichever timeframe is selected — each bar is that
+  // location's own raw data, aggregated over the timeframe's span (Day = today only,
+  // Week = last 7 days, Month/YTD = full 14-day window the raw store holds).
+  function generateByLocationSeries(metricKey, tfKey) {
+    const span = LOCATION_VIEW_SPAN[tfKey] || 1;
+    const dates = dailyDates.slice(-span);
+    const locs = LOCATIONS.filter(l => selectedLocations.has(l.id));
+    const categories = locs.map(l => l.name);
+    const data = locs.map(l => computeAggregateMetrics(dates.map(d => rawStore[l.id][d]))[metricKey]);
+    return { categories, data, mode: "byLocation" };
+  }
 
-      document.getElementById("metricTitle").textContent = m.label;
-      document.getElementById("metricSub").textContent = m.sub;
+  // ---------- Chart ----------
+  let chart;
+  let chartType = null;
+  let currentMetric = "OEE";
+  let currentTf = "Day";
+  let currentView = "trend";
 
-      const avg = data.reduce((a, b) => a + b, 0) / data.length;
-      const best = m.betterUp ? Math.max(...data) : Math.min(...data);
-      const worst = m.betterUp ? Math.min(...data) : Math.max(...data);
-      const current = data[data.length - 1];
+  function renderChipValues() {
+    const dateStr = dailyDates[dailyDates.length - 1];
+    const records = LOCATIONS.filter(l => selectedLocations.has(l.id)).map(l => rawStore[l.id][dateStr]);
+    const metrics = computeAggregateMetrics(records);
+    Object.keys(METRICS).forEach(key => {
+      const el = document.querySelector(`.chip-value[data-value="${key}"]`);
+      if (el) el.textContent = metrics[key].toFixed(1) + "%";
+    });
+  }
+
+  function render() {
+    const m = METRICS[currentMetric];
+    const { categories, data, mode } = currentView === "byLocation"
+      ? generateByLocationSeries(currentMetric, currentTf)
+      : generateSeries(currentMetric, currentTf);
+
+    document.getElementById("metricTitle").textContent = m.label;
+    document.getElementById("metricSub").textContent = mode === "byLocation"
+      ? `${m.sub} — by location, ${currentTf.toLowerCase()}`
+      : m.sub;
+
+    const avg = data.reduce((a,b)=>a+b,0) / data.length;
+    const best = m.betterUp ? Math.max(...data) : Math.min(...data);
+    const worst = m.betterUp ? Math.min(...data) : Math.max(...data);
+
+    let current, delta, positive;
+    if (mode === "byLocation") {
+      const span = LOCATION_VIEW_SPAN[currentTf] || 1;
+      const dates = dailyDates.slice(-span);
+      const records = LOCATIONS.filter(l => selectedLocations.has(l.id))
+        .flatMap(l => dates.map(d => rawStore[l.id][d]));
+      current = computeAggregateMetrics(records)[currentMetric]; // group total, not just one bar
+      delta = current - avg;
+      positive = m.betterUp ? current >= avg : current <= avg;
+    } else {
+      current = data[data.length - 1];
       const prev = data.length > 1 ? data[data.length - 2] : current;
-      const delta = current - prev;
-      const positive = m.betterUp ? delta >= 0 : delta <= 0;
-
-      document.getElementById("statCurrent").textContent = current.toFixed(1) + m.unit;
-      document.getElementById("statAvg").textContent = avg.toFixed(1) + m.unit;
-      document.getElementById("statBest").textContent = best.toFixed(1) + m.unit;
-      document.getElementById("statWorst").textContent = worst.toFixed(1) + m.unit;
-      const deltaEl = document.getElementById("statDelta");
-      deltaEl.textContent = (delta >= 0 ? "▲ " : "▼ ") + Math.abs(delta).toFixed(1) + m.unit + " vs prior";
-      deltaEl.className = "stat-delta " + (positive ? "up" : "down");
-
-      const options = {
-        chart: {
-          type: "area",
-          height: 300,
-          toolbar: { show: false },
-          foreColor: "#8B93A1",
-          background: "transparent",
-          animations: { easing: "easeinout", speed: 400 }
-        },
-        series: [{ name: currentMetric, data }],
-        xaxis: {
-          categories,
-          axisBorder: { color: "#3A424E" },
-          axisTicks: { color: "#3A424E" }
-        },
-        yaxis: {
-          min: 0, max: 100,
-          labels: { formatter: v => v.toFixed(0) + "%" }
-        },
-        colors: [m.color],
-        stroke: { curve: "smooth", width: 3 },
-        fill: {
-          type: "gradient",
-          gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0, stops: [0, 90, 100] }
-        },
-        dataLabels: { enabled: false },
-        grid: { borderColor: "#2E3642", strokeDashArray: 3 },
-        markers: { size: 4, colors: [m.color], strokeColors: "#1B2027", strokeWidth: 2 },
-        tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + m.unit } }
-      };
-
-      if (chart) {
-        chart.updateOptions(options);
-      } else {
-        chart = new ApexCharts(document.querySelector("#chart"), options);
-        chart.render();
-      }
+      delta = current - prev;
+      positive = m.betterUp ? delta >= 0 : delta <= 0;
     }
 
-    // ---------- Interaction wiring ----------
-    document.querySelectorAll(".chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentMetric = btn.dataset.metric;
-        render();
-      });
-    });
+    document.getElementById("statCurrent").textContent = current.toFixed(1) + m.unit;
+    document.getElementById("statAvg").textContent = avg.toFixed(1) + m.unit;
+    document.getElementById("statBest").textContent = best.toFixed(1) + m.unit;
+    document.getElementById("statWorst").textContent = worst.toFixed(1) + m.unit;
+    const deltaEl = document.getElementById("statDelta");
+    deltaEl.textContent = mode === "byLocation"
+      ? (delta >= 0 ? "▲ " : "▼ ") + Math.abs(delta).toFixed(1) + m.unit + " vs location avg"
+      : (delta >= 0 ? "▲ " : "▼ ") + Math.abs(delta).toFixed(1) + m.unit + " vs prior";
+    deltaEl.className = "stat-delta " + (positive ? "up" : "down");
 
-    document.querySelectorAll(".timeframe-bar .w3-button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".timeframe-bar .w3-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentTf = btn.dataset.tf;
-        render();
-      });
-    });
+    renderChipValues();
 
-    document.getElementById("settingsChip").addEventListener("click", () => {
-      alert("Settings panel goes here — targets, thresholds, data sources, etc.");
-    });
+    const baseOptions = {
+      chart: {
+        height: 300,
+        toolbar: { show: false },
+        foreColor: "#8B93A1",
+        background: "transparent",
+        animations: { easing: "easeinout", speed: 400 }
+      },
+      series: [{ name: currentMetric, data }],
+      xaxis: {
+        categories,
+        axisBorder: { color: "#3A424E" },
+        axisTicks: { color: "#3A424E" }
+      },
+      yaxis: {
+        min: 0, max: 100,
+        labels: { formatter: v => v.toFixed(0) + "%" }
+      },
+      colors: [m.color],
+      dataLabels: { enabled: false },
+      grid: { borderColor: "#2E3642", strokeDashArray: 3 },
+      tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + m.unit } }
+    };
 
-    // ---------- Location group filter ----------
-    const locationBar = document.getElementById("locationBar");
-    LOCATIONS.forEach(loc => {
-      const btn = document.createElement("button");
-      btn.className = "loc-chip active";
-      btn.textContent = loc.name;
-      btn.dataset.loc = loc.id;
-      btn.addEventListener("click", () => {
-        if (selectedLocations.has(loc.id)) {
-          if (selectedLocations.size === 1) return; // keep at least one location selected
-          selectedLocations.delete(loc.id);
-          btn.classList.remove("active");
-        } else {
-          selectedLocations.add(loc.id);
-          btn.classList.add("active");
+    const options = mode === "byLocation"
+      ? {
+          ...baseOptions,
+          chart: { ...baseOptions.chart, type: "bar" },
+          plotOptions: { bar: { borderRadius: 6, columnWidth: "45%", distributed: false } },
+          dataLabels: {
+            enabled: true,
+            formatter: v => v.toFixed(1) + "%",
+            offsetY: -20,
+            style: { colors: ["#ECE8E1"], fontSize: "12px", fontWeight: 700 }
+          }
         }
-        render();
-      });
-      locationBar.appendChild(btn);
-    });
+      : {
+          ...baseOptions,
+          chart: { ...baseOptions.chart, type: "area" },
+          stroke: { curve: "smooth", width: 3 },
+          fill: {
+            type: "gradient",
+            gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0, stops: [0, 90, 100] }
+          },
+          markers: { size: 4, colors: [m.color], strokeColors: "#1B2027", strokeWidth: 2 }
+        };
 
-    // ---------- Edit-data modal ----------
-    const editModal = document.getElementById("editModal");
-    const editDateInput = document.getElementById("editDate");
-    const editLocationSelect = document.getElementById("editLocation");
-    const editTableBody = document.getElementById("editTableBody");
-    const editPreview = document.getElementById("editPreview");
-
-    const minDate = dailyDates[0];
-    const maxDate = dailyDates[dailyDates.length - 1];
-
-    const INPUT_FIELDS = [
-      { key: "planned", label: "Planned Time (min)", step: 1, min: 60, max: 1440 },
-      { key: "downtime", label: "Downtime (min)", step: 1, min: 0, max: 1440 },
-      { key: "totalUnits", label: "Total Units", step: 1, min: 0, max: 100000 },
-      { key: "goodUnits", label: "Good Units", step: 1, min: 0, max: 100000 },
-      { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10 },
-      { key: "coqCost", label: "Cost of Poor Quality ($)", step: 10, min: 0, max: 1000000 },
-      { key: "revenue", label: "Revenue ($)", step: 10, min: 0, max: 5000000 }
-    ];
-
-    LOCATIONS.forEach(loc => {
-      const opt = document.createElement("option");
-      opt.value = loc.id;
-      opt.textContent = loc.name;
-      editLocationSelect.appendChild(opt);
-    });
-
-    function currentEditRecord() {
-      const locId = editLocationSelect.value;
-      const dateStr = editDateInput.value;
-      return rawStore[locId][dateStr];
+    if (chart && chartType === options.chart.type) {
+      chart.updateOptions(options, true, true);
+    } else {
+      if (chart) chart.destroy();
+      chart = new ApexCharts(document.querySelector("#chart"), options);
+      chart.render();
+      chartType = options.chart.type;
     }
+  }
 
-    function readFormValues() {
-      const values = {};
-      editTableBody.querySelectorAll(".edit-input").forEach(input => {
-        values[input.dataset.field] = parseFloat(input.value) || 0;
-      });
-      return values;
-    }
+  // ---------- Interaction wiring ----------
+  document.querySelectorAll(".chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentMetric = btn.dataset.metric;
+      render();
+    });
+  });
 
-    function updatePreview() {
-      const values = readFormValues();
-      const metrics = computeAggregateMetrics([values]);
-      editPreview.innerHTML = Object.keys(METRICS).map(key => `
+  document.querySelectorAll(".timeframe-bar .w3-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".timeframe-bar .w3-button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentTf = btn.dataset.tf;
+      render();
+    });
+  });
+
+  document.querySelectorAll(".view-toggle .w3-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".view-toggle .w3-button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentView = btn.dataset.view;
+      render();
+    });
+  });
+
+  document.getElementById("settingsChip").addEventListener("click", () => {
+    alert("Settings panel goes here — targets, thresholds, data sources, etc.");
+  });
+
+  // ---------- Help modal ----------
+  const helpModal = document.getElementById("helpModal");
+  document.getElementById("helpChip").addEventListener("click", () => helpModal.classList.add("open"));
+  document.getElementById("helpClose").addEventListener("click", () => helpModal.classList.remove("open"));
+  helpModal.addEventListener("click", (e) => { if (e.target === helpModal) helpModal.classList.remove("open"); });
+
+  // ---------- Location group filter ----------
+  const locationBar = document.getElementById("locationBar");
+  LOCATIONS.forEach(loc => {
+    const btn = document.createElement("button");
+    btn.className = "loc-chip active";
+    btn.textContent = loc.name;
+    btn.dataset.loc = loc.id;
+    btn.addEventListener("click", () => {
+      if (selectedLocations.has(loc.id)) {
+        if (selectedLocations.size === 1) return; // keep at least one location selected
+        selectedLocations.delete(loc.id);
+        btn.classList.remove("active");
+      } else {
+        selectedLocations.add(loc.id);
+        btn.classList.add("active");
+      }
+      render();
+    });
+    locationBar.appendChild(btn);
+  });
+
+  // ---------- Edit-data modal ----------
+  const editModal = document.getElementById("editModal");
+  const editDateInput = document.getElementById("editDate");
+  const editLocationSelect = document.getElementById("editLocation");
+  const editTableBody = document.getElementById("editTableBody");
+  const editPreview = document.getElementById("editPreview");
+
+  const minDate = dailyDates[0];
+  const maxDate = dailyDates[dailyDates.length - 1];
+
+  const INPUT_FIELDS = [
+    { key: "planned",        label: "Planned Time (min)",  step: 1,   min: 60,  max: 1440 },
+    { key: "downtime",       label: "Downtime (min)",      step: 1,   min: 0,   max: 1440 },
+    { key: "totalUnits",     label: "Total Units",         step: 1,   min: 0,   max: 100000 },
+    { key: "goodUnits",      label: "Good Units",          step: 1,   min: 0,   max: 100000 },
+    { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10 },
+    { key: "coqCost",        label: "Cost of Poor Quality ($)",    step: 10, min: 0,   max: 1000000 },
+    { key: "revenue",        label: "Revenue ($)",         step: 10,  min: 0,   max: 5000000 }
+  ];
+
+  LOCATIONS.forEach(loc => {
+    const opt = document.createElement("option");
+    opt.value = loc.id;
+    opt.textContent = loc.name;
+    editLocationSelect.appendChild(opt);
+  });
+
+  function currentEditRecord() {
+    const locId = editLocationSelect.value;
+    const dateStr = editDateInput.value;
+    return rawStore[locId][dateStr];
+  }
+
+  function readFormValues() {
+    const values = {};
+    editTableBody.querySelectorAll(".edit-input").forEach(input => {
+      values[input.dataset.field] = parseFloat(input.value) || 0;
+    });
+    return values;
+  }
+
+  function updatePreview() {
+    const values = readFormValues();
+    const metrics = computeAggregateMetrics([values]);
+    editPreview.innerHTML = Object.keys(METRICS).map(key => `
       <div>
         <p>${key}</p>
         <p style="color:${METRICS[key].color}">${metrics[key]}%</p>
       </div>`).join("");
-    }
+  }
 
-    function populateEditTable() {
-      const record = currentEditRecord();
-      editTableBody.innerHTML = "";
-      INPUT_FIELDS.forEach(f => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
+  function populateEditTable() {
+    const record = currentEditRecord();
+    editTableBody.innerHTML = "";
+    INPUT_FIELDS.forEach(f => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
         <td>${f.label}</td>
         <td style="text-align:right;">
           <input type="number" class="edit-input" data-field="${f.key}"
-                min="${f.min}" max="${f.max}" step="${f.step}" value="${record[f.key]}">
+                 min="${f.min}" max="${f.max}" step="${f.step}" value="${record[f.key]}">
         </td>`;
-        editTableBody.appendChild(row);
-      });
-      editTableBody.querySelectorAll(".edit-input").forEach(input => {
-        input.addEventListener("input", updatePreview);
-      });
-      updatePreview();
-    }
-
-    function openEditModal() {
-      editDateInput.min = minDate;
-      editDateInput.max = maxDate;
-      editDateInput.value = maxDate; // defaults to today
-      editLocationSelect.value = LOCATIONS[0].id;
-      populateEditTable();
-      editModal.classList.add("open");
-    }
-
-    function closeEditModal() {
-      editModal.classList.remove("open");
-    }
-
-    document.getElementById("editChip").addEventListener("click", openEditModal);
-    document.getElementById("editClose").addEventListener("click", closeEditModal);
-    document.getElementById("editCancel").addEventListener("click", closeEditModal);
-    editModal.addEventListener("click", (e) => { if (e.target === editModal) closeEditModal(); });
-
-    editDateInput.addEventListener("change", () => {
-      let d = editDateInput.value;
-      if (d < minDate) d = minDate;
-      if (d > maxDate) d = maxDate;
-      editDateInput.value = d;
-      populateEditTable();
+      editTableBody.appendChild(row);
     });
-
-    editLocationSelect.addEventListener("change", populateEditTable);
-
-    document.getElementById("editSave").addEventListener("click", () => {
-      const locId = editLocationSelect.value;
-      const dateStr = editDateInput.value;
-      const values = readFormValues();
-      rawStore[locId][dateStr] = {
-        planned: values.planned,
-        downtime: values.downtime,
-        totalUnits: values.totalUnits,
-        goodUnits: values.goodUnits,
-        idealCycleTime: values.idealCycleTime,
-        coqCost: values.coqCost,
-        revenue: values.revenue
-      };
-      closeEditModal();
-      if (currentTf === "Day") render();
+    editTableBody.querySelectorAll(".edit-input").forEach(input => {
+      input.addEventListener("input", updatePreview);
     });
+    updatePreview();
+  }
 
-    // Initial state
-    document.querySelector('.chip[data-metric="OEE"]').classList.add("active");
-    document.querySelector('.timeframe-bar .w3-button[data-tf="Today"]').classList.add("active");
-    render();
-  </script>
+  function openEditModal() {
+    editDateInput.min = minDate;
+    editDateInput.max = maxDate;
+    editDateInput.value = maxDate; // defaults to today
+    editLocationSelect.value = LOCATIONS[0].id;
+    populateEditTable();
+    editModal.classList.add("open");
+  }
+
+  function closeEditModal() {
+    editModal.classList.remove("open");
+  }
+
+  document.getElementById("editChip").addEventListener("click", openEditModal);
+  document.getElementById("editClose").addEventListener("click", closeEditModal);
+  document.getElementById("editCancel").addEventListener("click", closeEditModal);
+  editModal.addEventListener("click", (e) => { if (e.target === editModal) closeEditModal(); });
+
+  editDateInput.addEventListener("change", () => {
+    let d = editDateInput.value;
+    if (d < minDate) d = minDate;
+    if (d > maxDate) d = maxDate;
+    editDateInput.value = d;
+    populateEditTable();
+  });
+
+  editLocationSelect.addEventListener("change", populateEditTable);
+
+  document.getElementById("editSave").addEventListener("click", () => {
+    const locId = editLocationSelect.value;
+    const dateStr = editDateInput.value;
+    const values = readFormValues();
+    const record = {
+      planned: values.planned,
+      downtime: values.downtime,
+      totalUnits: values.totalUnits,
+      goodUnits: values.goodUnits,
+      idealCycleTime: values.idealCycleTime,
+      coqCost: values.coqCost,
+      revenue: values.revenue
+    };
+    rawStore[locId][dateStr] = record;
+
+    overrides[locId] = overrides[locId] || {};
+    overrides[locId][dateStr] = record;
+    saveOverrides(overrides);
+
+    closeEditModal();
+    if (currentTf === "Day") render();
+  });
+
+  // Initial state
+  document.querySelector('.chip[data-metric="OEE"]').classList.add("active");
+  document.querySelector('.timeframe-bar .w3-button[data-tf="Day"]').classList.add("active");
+  document.querySelector('.view-toggle .w3-button[data-view="trend"]').classList.add("active");
+  render();
+
+  document.getElementById("resetEdits").addEventListener("click", (e) => {
+    e.preventDefault();
+    if (confirm("Clear all saved edits and go back to the original sample data?")) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  });
+</script>
 
 </body>
-
 </html>
