@@ -718,8 +718,8 @@
         <div class="w3-col m12" style="text-align:right;">
           <div class="view-toggle w3-bar">
             <button class="w3-button" data-view="trend"><i class="fa fa-line-chart" style="margin-right:6px;"></i>Trend</button>
-            <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>By Location</button>
-            <button class="w3-button" data-view="polar"><i class="fa fa-pie-chart" style="margin-right:6px;"></i>Polar Area</button>
+            <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>Locations</button>
+            <button class="w3-button" data-view="polar"><i class="fa fa-pie-chart" style="margin-right:6px;"></i>Overview</button>
           </div>
         </div>
       </div>
@@ -1377,7 +1377,12 @@
             spokes: { strokeColor: "#2E3642" }
           }
         },
-        dataLabels: { enabled: false },
+        dataLabels: {
+          enabled: true,
+          formatter: v => v.toFixed(1) + "%",
+          style: { fontSize: "12px", fontWeight: 700, colors: ["#FFFFFF"] },
+          dropShadow: { enabled: false }
+        },
         tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + "%" } }
       };
     } else if (mode === "byLocation") {
@@ -1405,14 +1410,45 @@
       };
     }
 
-    if (chart && chartType === options.chart.type) {
+    // Pie-family charts (polarArea included) don't reliably refresh their slice labels
+    // through updateOptions — the wedges resize but the label text can stay stale. Always
+    // rebuild from scratch for polar so metric switches show the correct numbers.
+    const canUpdateInPlace = chart && chartType === options.chart.type && options.chart.type !== "polarArea";
+
+    if (canUpdateInPlace) {
       chart.updateOptions(options, true, true);
     } else {
       if (chart) chart.destroy();
       chart = new ApexCharts(document.querySelector("#chart"), options);
-      chart.render();
+      chart.render().then(() => {
+        if (currentView === "polar") addPolarLabelBackgrounds();
+      });
       chartType = options.chart.type;
     }
+  }
+
+  // ApexCharts' dataLabels.background option only applies to line/area/bar-style charts,
+  // not pie-family charts like polarArea — so for real black pills behind the wedge
+  // labels, draw them directly as SVG rects sized to each label's actual text bounds.
+  function addPolarLabelBackgrounds() {
+    const svg = document.querySelector("#chart svg");
+    if (!svg) return;
+    svg.querySelectorAll("rect.takt-label-bg").forEach(r => r.remove());
+    const texts = svg.querySelectorAll(".apexcharts-datalabels text, text.apexcharts-datalabel");
+    texts.forEach(text => {
+      let bbox;
+      try { bbox = text.getBBox(); } catch (e) { return; }
+      if (!bbox || !bbox.width) return;
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", bbox.x - 5);
+      rect.setAttribute("y", bbox.y - 3);
+      rect.setAttribute("width", bbox.width + 10);
+      rect.setAttribute("height", bbox.height + 6);
+      rect.setAttribute("rx", 4);
+      rect.setAttribute("fill", "#000000");
+      rect.setAttribute("class", "takt-label-bg");
+      text.parentNode.insertBefore(rect, text);
+    });
   }
 
   // ---------- Interaction wiring ----------
