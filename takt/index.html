@@ -513,14 +513,14 @@
         <button class="chip" data-metric="TEEP"  style="--c:var(--teep)"><span class="chip-label">TEEP</span><span class="chip-value" data-value="TEEP">—</span></button>
         <button class="chip" data-metric="Yield" style="--c:var(--yield)"><span class="chip-label">YIELD</span><span class="chip-value" data-value="Yield">—</span></button>
         <button class="chip" data-metric="CoQ"   style="--c:var(--coq)"><span class="chip-label">CoQ</span><span class="chip-value" data-value="CoQ">—</span></button>
-        <button class="chip-settings" id="helpChip" title="How these are calculated" aria-label="Help">
-          <i class="fa fa-info-circle"></i>
-        </button>
         <button class="chip-settings" id="editChip" title="Edit daily data" aria-label="Edit daily data">
           <i class="fa fa-pencil-square-o"></i>
         </button>
         <button class="chip-settings" id="settingsChip" title="Settings" aria-label="Settings">
           <i class="fa fa-cog"></i>
+        </button>
+        <button class="chip-settings" id="helpChip" title="How these are calculated" aria-label="Help">
+          <i class="fa fa-info-circle"></i>
         </button>
       </div>
     </div>
@@ -953,11 +953,13 @@
       AREAS.length = 0;
       saved.areas.forEach(a => AREAS.push({ id: a.id, name: a.name }));
     }
-    if (Array.isArray(saved.locations)) {
-      saved.locations.forEach(sl => {
-        const loc = LOCATIONS.find(l => l.id === sl.id);
-        if (loc) Object.assign(loc, sl);
-      });
+    if (Array.isArray(saved.locations) && saved.locations.length) {
+      LOCATIONS.length = 0;
+      saved.locations.forEach(sl => LOCATIONS.push({
+        id: sl.id, name: sl.name, areaId: sl.areaId,
+        plannedTime: sl.plannedTime, idealCycleTime: sl.idealCycleTime,
+        totalUnits: sl.totalUnits, coqCost: sl.coqCost, revenue: sl.revenue
+      }));
     }
   })();
 
