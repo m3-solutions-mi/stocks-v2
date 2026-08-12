@@ -347,6 +347,34 @@
   .data-table .dt-down{ color:#C96A6A; }
   .data-table .dt-delta{ font-size:11.5px; font-weight:600; margin-left:8px; }
   .data-table .dt-benchmark{ font-size:11.5px; font-weight:600; color:var(--muted); margin-left:6px; }
+
+  .compare-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:14px;
+  }
+  .compare-tile{
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px 6px;
+  }
+  .compare-tile-title{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.5px;
+    margin:0 0 4px 0;
+  }
+  @media (max-width:700px){
+    .compare-grid{ grid-template-columns:1fr; }
+  }
+
+  .today-table{ min-width:760px; } /* wide table — .today-table's parent wrapper scrolls horizontally on narrow screens */
+  .today-table td:nth-child(2), .today-table th:nth-child(2),
+  .today-table td:nth-child(3), .today-table th:nth-child(3){ font-weight:400; } /* override .data-table's generic 2nd/3rd-column bolding — this table has 9 columns */
+  .today-table td, .today-table th{ white-space:nowrap; padding-right:14px; }
+  .today-table .today-reason{ color:var(--muted); font-size:12.5px; white-space:normal; }
+  .today-table .today-metric{ font-weight:700; }
   .edit-swatch{
     display:inline-block;
     width:10px;height:10px;
@@ -554,7 +582,7 @@
   .up{color:#83B573;}
   .down{color:#C96A6A;}
 
-  .mobile-controls{ display:none; } /* shown only on phone, see media query below */
+  .mobile-controls{ display:none; } /* shown on tablet + phone, see media query below */
   .mobile-select{
     flex:1;
     background:var(--bg2);
@@ -568,7 +596,7 @@
   }
 
   .mobile-locations-trigger{
-    display:none; /* shown only on phone, see media query below */
+    display:none; /* shown on tablet + phone, see media query below */
     width:100%;
     align-items:center;
     background:var(--bg2);
@@ -623,6 +651,23 @@
      wrapping button rows become single-row horizontal-scroll strips instead of stacking into
      several lines, which is what was eating vertical space on small phones.
      ========================================================================================== */
+  /* ==========================================================================================
+     Tablet + phone: the button rows (Timeframe, View) and the Area/Group chip rows don't fit
+     cleanly once there are 6 view options and 4 timeframe options — W3.CSS's .w3-bar floats
+     its children and doesn't wrap, so on an iPad-mini-width screen these would just overflow
+     or get clipped rather than wrap onto a second line. Same dropdown/popover pattern as phone,
+     just triggered at a wider breakpoint too.
+     ========================================================================================== */
+  @media (max-width: 1024px) {
+    .tf-col, .view-toggle-row{ display:none; }
+    .mobile-controls{ display:flex; gap:8px; margin:10px 0 14px; }
+
+    #areaBar, #locationBar{ display:none; }
+    .mobile-locations-trigger{ display:flex; }
+
+    .help-box, .modal-box{ width:92vw; }
+  }
+
   @media (max-width: 480px) {
     .banner{ padding:14px 16px; }
     .banner-inner{ gap:12px; }
@@ -640,16 +685,6 @@
 
     .metric-title{ font-size:16px; }
     .metric-sub{ font-size:11.5px; }
-
-    /* Timeframe/View button rows are replaced by the dropdowns below on phone */
-    .tf-col, .view-toggle-row{ display:none; }
-    .mobile-controls{ display:flex; gap:8px; margin:10px 0 14px; }
-
-    /* Area/Group chip rows are replaced by the single Locations popover trigger on phone */
-    #areaBar, #locationBar{ display:none; }
-    .mobile-locations-trigger{ display:flex; }
-
-    .help-box, .modal-box{ width:92vw; }
 
     /* 2x2 grid with matched row heights, so "Current" having an extra delta line doesn't
        leave the two rows looking stair-stepped against each other */
@@ -1142,6 +1177,8 @@
             <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>Locations</button>
             <button class="w3-button" data-view="polar"><i class="fa fa-pie-chart" style="margin-right:6px;"></i>Overview</button>
             <button class="w3-button" data-view="table"><i class="fa fa-table" style="margin-right:6px;"></i>Table</button>
+            <button class="w3-button" data-view="compare"><i class="fa fa-th-large" style="margin-right:6px;"></i>Compare</button>
+            <button class="w3-button" data-view="today"><i class="fa fa-list" style="margin-right:6px;"></i>Today</button>
           </div>
         </div>
       </div>
@@ -1159,6 +1196,8 @@
           <option value="byLocation">Locations</option>
           <option value="polar">Overview</option>
           <option value="table">Table</option>
+          <option value="compare">Compare</option>
+          <option value="today">Today</option>
         </select>
       </div>
 
@@ -1184,6 +1223,30 @@
             <tr><th id="dataTableCol1">Period</th><th style="text-align:right;">Value</th><th style="text-align:right;">vs Benchmark</th></tr>
           </thead>
           <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+      <div id="compareWrap" style="display:none; margin-top:10px;" class="compare-grid">
+        <div class="compare-tile"><p class="compare-tile-title" id="compareTitleOEE">OEE</p><div id="compareChartOEE"></div></div>
+        <div class="compare-tile"><p class="compare-tile-title" id="compareTitleTEEP">TEEP</p><div id="compareChartTEEP"></div></div>
+        <div class="compare-tile"><p class="compare-tile-title" id="compareTitleYield">Yield</p><div id="compareChartYield"></div></div>
+        <div class="compare-tile"><p class="compare-tile-title" id="compareTitleCoQ">CoQ</p><div id="compareChartCoQ"></div></div>
+      </div>
+      <div id="todayWrap" style="display:none; margin-top:10px; overflow-x:auto;">
+        <table class="data-table today-table">
+          <thead>
+            <tr>
+              <th>Location</th>
+              <th style="text-align:right;">Up Time</th>
+              <th style="text-align:right;">Total Units</th>
+              <th style="text-align:right;">Good Units</th>
+              <th>Reason for Loss</th>
+              <th style="text-align:right;">OEE</th>
+              <th style="text-align:right;">TEEP</th>
+              <th style="text-align:right;">Yield</th>
+              <th style="text-align:right;">CoQ</th>
+            </tr>
+          </thead>
+          <tbody id="todayTableBody"></tbody>
         </table>
       </div>
 
@@ -1806,9 +1869,10 @@
   // ---------- Chart ----------
   let chart;
   let chartType = null;
+  let compareCharts = { OEE: null, TEEP: null, Yield: null, CoQ: null }; // Compare view's 4 mini-charts
   let currentMetric = (savedUIState && METRICS[savedUIState.metric]) ? savedUIState.metric : "OEE";
   let currentTf = (savedUIState && TIMEFRAMES[savedUIState.tf]) ? savedUIState.tf : "Day";
-  let currentView = (savedUIState && ["trend", "byLocation", "polar", "table"].includes(savedUIState.view)) ? savedUIState.view : "trend";
+  let currentView = (savedUIState && ["trend", "byLocation", "polar", "table", "compare", "today"].includes(savedUIState.view)) ? savedUIState.view : "trend";
 
   // Current value for a metric under whatever timeframe/view/group is currently selected —
   // shared by the main chart's "Current" stat and the banner chip numbers, so they always agree.
@@ -1841,11 +1905,48 @@
     return values.reduce((a, b) => a + b, 0) / values.length;
   }
 
+  // Scales a trend chart's y-axis to fit the data (and the benchmark line) rather than a fixed
+  // 0–100, so a naturally-low metric like CoQ or TEEP doesn't look flat. Shared by the main
+  // Trend chart and each mini-chart in the Compare view.
+  function computeTrendAxisRange(data, benchmark) {
+    const lo = Math.min(...data, benchmark), hi = Math.max(...data, benchmark);
+    const pad = Math.max(4, (hi - lo) * 0.25);
+    let axisMin = Math.max(0, Math.floor((lo - pad) / 5) * 5);
+    let axisMax = Math.min(100, Math.ceil((hi + pad) / 5) * 5);
+    if (axisMax - axisMin < 15) { // guarantee enough vertical room even for a near-flat series
+      const mid = (axisMax + axisMin) / 2;
+      axisMin = Math.max(0, mid - 7.5);
+      axisMax = Math.min(100, mid + 7.5);
+    }
+    return { axisMin, axisMax };
+  }
+
   function renderChipValues() {
     Object.keys(METRICS).forEach(key => {
       const el = document.querySelector(`.chip-value[data-value="${key}"]`);
       if (el) el.textContent = computeCurrentValue(key).toFixed(1) + "%";
     });
+  }
+
+  // Keeps the dashed benchmark line on every screen size, but drops the text label box on
+  // phones — at that width the label often overlaps the chart or gets clipped.
+  function buildBenchmarkAnnotation(benchmark) {
+    const isPhone = window.innerWidth <= 480;
+    return {
+      yaxis: [{
+        y: benchmark,
+        borderColor: "#9FA8B5",
+        strokeDashArray: 5,
+        label: isPhone ? { text: "", borderWidth: 0 } : {
+          borderColor: "#9FA8B5",
+          style: { color: "#12161C", background: "#9FA8B5", fontSize: "11px", fontWeight: 700 },
+          text: `Benchmark: ${benchmark.toFixed(1)}%`,
+          position: "left",
+          offsetX: 8,
+          textAnchor: "start"
+        }
+      }]
+    };
   }
 
   function renderDataTable(metricLabel, categories, data, m) {
@@ -1876,6 +1977,103 @@
         `<span class="dt-benchmark">(target ${benchmark.toFixed(1)}${m.unit})</span>`;
       const row = document.createElement("tr");
       row.innerHTML = `<td>${categories[i]}</td><td>${v.toFixed(1)}${m.unit}${deltaHtml}</td><td>${benchmarkHtml}</td>`;
+      tbody.appendChild(row);
+    });
+  }
+
+  function destroyCompareCharts() {
+    Object.keys(compareCharts).forEach(key => {
+      if (compareCharts[key]) { compareCharts[key].destroy(); compareCharts[key] = null; }
+    });
+  }
+
+  // All four metrics side by side, each keeping its own correctly-scaled axis and formula —
+  // OEE/TEEP/Yield as small trend lines, CoQ as bars since it runs the opposite direction
+  // (lower is better) and usually sits on a very different scale (single digits vs 70-95%).
+  function renderCompareView() {
+    document.getElementById("compareWrap").style.display = "grid";
+
+    Object.keys(METRICS).forEach(key => {
+      const mm = METRICS[key];
+      const { categories, data } = generateSeries(key, currentTf);
+      const benchmark = getGroupBenchmark(key);
+      const { axisMin, axisMax } = computeTrendAxisRange(data, benchmark);
+      const current = computeCurrentValue(key);
+
+      const titleEl = document.getElementById(`compareTitle${key}`);
+      if (titleEl) titleEl.innerHTML = `<span style="color:${mm.color}">${key}</span> — ${current.toFixed(1)}${mm.unit}`;
+
+      const isCoQ = key === "CoQ";
+      const options = {
+        chart: {
+          type: isCoQ ? "bar" : "area",
+          height: 200,
+          toolbar: { show: false },
+          foreColor: "#9FA8B5",
+          background: "transparent",
+          animations: { enabled: false }
+        },
+        series: [{ name: key, data }],
+        xaxis: {
+          categories,
+          labels: { style: { fontSize: "10px" } },
+          axisBorder: { color: "#3C4552" },
+          axisTicks: { color: "#3C4552" }
+        },
+        yaxis: { min: axisMin, max: axisMax, labels: { formatter: v => v.toFixed(0) + "%", style: { fontSize: "10px" } } },
+        colors: [mm.color],
+        dataLabels: { enabled: false },
+        grid: { borderColor: "#313A46", strokeDashArray: 3 },
+        tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + mm.unit } },
+        annotations: buildBenchmarkAnnotation(benchmark),
+        ...(isCoQ
+          ? { plotOptions: { bar: { borderRadius: 3, columnWidth: "55%" } } }
+          : {
+              stroke: { curve: "smooth", width: 2 },
+              fill: { type: "gradient", gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0, stops: [0, 90, 100] } },
+              markers: { size: 0 }
+            })
+      };
+
+      if (compareCharts[key]) { compareCharts[key].destroy(); compareCharts[key] = null; }
+      compareCharts[key] = new ApexCharts(document.querySelector(`#compareChart${key}`), options);
+      compareCharts[key].render();
+    });
+  }
+
+  // A per-location roll call for today: the raw inputs (Up Time, Total Units, Good Units,
+  // Reason for Loss) side by side with what they calculate to — the same fields the Edit modal
+  // shows for one location/day at a time, here shown for every location in the current group at
+  // once. Respects the Area/Group filter, same as every other view.
+  function renderTodayView() {
+    document.getElementById("todayWrap").style.display = "block";
+    const todayDate = dailyDates[dailyDates.length - 1];
+    const tbody = document.getElementById("todayTableBody");
+    tbody.innerHTML = "";
+
+    const locs = LOCATIONS.filter(l => selectedLocations.has(l.id));
+    if (!locs.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="color:var(--muted);">No locations selected.</td></tr>`;
+      return;
+    }
+
+    locs.forEach(loc => {
+      const record = rawStore[loc.id] && rawStore[loc.id][todayDate];
+      if (!record) return;
+      const upTimeHours = Math.max(0, (record.planned - record.downtime) / 60);
+      const metrics = computeAggregateMetrics([record]);
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${loc.name}</td>
+        <td style="text-align:right;">${upTimeHours.toFixed(2)}h</td>
+        <td style="text-align:right;">${record.totalUnits.toFixed(2)}</td>
+        <td style="text-align:right;">${record.goodUnits}</td>
+        <td class="today-reason">${record.scrapReason || "—"}</td>
+        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.OEE.color}">${metrics.OEE.toFixed(1)}%</span></td>
+        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.TEEP.color}">${metrics.TEEP.toFixed(1)}%</span></td>
+        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.Yield.color}">${metrics.Yield.toFixed(1)}%</span></td>
+        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.CoQ.color}">${metrics.CoQ.toFixed(1)}%</span></td>`;
       tbody.appendChild(row);
     });
   }
@@ -1921,10 +2119,36 @@
 
     if (currentView === "table") {
       if (chart) { chart.destroy(); chart = null; chartType = null; }
+      destroyCompareCharts();
+      document.getElementById("compareWrap").style.display = "none";
+      document.getElementById("todayWrap").style.display = "none";
       renderDataTable(m.label, categories, data, m);
       return;
     }
+
+    if (currentView === "compare") {
+      if (chart) { chart.destroy(); chart = null; chartType = null; }
+      document.getElementById("dataTableWrap").style.display = "none";
+      document.getElementById("todayWrap").style.display = "none";
+      document.getElementById("chart").style.display = "none";
+      renderCompareView();
+      return;
+    }
+
+    if (currentView === "today") {
+      if (chart) { chart.destroy(); chart = null; chartType = null; }
+      destroyCompareCharts();
+      document.getElementById("compareWrap").style.display = "none";
+      document.getElementById("dataTableWrap").style.display = "none";
+      document.getElementById("chart").style.display = "none";
+      renderTodayView();
+      return;
+    }
+
+    destroyCompareCharts();
+    document.getElementById("compareWrap").style.display = "none";
     document.getElementById("dataTableWrap").style.display = "none";
+    document.getElementById("todayWrap").style.display = "none";
     document.getElementById("chart").style.display = "block";
 
     const baseOptions = {
@@ -1950,27 +2174,6 @@
       grid: { borderColor: "#313A46", strokeDashArray: 3 },
       tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + m.unit } }
     };
-
-    // Keeps the dashed benchmark line on every screen size, but drops the text label box on
-    // phones — at that width the label often overlaps the chart or gets clipped.
-    function buildBenchmarkAnnotation(benchmark) {
-      const isPhone = window.innerWidth <= 480;
-      return {
-        yaxis: [{
-          y: benchmark,
-          borderColor: "#9FA8B5",
-          strokeDashArray: 5,
-          label: isPhone ? { text: "", borderWidth: 0 } : {
-            borderColor: "#9FA8B5",
-            style: { color: "#12161C", background: "#9FA8B5", fontSize: "11px", fontWeight: 700 },
-            text: `Benchmark: ${benchmark.toFixed(1)}%`,
-            position: "left",
-            offsetX: 8,
-            textAnchor: "start"
-          }
-        }]
-      };
-    }
 
     let options;
     if (currentView === "polar") {
@@ -2051,15 +2254,7 @@
       // when the real variation is meaningful — Locations/Overview keep the fixed 0–100 scale
       // since those are about comparing locations against each other, not reading a trend shape.
       const benchmark = getGroupBenchmark(currentMetric);
-      const lo = Math.min(...data, benchmark), hi = Math.max(...data, benchmark);
-      const pad = Math.max(4, (hi - lo) * 0.25);
-      let axisMin = Math.max(0, Math.floor((lo - pad) / 5) * 5);
-      let axisMax = Math.min(100, Math.ceil((hi + pad) / 5) * 5);
-      if (axisMax - axisMin < 15) { // guarantee enough vertical room even for a near-flat series
-        const mid = (axisMax + axisMin) / 2;
-        axisMin = Math.max(0, mid - 7.5);
-        axisMax = Math.min(100, mid + 7.5);
-      }
+      const { axisMin, axisMax } = computeTrendAxisRange(data, benchmark);
       options = {
         ...baseOptions,
         chart: { ...baseOptions.chart, type: "area" },
