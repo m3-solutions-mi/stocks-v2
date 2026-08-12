@@ -712,12 +712,66 @@
       </div>
 
       <div class="help-tabs" id="helpTabs">
-        <button type="button" class="help-tab active" data-tab="metrics">Metrics</button>
+        <button type="button" class="help-tab active" data-tab="overview">Overview</button>
+        <button type="button" class="help-tab" data-tab="metrics">Metrics</button>
         <button type="button" class="help-tab" data-tab="edit">Edit Data</button>
         <button type="button" class="help-tab" data-tab="settings">Settings</button>
       </div>
 
-      <div class="help-panel" id="helpPanelMetrics">
+      <div class="help-panel" id="helpPanelOverview">
+
+      <div class="help-section">
+        <p class="help-heading">What TAKT is</p>
+        <p class="help-desc">
+          TAKT rolls up daily production data — entered manually or fed by an API — into
+          standardized OEE, TEEP, Yield, and CoQ figures across any number of locations and
+          areas. Instead of every plant reporting these numbers in its own spreadsheet with its
+          own assumptions, everyone feeds the same calculation and rolls up to one comparable view.
+        </p>
+        <p class="help-note">
+          Custom adapters can be built to connect TAKT to your existing systems — MES, ERP,
+          a historian, whatever's already running the floor — so the numbers populate
+          automatically instead of requiring manual entry. The pencil icon is always available
+          to correct or fill in a value by hand when something needs a human override.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Where the name comes from</p>
+        <p class="help-desc">
+          "Takt" isn't an acronym — it's the German word for a musical beat or pulse. In lean
+          manufacturing, <strong>takt time</strong> is the pace a line needs to run at to match
+          customer demand: available production time ÷ demand. It's one of the foundational
+          concepts in lean production, alongside metrics like OEE and cycle time — the app is
+          named after the underlying rhythm it's built to track.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Why it's worth doing</p>
+        <p class="help-desc">
+          A one-point improvement in OEE at a typical mid-size plant is commonly worth a
+          meaningful six-figure sum annually in reduced downtime, scrap, and overtime — the
+          hard part is usually not knowing where to focus first. Standardizing how every
+          location measures and reports the same four numbers is what makes that focus possible
+          at a corporate level:
+        </p>
+        <p class="help-desc">
+          <strong>Comparability</strong> — locations stop being measured against their own
+          history in isolation and start being measured against each other and against a shared
+          benchmark.<br>
+          <strong>Faster triage</strong> — an underperforming line shows up immediately in a
+          rollup instead of surfacing weeks later in a monthly report.<br>
+          <strong>Less manual reporting overhead</strong> — one shared model replaces however
+          many spreadsheet variants currently exist across sites.<br>
+          <strong>Accountability</strong> — area-level benchmark targets turn "how are we doing"
+          into a specific, visible number instead of a subjective read.
+        </p>
+      </div>
+
+      </div>
+
+      <div class="help-panel" id="helpPanelMetrics" style="display:none;">
 
       <div class="help-section">
         <p class="help-heading"><span class="help-swatch" style="background:#5C89B9"></span>OEE — Overall Equipment Effectiveness</p>
@@ -2410,7 +2464,7 @@
 
   // ---------- Help modal ----------
   const helpModal = document.getElementById("helpModal");
-  const HELP_TABS = ["metrics", "edit", "settings"];
+  const HELP_TABS = ["overview", "metrics", "edit", "settings"];
 
   function showHelpTab(tabName) {
     document.querySelectorAll("#helpTabs .help-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tabName));
@@ -2421,7 +2475,7 @@
   }
 
   document.getElementById("helpChip").addEventListener("click", () => {
-    showHelpTab("metrics");
+    showHelpTab("overview");
     helpModal.classList.add("open");
     lockPageScroll();
   });
