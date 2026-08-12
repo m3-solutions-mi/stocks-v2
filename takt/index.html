@@ -868,7 +868,9 @@
           update these every time.<br>
           <strong>Downtime</strong> — unplanned downtime minutes; Run Time = Planned Time − Downtime.<br>
           <strong>Total Units</strong> — total units produced, good and bad.<br>
-          <strong>Good Units</strong> — units that passed quality; must be ≤ Total Units.
+          <strong>Good Units</strong> — units that passed quality; must be ≤ Total Units.<br>
+          <strong>Reason for Loss</strong> — optional; one of 5 codes configured per area under
+          Settings, for whenever Good Units is less than Total Units.
         </p>
         <p class="help-desc">
           <strong>Planned / Target</strong> — set periodically, usually by planning or finance
@@ -937,6 +939,16 @@
           If your current Group selection spans more than one area, the line shown is the average
           of every represented area's target — most of the time a group is a single area, so this
           rarely comes up.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Scrap Reasons</p>
+        <p class="help-desc">
+          Five reason codes, pulled from the "Machine" category of the standard 6M root-cause
+          framework, offered as a dropdown in the Edit modal whenever Good Units is less than
+          Total Units. Each area can reword all five to match its own terminology or equipment —
+          the count stays fixed at five.
         </p>
       </div>
 
@@ -1043,6 +1055,16 @@
       <div id="benchmarkAreaFilter" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
       <table class="edit-table">
         <tbody id="benchmarkTableBody"></tbody>
+      </table>
+
+      <p class="settings-section-label" style="margin-top:20px;">Scrap Reasons</p>
+      <p style="color:var(--muted); font-size:11.5px; margin:-4px 0 10px 0;">
+        The 5 reason codes offered in the Edit modal when Good Units is less than Total Units.
+        Each area can reword these to match its own terminology — the count stays at 5.
+      </p>
+      <div id="scrapReasonAreaFilter" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
+      <table class="edit-table">
+        <tbody id="scrapReasonTableBody"></tbody>
       </table>
 
       <p class="settings-section-label" style="margin-top:20px;">Location targets</p>
@@ -1190,7 +1212,7 @@
     api: {
       baseUrl: "/api",
       // Expected shape for GET and PUT bodies (full record):
-      // { planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue }
+      // { planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue, scrapReason }
       // PATCH body is a partial object with just the changed keys; the server should merge
       // it into the existing record atomically and return the resulting full record.
       endpoints: {
@@ -1227,14 +1249,26 @@
   // TEEP target than a 24/7 site, since TEEP is driven by shift strategy, not just performance.
   const DEFAULT_BENCHMARKS = { OEE: 85, TEEP: 45, Yield: 95, CoQ: 5 };
 
+  // ---------- Scrap reasons ----------
+  // Five reason codes from the "Machine" bucket of the classic 6M root-cause framework —
+  // the most common category for a straight equipment-tracking app like this. Each area can
+  // reword these to match its own terminology; the count stays fixed at five by design.
+  const DEFAULT_SCRAP_REASONS = [
+    "Equipment malfunction mid-run",
+    "Tooling wear or damage",
+    "Calibration drift",
+    "Unplanned breakdown/jam",
+    "Preventive maintenance overdue"
+  ];
+
   // ---------- Areas ----------
   // A grouping layer above locations — editable and selectable from the UI. Each location
   // belongs to exactly one area (areaId). Selecting an area in the Group filter toggles
   // every location that belongs to it. Each area also carries its own benchmark targets,
-  // shown as a reference line on the Trend chart.
+  // shown as a reference line on the Trend chart, and its own set of scrap reason codes.
   const AREAS = [
-    { id: "na",    name: "North America", benchmarks: { ...DEFAULT_BENCHMARKS } },
-    { id: "latam", name: "Latin America", benchmarks: { ...DEFAULT_BENCHMARKS } }
+    { id: "na",    name: "North America", benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: [...DEFAULT_SCRAP_REASONS] },
+    { id: "latam", name: "Latin America", benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: [...DEFAULT_SCRAP_REASONS] }
   ];
 
   const LOCATIONS = [
@@ -1291,7 +1325,7 @@
       localStorage.setItem(SETTINGS_KEY, JSON.stringify({
         dataMode: CONFIG.dataMode,
         apiBaseUrl: CONFIG.api.baseUrl,
-        areas: AREAS.map(a => ({ id: a.id, name: a.name, benchmarks: { ...a.benchmarks } })),
+        areas: AREAS.map(a => ({ id: a.id, name: a.name, benchmarks: { ...a.benchmarks }, scrapReasons: [...(a.scrapReasons || DEFAULT_SCRAP_REASONS)] })),
         locations: LOCATIONS.map(l => ({
           id: l.id, name: l.name, areaId: l.areaId, plannedTime: l.plannedTime,
           idealCycleTime: l.idealCycleTime, totalUnits: l.totalUnits,
@@ -1313,7 +1347,8 @@
       saved.areas.forEach(a => AREAS.push({
         id: a.id,
         name: a.name,
-        benchmarks: { ...DEFAULT_BENCHMARKS, ...(a.benchmarks || {}) }
+        benchmarks: { ...DEFAULT_BENCHMARKS, ...(a.benchmarks || {}) },
+        scrapReasons: (Array.isArray(a.scrapReasons) && a.scrapReasons.length === 5) ? a.scrapReasons : [...DEFAULT_SCRAP_REASONS]
       }));
     }
     if (Array.isArray(saved.locations) && saved.locations.length) {
@@ -1459,7 +1494,16 @@
       const goodUnits = Math.max(1, Math.round(totalUnits * qualityFactor));
       const coqCost = Math.max(0, Math.round(loc.coqCost * (0.7 + rand() * 0.6)));
       const revenue = Math.max(0, Math.round(loc.revenue * (0.85 + rand() * 0.3)));
-      return { planned, downtime, totalUnits, goodUnits, idealCycleTime: loc.idealCycleTime, coqCost, revenue };
+
+      // Give a reason for the loss whenever there was one, picked from this location's area.
+      let scrapReason = "";
+      if (goodUnits < totalUnits) {
+        const area = AREAS.find(a => a.id === loc.areaId);
+        const reasons = (area && Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
+        scrapReason = reasons[Math.floor(rand() * reasons.length)];
+      }
+
+      return { planned, downtime, totalUnits, goodUnits, idealCycleTime: loc.idealCycleTime, coqCost, revenue, scrapReason };
     },
 
     // Populates `store[locationId][dateStr]` for every location across `dates`.
@@ -1476,7 +1520,7 @@
           const url = CONFIG.api.endpoints.listRecords(loc.id, dates[0], dates[dates.length - 1]);
           const res = await fetch(url, { headers: CONFIG.api.headers });
           if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-          const rows = await res.json(); // expected: [{ date, planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue }, ...]
+          const rows = await res.json(); // expected: [{ date, planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue, scrapReason }, ...]
           store[loc.id] = {};
           rows.forEach(row => {
             const { date, ...record } = row;
@@ -2177,13 +2221,14 @@
     let base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "area";
     let id = base, n = 2;
     while (AREAS.some(a => a.id === id)) id = `${base}-${n++}`;
-    AREAS.push({ id, name, benchmarks: { ...DEFAULT_BENCHMARKS } });
+    AREAS.push({ id, name, benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: [...DEFAULT_SCRAP_REASONS] });
     input.value = "";
     saveSettings();
     renderAreaManageList();
     renderAreaBar();
     renderLocationAreaFilter();
     renderBenchmarkAreaFilter();
+    renderScrapReasonAreaFilter();
     populateSettingsTable(selectedSettingsLocationId); // new area now selectable
   }
 
@@ -2197,6 +2242,7 @@
     AREAS.splice(AREAS.findIndex(a => a.id === id), 1);
     if (settingsAreaFilterId === id) settingsAreaFilterId = fallback.id;
     if (benchmarkAreaFilterId === id) benchmarkAreaFilterId = fallback.id;
+    if (scrapReasonAreaFilterId === id) scrapReasonAreaFilterId = fallback.id;
     saveSettings();
     renderAreaManageList();
     renderAreaBar();
@@ -2205,6 +2251,7 @@
     renderLocationAreaFilter();
     renderLocationManageList();
     renderBenchmarkAreaFilter();
+    renderScrapReasonAreaFilter();
     populateSettingsTable(selectedSettingsLocationId);
   }
 
@@ -2266,6 +2313,41 @@
         <td><span class="edit-swatch" style="background:${f.color}"></span>${f.label}</td>
         <td style="text-align:right;">
           <input type="number" class="edit-input" data-benchmark="${f.key}" min="0" max="100" step="0.5" value="${value}">
+        </td>`;
+      tbody.appendChild(row);
+    });
+  }
+
+  let scrapReasonAreaFilterId = AREAS[0].id;
+
+  function renderScrapReasonAreaFilter() {
+    const filterBar = document.getElementById("scrapReasonAreaFilter");
+    filterBar.innerHTML = "";
+    AREAS.forEach(area => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "loc-chip" + (area.id === scrapReasonAreaFilterId ? " active" : "");
+      btn.textContent = area.name;
+      btn.addEventListener("click", () => {
+        scrapReasonAreaFilterId = area.id;
+        renderScrapReasonAreaFilter();
+        populateScrapReasonTable(scrapReasonAreaFilterId);
+      });
+      filterBar.appendChild(btn);
+    });
+  }
+
+  function populateScrapReasonTable(areaId) {
+    const area = AREAS.find(a => a.id === areaId);
+    const reasons = (Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
+    const tbody = document.getElementById("scrapReasonTableBody");
+    tbody.innerHTML = "";
+    reasons.forEach((text, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="color:var(--muted); font-size:11px; letter-spacing:1px; text-transform:uppercase; width:70px;">Reason ${i + 1}</td>
+        <td>
+          <input type="text" class="edit-input" data-scrap-reason="${i}" value="${text}" style="width:100%; text-align:left;">
         </td>`;
       tbody.appendChild(row);
     });
@@ -2386,6 +2468,10 @@
     renderBenchmarkAreaFilter();
     populateBenchmarkTable(benchmarkAreaFilterId);
 
+    scrapReasonAreaFilterId = AREAS[0].id;
+    renderScrapReasonAreaFilter();
+    populateScrapReasonTable(scrapReasonAreaFilterId);
+
     settingsAreaFilterId = AREAS[0].id; // default to the first area every time Settings opens
     const firstInArea = LOCATIONS.find(l => l.areaId === settingsAreaFilterId);
     selectedSettingsLocationId = (firstInArea || LOCATIONS[0]).id;
@@ -2440,6 +2526,18 @@
         const v = parseFloat(input.value);
         benchmarkArea.benchmarks[key] = isNaN(v) ? DEFAULT_BENCHMARKS[key] : v;
       });
+    }
+
+    // apply the currently-shown area's scrap-reason edits
+    const scrapReasonArea = AREAS.find(a => a.id === scrapReasonAreaFilterId);
+    if (scrapReasonArea) {
+      const updated = [...DEFAULT_SCRAP_REASONS];
+      document.getElementById("scrapReasonTableBody").querySelectorAll(".edit-input").forEach(input => {
+        const idx = parseInt(input.dataset.scrapReason, 10);
+        const text = input.value.trim();
+        if (!isNaN(idx) && idx >= 0 && idx < 5) updated[idx] = text || DEFAULT_SCRAP_REASONS[idx];
+      });
+      scrapReasonArea.scrapReasons = updated;
     }
 
     // apply data-source settings
@@ -2690,6 +2788,7 @@
     { key: "downtime",       label: "Downtime (min)",              step: 1,    min: 0,    max: 1440,    group: "actual" },
     { key: "totalUnits",     label: "Total Units",                 step: 1,    min: 0,    max: 100000,  group: "actual" },
     { key: "goodUnits",      label: "Good Units",                  step: 1,    min: 0,    max: 100000,  group: "actual" },
+    { key: "scrapReason",    label: "Reason for Loss",             type: "select", group: "actual" },
     { key: "planned",        label: "Planned Time (min)",          step: 1,    min: 60,   max: 1440,    group: "planned" },
     { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10,      group: "planned" },
     { key: "coqCost",        label: "Cost of Poor Quality ($)",    step: 10,   min: 0,    max: 1000000, group: "planned" },
@@ -2711,7 +2810,8 @@
   function readFormValues() {
     const values = {};
     editTableBody.querySelectorAll(".edit-input").forEach(input => {
-      values[input.dataset.field] = parseFloat(input.value) || 0;
+      const isSelect = input.tagName === "SELECT";
+      values[input.dataset.field] = isSelect ? input.value : (parseFloat(input.value) || 0);
     });
     return values;
   }
@@ -2746,12 +2846,23 @@
         editTableBody.appendChild(headerRow);
       }
       const row = document.createElement("tr");
-      row.innerHTML = `
+      let inputHtml;
+      if (f.type === "select") {
+        const loc = LOCATIONS.find(l => l.id === editLocationSelect.value);
+        const area = AREAS.find(a => a.id === (loc && loc.areaId));
+        const reasons = (area && Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
+        const current = record[f.key] || "";
+        const options = ['<option value="">— none —</option>']
+          .concat(reasons.map(r => `<option value="${r}" ${r === current ? "selected" : ""}>${r}</option>`));
+        inputHtml = `<select class="edit-input" data-field="${f.key}" style="width:100%; text-align:left;">${options.join("")}</select>`;
+        row.innerHTML = `<td colspan="2">${f.label}<br>${inputHtml}</td>`;
+      } else {
+        inputHtml = `<input type="number" class="edit-input" data-field="${f.key}"
+                 min="${f.min}" max="${f.max}" step="${f.step}" value="${record[f.key]}">`;
+        row.innerHTML = `
         <td>${f.label}</td>
-        <td style="text-align:right;">
-          <input type="number" class="edit-input" data-field="${f.key}"
-                 min="${f.min}" max="${f.max}" step="${f.step}" value="${record[f.key]}">
-        </td>`;
+        <td style="text-align:right;">${inputHtml}</td>`;
+      }
       editTableBody.appendChild(row);
     });
     editTableBody.querySelectorAll(".edit-input").forEach(input => {
