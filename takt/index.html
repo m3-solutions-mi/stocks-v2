@@ -849,6 +849,21 @@
       </div>
 
       <div class="help-section">
+        <p class="help-heading">Benchmarks</p>
+        <p class="help-desc">
+          Each area has its own target for OEE, TEEP, Yield, and CoQ, shown as a dashed reference
+          line on the Trend chart. They default to the industry rule-of-thumb figures from the
+          Metrics tab, but every area can override them — useful since, for example, a reasonable
+          TEEP target depends heavily on how many shifts that site runs.
+        </p>
+        <p class="help-note">
+          If your current Group selection spans more than one area, the line shown is the average
+          of every represented area's target — most of the time a group is a single area, so this
+          rarely comes up.
+        </p>
+      </div>
+
+      <div class="help-section">
         <p class="help-heading">Location targets</p>
         <p class="help-desc">
           Pick an area, then a location, to edit its settings:
@@ -943,6 +958,15 @@
         <input type="text" class="edit-select" id="newAreaName" placeholder="New area name" style="margin-bottom:0;">
         <button type="button" class="btn-save" id="addAreaBtn" style="white-space:nowrap;">Add</button>
       </div>
+
+      <p class="settings-section-label" style="margin-top:20px;">Benchmarks</p>
+      <p style="color:var(--muted); font-size:11.5px; margin:-4px 0 10px 0;">
+        Reference targets shown as a line on the Trend chart. Each area can set its own.
+      </p>
+      <div id="benchmarkAreaFilter" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
+      <table class="edit-table">
+        <tbody id="benchmarkTableBody"></tbody>
+      </table>
 
       <p class="settings-section-label" style="margin-top:20px;">Location targets</p>
       <div id="locationAreaFilter" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
@@ -1120,13 +1144,20 @@
   // Each location's shift length, cycle time, and typical daily scale is configured here.
   // Change these values to model a different site — everything downstream (sample data,
   // edit-modal defaults) is generated from these numbers.
+  // ---------- Industry benchmarks ----------
+  // Default reference targets (see Help > Metrics for the reasoning behind each). Each area can
+  // override these independently in Settings — e.g. a single-shift site would set a much lower
+  // TEEP target than a 24/7 site, since TEEP is driven by shift strategy, not just performance.
+  const DEFAULT_BENCHMARKS = { OEE: 85, TEEP: 45, Yield: 95, CoQ: 5 };
+
   // ---------- Areas ----------
   // A grouping layer above locations — editable and selectable from the UI. Each location
   // belongs to exactly one area (areaId). Selecting an area in the Group filter toggles
-  // every location that belongs to it.
+  // every location that belongs to it. Each area also carries its own benchmark targets,
+  // shown as a reference line on the Trend chart.
   const AREAS = [
-    { id: "na",    name: "North America" },
-    { id: "latam", name: "Latin America" }
+    { id: "na",    name: "North America", benchmarks: { ...DEFAULT_BENCHMARKS } },
+    { id: "latam", name: "Latin America", benchmarks: { ...DEFAULT_BENCHMARKS } }
   ];
 
   const LOCATIONS = [
@@ -1183,7 +1214,7 @@
       localStorage.setItem(SETTINGS_KEY, JSON.stringify({
         dataMode: CONFIG.dataMode,
         apiBaseUrl: CONFIG.api.baseUrl,
-        areas: AREAS.map(a => ({ id: a.id, name: a.name })),
+        areas: AREAS.map(a => ({ id: a.id, name: a.name, benchmarks: { ...a.benchmarks } })),
         locations: LOCATIONS.map(l => ({
           id: l.id, name: l.name, areaId: l.areaId, plannedTime: l.plannedTime,
           idealCycleTime: l.idealCycleTime, totalUnits: l.totalUnits,
@@ -1202,7 +1233,11 @@
     if (typeof saved.apiBaseUrl === "string" && saved.apiBaseUrl.trim()) CONFIG.api.baseUrl = saved.apiBaseUrl.trim();
     if (Array.isArray(saved.areas) && saved.areas.length) {
       AREAS.length = 0;
-      saved.areas.forEach(a => AREAS.push({ id: a.id, name: a.name }));
+      saved.areas.forEach(a => AREAS.push({
+        id: a.id,
+        name: a.name,
+        benchmarks: { ...DEFAULT_BENCHMARKS, ...(a.benchmarks || {}) }
+      }));
     }
     if (Array.isArray(saved.locations) && saved.locations.length) {
       LOCATIONS.length = 0;
@@ -1638,6 +1673,23 @@
     return data[data.length - 1];
   }
 
+  // The benchmark line shown on the Trend chart. If the current group spans more than one
+  // area, this averages each represented area's target rather than picking just one — most
+  // of the time a group is a single area anyway (that's what the Area chips are for).
+  function getGroupBenchmark(metricKey) {
+    const areaIds = new Set(
+      LOCATIONS.filter(l => selectedLocations.has(l.id)).map(l => l.areaId)
+    );
+    if (areaIds.size === 0) return DEFAULT_BENCHMARKS[metricKey];
+    const values = Array.from(areaIds).map(id => {
+      const area = AREAS.find(a => a.id === id);
+      return (area && area.benchmarks && area.benchmarks[metricKey] != null)
+        ? area.benchmarks[metricKey]
+        : DEFAULT_BENCHMARKS[metricKey];
+    });
+    return values.reduce((a, b) => a + b, 0) / values.length;
+  }
+
   function renderChipValues() {
     Object.keys(METRICS).forEach(key => {
       const el = document.querySelector(`.chip-value[data-value="${key}"]`);
@@ -1810,7 +1862,8 @@
       // makes a naturally-low metric like TEEP (~20-30%) or CoQ (~5%) look almost flat even
       // when the real variation is meaningful — Locations/Overview keep the fixed 0–100 scale
       // since those are about comparing locations against each other, not reading a trend shape.
-      const lo = Math.min(...data), hi = Math.max(...data);
+      const benchmark = getGroupBenchmark(currentMetric);
+      const lo = Math.min(...data, benchmark), hi = Math.max(...data, benchmark);
       const pad = Math.max(4, (hi - lo) * 0.25);
       let axisMin = Math.max(0, Math.floor((lo - pad) / 5) * 5);
       let axisMax = Math.min(100, Math.ceil((hi + pad) / 5) * 5);
@@ -1828,7 +1881,22 @@
           type: "gradient",
           gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0, stops: [0, 90, 100] }
         },
-        markers: { size: 4, colors: [m.color], strokeColors: "#12161C", strokeWidth: 2 }
+        markers: { size: 4, colors: [m.color], strokeColors: "#12161C", strokeWidth: 2 },
+        annotations: {
+          yaxis: [{
+            y: benchmark,
+            borderColor: "#9FA8B5",
+            strokeDashArray: 5,
+            label: {
+              borderColor: "#9FA8B5",
+              style: { color: "#12161C", background: "#9FA8B5", fontSize: "11px", fontWeight: 700 },
+              text: `Benchmark: ${benchmark.toFixed(1)}%`,
+              position: "left",
+              offsetX: 8,
+              textAnchor: "start"
+            }
+          }]
+        }
       };
     }
 
@@ -1921,6 +1989,7 @@
   const dataModeToggle = document.getElementById("dataModeToggle");
   let selectedSettingsLocationId = LOCATIONS[0].id;
   let settingsAreaFilterId = AREAS[0].id;
+  let benchmarkAreaFilterId = AREAS[0].id;
 
   const SETTINGS_FIELDS = [
     { key: "name",           label: "Location Name",             type: "text" },
@@ -2008,12 +2077,13 @@
     let base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "area";
     let id = base, n = 2;
     while (AREAS.some(a => a.id === id)) id = `${base}-${n++}`;
-    AREAS.push({ id, name });
+    AREAS.push({ id, name, benchmarks: { ...DEFAULT_BENCHMARKS } });
     input.value = "";
     saveSettings();
     renderAreaManageList();
     renderAreaBar();
     renderLocationAreaFilter();
+    renderBenchmarkAreaFilter();
     populateSettingsTable(selectedSettingsLocationId); // new area now selectable
   }
 
@@ -2026,6 +2096,7 @@
     LOCATIONS.forEach(loc => { if (loc.areaId === id) loc.areaId = fallback.id; });
     AREAS.splice(AREAS.findIndex(a => a.id === id), 1);
     if (settingsAreaFilterId === id) settingsAreaFilterId = fallback.id;
+    if (benchmarkAreaFilterId === id) benchmarkAreaFilterId = fallback.id;
     saveSettings();
     renderAreaManageList();
     renderAreaBar();
@@ -2033,6 +2104,7 @@
     syncSelectionUI();
     renderLocationAreaFilter();
     renderLocationManageList();
+    renderBenchmarkAreaFilter();
     populateSettingsTable(selectedSettingsLocationId);
   }
 
@@ -2056,6 +2128,46 @@
         renderLocationManageList();
       });
       filterBar.appendChild(btn);
+    });
+  }
+
+  const BENCHMARK_FIELDS = [
+    { key: "OEE",   label: "OEE",   color: "#5C89B9" },
+    { key: "TEEP",  label: "TEEP",  color: "#20A8A8" },
+    { key: "Yield", label: "Yield", color: "#996FAC" },
+    { key: "CoQ",   label: "CoQ",   color: "#AD966A" }
+  ];
+
+  function renderBenchmarkAreaFilter() {
+    const filterBar = document.getElementById("benchmarkAreaFilter");
+    filterBar.innerHTML = "";
+    AREAS.forEach(area => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "loc-chip" + (area.id === benchmarkAreaFilterId ? " active" : "");
+      btn.textContent = area.name;
+      btn.addEventListener("click", () => {
+        benchmarkAreaFilterId = area.id;
+        renderBenchmarkAreaFilter();
+        populateBenchmarkTable(benchmarkAreaFilterId);
+      });
+      filterBar.appendChild(btn);
+    });
+  }
+
+  function populateBenchmarkTable(areaId) {
+    const area = AREAS.find(a => a.id === areaId);
+    const tbody = document.getElementById("benchmarkTableBody");
+    tbody.innerHTML = "";
+    BENCHMARK_FIELDS.forEach(f => {
+      const value = (area.benchmarks && area.benchmarks[f.key] != null) ? area.benchmarks[f.key] : DEFAULT_BENCHMARKS[f.key];
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><span class="edit-swatch" style="background:${f.color}"></span>${f.label}</td>
+        <td style="text-align:right;">
+          <input type="number" class="edit-input" data-benchmark="${f.key}" min="0" max="100" step="0.5" value="${value}">
+        </td>`;
+      tbody.appendChild(row);
     });
   }
 
@@ -2170,6 +2282,10 @@
     settingsApiUrl.value = CONFIG.api.baseUrl;
     renderAreaManageList();
 
+    benchmarkAreaFilterId = AREAS[0].id;
+    renderBenchmarkAreaFilter();
+    populateBenchmarkTable(benchmarkAreaFilterId);
+
     settingsAreaFilterId = AREAS[0].id; // default to the first area every time Settings opens
     const firstInArea = LOCATIONS.find(l => l.areaId === settingsAreaFilterId);
     selectedSettingsLocationId = (firstInArea || LOCATIONS[0]).id;
@@ -2214,6 +2330,17 @@
       else if (field === "areaId") loc.areaId = input.value;
       else loc[field] = parseFloat(input.value) || 0;
     });
+
+    // apply the currently-shown area's benchmark edits
+    const benchmarkArea = AREAS.find(a => a.id === benchmarkAreaFilterId);
+    if (benchmarkArea) {
+      benchmarkArea.benchmarks = benchmarkArea.benchmarks || {};
+      document.getElementById("benchmarkTableBody").querySelectorAll(".edit-input").forEach(input => {
+        const key = input.dataset.benchmark;
+        const v = parseFloat(input.value);
+        benchmarkArea.benchmarks[key] = isNaN(v) ? DEFAULT_BENCHMARKS[key] : v;
+      });
+    }
 
     // apply data-source settings
     const activeModeBtn = dataModeToggle.querySelector(".loc-chip.active");
