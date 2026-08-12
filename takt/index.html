@@ -1801,6 +1801,27 @@
       tooltip: { theme: "dark", y: { formatter: v => v.toFixed(1) + m.unit } }
     };
 
+    // Keeps the dashed benchmark line on every screen size, but drops the text label box on
+    // phones — at that width the label often overlaps the chart or gets clipped.
+    function buildBenchmarkAnnotation(benchmark) {
+      const isPhone = window.innerWidth <= 480;
+      return {
+        yaxis: [{
+          y: benchmark,
+          borderColor: "#9FA8B5",
+          strokeDashArray: 5,
+          label: isPhone ? { text: "", borderWidth: 0 } : {
+            borderColor: "#9FA8B5",
+            style: { color: "#12161C", background: "#9FA8B5", fontSize: "11px", fontWeight: 700 },
+            text: `Benchmark: ${benchmark.toFixed(1)}%`,
+            position: "left",
+            offsetX: 8,
+            textAnchor: "start"
+          }
+        }]
+      };
+    }
+
     let options;
     if (currentView === "polar") {
       // Polar charts are circular, so a plain wide container leaves dead space on either
@@ -1869,21 +1890,7 @@
           offsetY: -20,
           style: { colors: ["#F5F3EF"], fontSize: "12px", fontWeight: 700 }
         },
-        annotations: {
-          yaxis: [{
-            y: benchmark,
-            borderColor: "#9FA8B5",
-            strokeDashArray: 5,
-            label: {
-              borderColor: "#9FA8B5",
-              style: { color: "#12161C", background: "#9FA8B5", fontSize: "11px", fontWeight: 700 },
-              text: `Benchmark: ${benchmark.toFixed(1)}%`,
-              position: "left",
-              offsetX: 8,
-              textAnchor: "start"
-            }
-          }]
-        }
+        annotations: buildBenchmarkAnnotation(benchmark)
       };
     } else {
       // Trend-only: scale the axis to fit this metric's actual range. A fixed 0–100 axis
@@ -1910,21 +1917,7 @@
           gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0, stops: [0, 90, 100] }
         },
         markers: { size: 4, colors: [m.color], strokeColors: "#12161C", strokeWidth: 2 },
-        annotations: {
-          yaxis: [{
-            y: benchmark,
-            borderColor: "#9FA8B5",
-            strokeDashArray: 5,
-            label: {
-              borderColor: "#9FA8B5",
-              style: { color: "#12161C", background: "#9FA8B5", fontSize: "11px", fontWeight: 700 },
-              text: `Benchmark: ${benchmark.toFixed(1)}%`,
-              position: "left",
-              offsetX: 8,
-              textAnchor: "start"
-            }
-          }]
-        }
+        annotations: buildBenchmarkAnnotation(benchmark)
       };
     }
 
