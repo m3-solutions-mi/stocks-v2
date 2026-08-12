@@ -140,6 +140,51 @@
   }
   .loc-chip:hover:not(.active){border-color:var(--muted); color:var(--ink);}
 
+  .area-chip{border-style:dashed;}
+  .area-chip.active{border-style:solid;}
+
+  .area-manage-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .area-manage-chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:5px 6px 5px 12px;
+    font-size:12.5px;
+    color:var(--ink);
+  }
+  .area-manage-chip button{
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    cursor:pointer;
+    font-size:11px;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+  }
+  .area-manage-chip button:hover{
+    background:color-mix(in srgb, var(--muted) 25%, transparent);
+    color:var(--ink);
+  }
+
+  .settings-section-label{
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    font-weight:700;
+    margin:0 0 8px 0;
+  }
+  .loc-chip-row{display:flex; gap:8px;}
+  .loc-chip-row .loc-chip{flex:1; text-align:center;}
+
   .edit-select{
     width:100%;
     background:var(--bg2);
@@ -532,6 +577,42 @@
     </div>
   </div>
 
+  <!-- ===== Settings modal ===== -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <p class="modal-title">Settings</p>
+        <button class="modal-close" id="settingsClose" aria-label="Close"><i class="fa fa-times"></i></button>
+      </div>
+
+      <p class="settings-section-label">Data source</p>
+      <div class="loc-chip-row" id="dataModeToggle">
+        <button type="button" class="loc-chip" data-mode="sample">Sample data</button>
+        <button type="button" class="loc-chip" data-mode="api">Live API</button>
+      </div>
+      <input type="text" class="edit-select" id="settingsApiUrl" placeholder="API base URL, e.g. /api" style="margin-top:10px;">
+
+      <p class="settings-section-label" style="margin-top:20px;">Areas</p>
+      <div class="area-manage-row" id="areaManageList"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <input type="text" class="edit-select" id="newAreaName" placeholder="New area name" style="margin-bottom:0;">
+        <button type="button" class="btn-save" id="addAreaBtn" style="white-space:nowrap;">Add</button>
+      </div>
+
+      <p class="settings-section-label" style="margin-top:20px;">Location targets</p>
+      <select class="edit-select" id="settingsLocation"></select>
+
+      <table class="edit-table">
+        <tbody id="settingsTableBody"></tbody>
+      </table>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" id="settingsCancel">Cancel</button>
+        <button class="btn-save" id="settingsSave">Save changes</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Body ===== -->
   <div class="wrap">
     <div class="panel">
@@ -558,6 +639,10 @@
             <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>By Location</button>
           </div>
         </div>
+      </div>
+
+      <div id="areaBar" class="location-bar">
+        <span class="location-label">Area:</span>
       </div>
 
       <div id="locationBar" class="location-bar">
@@ -598,13 +683,43 @@
 
     <p style="color:var(--muted); font-size:12px; margin-top:14px;">
       Sample data shown for demonstration. Switch between Trend and By Location above to change how the chart
-      is grouped, toggle locations to change who's in the group, or use the pencil icon to edit a location's
-      raw shift data for a given day — edits are saved in this browser and persist across reloads.
-      <a href="#" id="resetEdits" style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved edits</a>
+      is grouped, click an Area to select every location in it, toggle individual locations to fine-tune the
+      group, or use the pencil icon to edit a location's raw shift data for a given day. Manage areas and
+      locations from the gear icon. Your selections and edits are saved in this browser and persist across reloads.
+      <a href="#" id="resetEdits" style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
     </p>
   </div>
 
 <script>
+  // ==========================================================================================
+  // CONFIG — switch between the built-in sample data and a real backend here.
+  //
+  //   dataMode: "sample"  -> everything is generated locally and edits persist to localStorage.
+  //   dataMode: "api"     -> data is fetched/saved through the endpoints below.
+  //
+  // The rest of the app (charts, calculations, edit modal) never touches storage directly —
+  // it only calls DataSource.getRecord / DataSource.saveRecord / DataSource.loadAll, so
+  // flipping this one value is the only change needed to go live against a real API.
+  // ==========================================================================================
+  const CONFIG = {
+    dataMode: "sample", // "sample" | "api"
+    api: {
+      baseUrl: "/api",
+      // Expected shape for both GET and PUT bodies:
+      // { planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue }
+      endpoints: {
+        // GET  -> a single day's raw record for one location
+        getRecord: (locationId, dateStr) => `${CONFIG.api.baseUrl}/locations/${locationId}/days/${dateStr}`,
+        // PUT  -> save/replace a single day's raw record for one location
+        saveRecord: (locationId, dateStr) => `${CONFIG.api.baseUrl}/locations/${locationId}/days/${dateStr}`,
+        // GET  -> bulk fetch a date range for one location (used at startup)
+        listRecords: (locationId, startDate, endDate) =>
+          `${CONFIG.api.baseUrl}/locations/${locationId}/days?start=${startDate}&end=${endDate}`
+      },
+      headers: { "Content-Type": "application/json" }
+    }
+  };
+
   // ---------- Metric definitions (targets match the banner rings) ----------
   const METRICS = {
     OEE:   { label: "Overall Equipment Effectiveness", sub: "Availability × Performance × Quality", color: "#5B7FA6", baseline: 72, unit: "%", betterUp: true },
@@ -617,10 +732,20 @@
   // Each location's shift length, cycle time, and typical daily scale is configured here.
   // Change these values to model a different site — everything downstream (sample data,
   // edit-modal defaults) is generated from these numbers.
+  // ---------- Areas ----------
+  // A grouping layer above locations — editable and selectable from the UI. Each location
+  // belongs to exactly one area (areaId). Selecting an area in the Group filter toggles
+  // every location that belongs to it.
+  const AREAS = [
+    { id: "na",    name: "North America" },
+    { id: "latam", name: "Latin America" }
+  ];
+
   const LOCATIONS = [
     {
       id: "line1",
       name: "Line 1 — Mesa, AZ",
+      areaId: "na",
       idealCycleTime: 0.42,     // minutes per unit at ideal rate
       plannedTime: 480,         // planned production minutes per day
       totalUnits: 900,          // typical total units produced per day
@@ -630,6 +755,7 @@
     {
       id: "line2",
       name: "Line 2 — Dayton, OH",
+      areaId: "na",
       idealCycleTime: 0.55,
       plannedTime: 480,
       totalUnits: 700,
@@ -639,6 +765,7 @@
     {
       id: "line3",
       name: "Line 3 — Querétaro, MX",
+      areaId: "latam",
       idealCycleTime: 0.38,
       plannedTime: 450,
       totalUnits: 1000,
@@ -646,6 +773,56 @@
       revenue: 28000
     }
   ];
+
+  // ---------- Settings persistence ----------
+  // Data-source config, areas, and per-location targets, edited from the Settings dialog.
+  // Applied here, immediately, so sample generation and API calls reflect saved settings
+  // from the very first load.
+  const SETTINGS_KEY = "takt-settings-v1";
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.warn("Could not read saved settings:", e);
+      return null;
+    }
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+        dataMode: CONFIG.dataMode,
+        apiBaseUrl: CONFIG.api.baseUrl,
+        areas: AREAS.map(a => ({ id: a.id, name: a.name })),
+        locations: LOCATIONS.map(l => ({
+          id: l.id, name: l.name, areaId: l.areaId, plannedTime: l.plannedTime,
+          idealCycleTime: l.idealCycleTime, totalUnits: l.totalUnits,
+          coqCost: l.coqCost, revenue: l.revenue
+        }))
+      }));
+    } catch (e) {
+      console.warn("Could not save settings:", e);
+    }
+  }
+
+  (function applySavedSettings() {
+    const saved = loadSettings();
+    if (!saved) return;
+    if (saved.dataMode === "sample" || saved.dataMode === "api") CONFIG.dataMode = saved.dataMode;
+    if (typeof saved.apiBaseUrl === "string" && saved.apiBaseUrl.trim()) CONFIG.api.baseUrl = saved.apiBaseUrl.trim();
+    if (Array.isArray(saved.areas) && saved.areas.length) {
+      AREAS.length = 0;
+      saved.areas.forEach(a => AREAS.push({ id: a.id, name: a.name }));
+    }
+    if (Array.isArray(saved.locations)) {
+      saved.locations.forEach(sl => {
+        const loc = LOCATIONS.find(l => l.id === sl.id);
+        if (loc) Object.assign(loc, sl);
+      });
+    }
+  })();
 
   const TIMEFRAMES = {
     Day:   { points: 14, unitLabel: "day"   },
@@ -719,39 +896,135 @@
 
   const overrides = loadOverrides();
 
+  // Selections (metric, timeframe, view, group) are saved separately from the edited
+  // shift data, so a returning visitor lands back where they left off.
+  const UI_STATE_KEY = "takt-ui-state-v1";
+
+  function loadUIState() {
+    try {
+      const raw = localStorage.getItem(UI_STATE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.warn("Could not read saved selections:", e);
+      return null;
+    }
+  }
+
+  function saveUIState() {
+    try {
+      localStorage.setItem(UI_STATE_KEY, JSON.stringify({
+        metric: currentMetric,
+        tf: currentTf,
+        view: currentView,
+        locations: Array.from(selectedLocations)
+      }));
+    } catch (e) {
+      console.warn("Could not save selections:", e);
+    }
+  }
+
+  const savedUIState = loadUIState();
+
   // ---------- Raw daily shift data (the "manual daily input" the app is built around) ----------
   // Stored per location, per date. OEE/TEEP/Yield/CoQ are CALCULATED from this, never stored directly.
   // A "group" of locations is aggregated by summing raw inputs first, then computing ratios —
   // this is the correct way to combine OEE across lines, not averaging percentages.
-
   const rawStore = {};
-  LOCATIONS.forEach(loc => {
-    rawStore[loc.id] = {};
-    const rand = mulberry32(loc.id.charCodeAt(0) * 131 + loc.id.length * 41);
-    dailyDates.forEach(dateStr => {
-      const downtime = Math.round(20 + rand() * 110);                        // minutes of unplanned downtime
-      const planned = Math.round(loc.plannedTime + (rand() - 0.5) * 20);     // varies slightly around configured planned time
-      const totalUnits = Math.max(10, Math.round(loc.totalUnits * (0.85 + rand() * 0.3)));   // ±15% of configured total units
-      const qualityFactor = 0.86 + rand() * 0.13;                            // good-unit rate
+  LOCATIONS.forEach(loc => { rawStore[loc.id] = {}; });
+
+  // ==========================================================================================
+  // DataSource — the single place that knows how to get and save raw shift data.
+  // Everything else in the app (charts, stats, the edit modal) calls DataSource.* and doesn't
+  // care whether the data came from generated samples or a real API. To go live:
+  //   1. Set CONFIG.dataMode = "api"
+  //   2. Point CONFIG.api.baseUrl / endpoints at your backend
+  //   3. Make sure your API returns/accepts the record shape noted in CONFIG above
+  // ==========================================================================================
+  const DataSource = {
+
+    // Deterministic sample generator for one location/date — swapped out entirely in API mode.
+    _generateSampleRecord(loc, rand) {
+      const downtime = Math.round(20 + rand() * 110);                      // minutes of unplanned downtime
+      const planned = Math.round(loc.plannedTime + (rand() - 0.5) * 20);   // varies around configured planned time
+      const totalUnits = Math.max(10, Math.round(loc.totalUnits * (0.85 + rand() * 0.3)));
+      const qualityFactor = 0.86 + rand() * 0.13;
       const goodUnits = Math.max(1, Math.round(totalUnits * qualityFactor));
-      const coqCost = Math.max(0, Math.round(loc.coqCost * (0.7 + rand() * 0.6)));           // ±30% of configured CoQ cost
-      const revenue = Math.max(0, Math.round(loc.revenue * (0.85 + rand() * 0.3)));          // ±15% of configured revenue
+      const coqCost = Math.max(0, Math.round(loc.coqCost * (0.7 + rand() * 0.6)));
+      const revenue = Math.max(0, Math.round(loc.revenue * (0.85 + rand() * 0.3)));
+      return { planned, downtime, totalUnits, goodUnits, idealCycleTime: loc.idealCycleTime, coqCost, revenue };
+    },
 
-      rawStore[loc.id][dateStr] = {
-        planned, downtime, totalUnits, goodUnits,
-        idealCycleTime: loc.idealCycleTime, coqCost, revenue
-      };
-    });
+    // Populates `store[locationId][dateStr]` for every location across `dates`.
+    // Called once at startup. In API mode, falls back to sample data per-location on failure
+    // so the UI never breaks if the backend is unreachable during development.
+    async loadAll(store, dates) {
+      if (CONFIG.dataMode === "api") {
+        await Promise.all(LOCATIONS.map(async loc => {
+          try {
+            const url = CONFIG.api.endpoints.listRecords(loc.id, dates[0], dates[dates.length - 1]);
+            const res = await fetch(url, { headers: CONFIG.api.headers });
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            const rows = await res.json(); // expected: [{ date, planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue }, ...]
+            store[loc.id] = {};
+            rows.forEach(row => {
+              const { date, ...record } = row;
+              store[loc.id][date] = record;
+            });
+          } catch (err) {
+            console.warn(`API load failed for ${loc.name}, using sample data instead:`, err);
+            this._fillSampleForLocation(store, loc, dates);
+          }
+        }));
+        return;
+      }
 
-    // apply any saved edits for this location on top of the generated sample data
-    if (overrides[loc.id]) {
-      Object.keys(overrides[loc.id]).forEach(dateStr => {
-        if (rawStore[loc.id][dateStr]) {
-          Object.assign(rawStore[loc.id][dateStr], overrides[loc.id][dateStr]);
-        }
+      // sample mode
+      LOCATIONS.forEach(loc => this._fillSampleForLocation(store, loc, dates));
+    },
+
+    _fillSampleForLocation(store, loc, dates) {
+      store[loc.id] = {};
+      const rand = mulberry32(loc.id.charCodeAt(0) * 131 + loc.id.length * 41);
+      dates.forEach(dateStr => {
+        store[loc.id][dateStr] = this._generateSampleRecord(loc, rand);
       });
+      // layer any locally saved edits on top of the generated sample data
+      if (overrides[loc.id]) {
+        Object.keys(overrides[loc.id]).forEach(dateStr => {
+          if (store[loc.id][dateStr]) Object.assign(store[loc.id][dateStr], overrides[loc.id][dateStr]);
+        });
+      }
+    },
+
+    // Fetches a single location/date record. Not used on the happy path (loadAll hydrates
+    // everything up front) but available for on-demand refreshes.
+    async getRecord(locationId, dateStr) {
+      if (CONFIG.dataMode === "api") {
+        const res = await fetch(CONFIG.api.endpoints.getRecord(locationId, dateStr), { headers: CONFIG.api.headers });
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        return res.json();
+      }
+      return rawStore[locationId][dateStr];
+    },
+
+    // Saves one location/date record. Updates the in-memory cache (rawStore) either way,
+    // and either persists to localStorage (sample mode) or PUTs to the API (api mode).
+    async saveRecord(locationId, dateStr, record) {
+      if (CONFIG.dataMode === "api") {
+        const res = await fetch(CONFIG.api.endpoints.saveRecord(locationId, dateStr), {
+          method: "PUT",
+          headers: CONFIG.api.headers,
+          body: JSON.stringify(record)
+        });
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      } else {
+        overrides[locationId] = overrides[locationId] || {};
+        overrides[locationId][dateStr] = record;
+        saveOverrides(overrides);
+      }
+      rawStore[locationId][dateStr] = record;
     }
-  });
+  };
 
   function round1(v) { return Math.round(v * 10) / 10; }
 
@@ -782,7 +1055,12 @@
   }
 
   // ---------- Group selection ----------
-  const selectedLocations = new Set(LOCATIONS.map(l => l.id)); // default: all locations
+  const validSavedLocations = savedUIState && Array.isArray(savedUIState.locations)
+    ? savedUIState.locations.filter(id => LOCATIONS.some(l => l.id === id))
+    : [];
+  const selectedLocations = new Set(
+    validSavedLocations.length ? validSavedLocations : LOCATIONS.map(l => l.id)
+  );
 
   function labelsFor(metricKey, tfKey) {
     const tf = TIMEFRAMES[tfKey];
@@ -808,9 +1086,22 @@
       return { categories: labelsFor(metricKey, tfKey), data, mode: "trend" };
     }
 
-    const rand = mulberry32(metricKey.charCodeAt(0) * 97 + tfKey.length * 13);
+    // Week/Month/YTD are synthetic beyond the 14-day raw window, but they should still visibly
+    // react to the group filter — seed on the selected locations and center on their real
+    // measured average (from the raw store) rather than a fixed baseline.
+    const groupKey = Array.from(selectedLocations).sort().join(",");
+    let seed = metricKey.charCodeAt(0) * 97 + tfKey.length * 13;
+    for (let i = 0; i < groupKey.length; i++) seed = (seed * 31 + groupKey.charCodeAt(i)) | 0;
+    const rand = mulberry32(seed);
+
+    const groupRecords = LOCATIONS.filter(l => selectedLocations.has(l.id));
+    const dayValues = dailyDates.map(d =>
+      computeAggregateMetrics(groupRecords.map(l => rawStore[l.id][d]))[metricKey]
+    );
+    const groupBaseline = dayValues.reduce((a, b) => a + b, 0) / dayValues.length;
+
     const n = tf.points;
-    let value = m.baseline - 10 + rand() * 20;
+    let value = groupBaseline - 10 + rand() * 20;
     const raw = [];
     for (let i = 0; i < n; i++) {
       let step = (rand() - 0.5) * 18;
@@ -848,17 +1139,28 @@
   // ---------- Chart ----------
   let chart;
   let chartType = null;
-  let currentMetric = "OEE";
-  let currentTf = "Day";
-  let currentView = "trend";
+  let currentMetric = (savedUIState && METRICS[savedUIState.metric]) ? savedUIState.metric : "OEE";
+  let currentTf = (savedUIState && TIMEFRAMES[savedUIState.tf]) ? savedUIState.tf : "Day";
+  let currentView = (savedUIState && ["trend", "byLocation"].includes(savedUIState.view)) ? savedUIState.view : "trend";
+
+  // Current value for a metric under whatever timeframe/view/group is currently selected —
+  // shared by the main chart's "Current" stat and the banner chip numbers, so they always agree.
+  function computeCurrentValue(metricKey) {
+    if (currentView === "byLocation") {
+      const span = LOCATION_VIEW_SPAN[currentTf] || 1;
+      const dates = dailyDates.slice(-span);
+      const records = LOCATIONS.filter(l => selectedLocations.has(l.id))
+        .flatMap(l => dates.map(d => rawStore[l.id][d]));
+      return computeAggregateMetrics(records)[metricKey];
+    }
+    const { data } = generateSeries(metricKey, currentTf);
+    return data[data.length - 1];
+  }
 
   function renderChipValues() {
-    const dateStr = dailyDates[dailyDates.length - 1];
-    const records = LOCATIONS.filter(l => selectedLocations.has(l.id)).map(l => rawStore[l.id][dateStr]);
-    const metrics = computeAggregateMetrics(records);
     Object.keys(METRICS).forEach(key => {
       const el = document.querySelector(`.chip-value[data-value="${key}"]`);
-      if (el) el.textContent = metrics[key].toFixed(1) + "%";
+      if (el) el.textContent = computeCurrentValue(key).toFixed(1) + "%";
     });
   }
 
@@ -877,17 +1179,12 @@
     const best = m.betterUp ? Math.max(...data) : Math.min(...data);
     const worst = m.betterUp ? Math.min(...data) : Math.max(...data);
 
-    let current, delta, positive;
+    const current = computeCurrentValue(currentMetric);
+    let delta, positive;
     if (mode === "byLocation") {
-      const span = LOCATION_VIEW_SPAN[currentTf] || 1;
-      const dates = dailyDates.slice(-span);
-      const records = LOCATIONS.filter(l => selectedLocations.has(l.id))
-        .flatMap(l => dates.map(d => rawStore[l.id][d]));
-      current = computeAggregateMetrics(records)[currentMetric]; // group total, not just one bar
       delta = current - avg;
       positive = m.betterUp ? current >= avg : current <= avg;
     } else {
-      current = data[data.length - 1];
       const prev = data.length > 1 ? data[data.length - 2] : current;
       delta = current - prev;
       positive = m.betterUp ? delta >= 0 : delta <= 0;
@@ -968,6 +1265,7 @@
       document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentMetric = btn.dataset.metric;
+      saveUIState();
       render();
     });
   });
@@ -977,6 +1275,7 @@
       document.querySelectorAll(".timeframe-bar .w3-button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentTf = btn.dataset.tf;
+      saveUIState();
       render();
     });
   });
@@ -986,12 +1285,190 @@
       document.querySelectorAll(".view-toggle .w3-button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentView = btn.dataset.view;
+      saveUIState();
       render();
     });
   });
 
-  document.getElementById("settingsChip").addEventListener("click", () => {
-    alert("Settings panel goes here — targets, thresholds, data sources, etc.");
+  // ---------- Settings modal ----------
+  const settingsModal = document.getElementById("settingsModal");
+  const settingsApiUrl = document.getElementById("settingsApiUrl");
+  const settingsLocationSelect = document.getElementById("settingsLocation");
+  const settingsTableBody = document.getElementById("settingsTableBody");
+  const dataModeToggle = document.getElementById("dataModeToggle");
+
+  const SETTINGS_FIELDS = [
+    { key: "name",           label: "Location Name",             type: "text" },
+    { key: "areaId",         label: "Area",                      type: "select" },
+    { key: "plannedTime",    label: "Planned Time (min)",        step: 1,    min: 60,   max: 1440 },
+    { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10 },
+    { key: "totalUnits",     label: "Total Units Target",        step: 1,    min: 0,    max: 100000 },
+    { key: "coqCost",        label: "CoQ Cost Baseline ($)",     step: 10,   min: 0,    max: 1000000 },
+    { key: "revenue",        label: "Revenue Baseline ($)",      step: 10,   min: 0,    max: 5000000 }
+  ];
+
+  LOCATIONS.forEach(loc => {
+    const opt = document.createElement("option");
+    opt.value = loc.id;
+    opt.textContent = loc.name;
+    settingsLocationSelect.appendChild(opt);
+  });
+
+  function refreshLocationLabels() {
+    document.querySelectorAll(".loc-chip[data-loc]").forEach(btn => {
+      const loc = LOCATIONS.find(l => l.id === btn.dataset.loc);
+      if (loc) btn.textContent = loc.name;
+    });
+    [editLocationSelect, settingsLocationSelect].forEach(sel => {
+      Array.from(sel.options).forEach(opt => {
+        const loc = LOCATIONS.find(l => l.id === opt.value);
+        if (loc) opt.textContent = loc.name;
+      });
+    });
+  }
+
+  function populateSettingsTable(locId) {
+    const loc = LOCATIONS.find(l => l.id === locId);
+    settingsTableBody.innerHTML = "";
+    SETTINGS_FIELDS.forEach(f => {
+      const row = document.createElement("tr");
+      let inputHtml;
+      if (f.type === "text") {
+        inputHtml = `<input type="text" class="edit-input" data-field="${f.key}" value="${loc[f.key]}" style="text-align:left; width:180px;">`;
+      } else if (f.type === "select") {
+        const options = AREAS.map(a =>
+          `<option value="${a.id}" ${a.id === loc[f.key] ? "selected" : ""}>${a.name}</option>`
+        ).join("");
+        inputHtml = `<select class="edit-input" data-field="${f.key}" style="width:180px;">${options}</select>`;
+      } else {
+        inputHtml = `<input type="number" class="edit-input" data-field="${f.key}" min="${f.min}" max="${f.max}" step="${f.step}" value="${loc[f.key]}">`;
+      }
+      row.innerHTML = `<td>${f.label}</td><td style="text-align:right;">${inputHtml}</td>`;
+      settingsTableBody.appendChild(row);
+    });
+  }
+
+  // ---------- Area management (inside Settings) ----------
+  function renderAreaManageList() {
+    const list = document.getElementById("areaManageList");
+    list.innerHTML = "";
+    AREAS.forEach(area => {
+      const chip = document.createElement("div");
+      chip.className = "area-manage-chip";
+      chip.innerHTML = `<span>${area.name}</span>`;
+      const delBtn = document.createElement("button");
+      delBtn.innerHTML = '<i class="fa fa-times"></i>';
+      delBtn.title = "Delete area";
+      delBtn.addEventListener("click", () => deleteArea(area.id));
+      chip.appendChild(delBtn);
+      list.appendChild(chip);
+    });
+  }
+
+  function addArea() {
+    const input = document.getElementById("newAreaName");
+    const name = input.value.trim();
+    if (!name) return;
+    let base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "area";
+    let id = base, n = 2;
+    while (AREAS.some(a => a.id === id)) id = `${base}-${n++}`;
+    AREAS.push({ id, name });
+    input.value = "";
+    saveSettings();
+    renderAreaManageList();
+    renderAreaBar();
+    populateSettingsTable(settingsLocationSelect.value); // new area now selectable
+  }
+
+  function deleteArea(id) {
+    if (AREAS.length <= 1) { alert("You need at least one area."); return; }
+    const area = AREAS.find(a => a.id === id);
+    if (!area) return;
+    if (!confirm(`Delete "${area.name}"? Locations in this area will move to another area.`)) return;
+    const fallback = AREAS.find(a => a.id !== id);
+    LOCATIONS.forEach(loc => { if (loc.areaId === id) loc.areaId = fallback.id; });
+    AREAS.splice(AREAS.findIndex(a => a.id === id), 1);
+    saveSettings();
+    renderAreaManageList();
+    renderAreaBar();
+    renderLocationBar();
+    syncSelectionUI();
+    populateSettingsTable(settingsLocationSelect.value);
+  }
+
+  function setDataModeUI(mode) {
+    dataModeToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    settingsApiUrl.disabled = mode !== "api";
+    settingsApiUrl.style.opacity = mode !== "api" ? 0.5 : 1;
+  }
+
+  function openSettingsModal() {
+    setDataModeUI(CONFIG.dataMode);
+    settingsApiUrl.value = CONFIG.api.baseUrl;
+    renderAreaManageList();
+    settingsLocationSelect.value = LOCATIONS[0].id;
+    populateSettingsTable(settingsLocationSelect.value);
+    settingsModal.classList.add("open");
+  }
+
+  function closeSettingsModal() {
+    settingsModal.classList.remove("open");
+  }
+
+  document.getElementById("settingsChip").addEventListener("click", openSettingsModal);
+  document.getElementById("settingsClose").addEventListener("click", closeSettingsModal);
+  document.getElementById("settingsCancel").addEventListener("click", closeSettingsModal);
+  settingsModal.addEventListener("click", (e) => { if (e.target === settingsModal) closeSettingsModal(); });
+
+  document.getElementById("addAreaBtn").addEventListener("click", addArea);
+  document.getElementById("newAreaName").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); addArea(); }
+  });
+
+  settingsLocationSelect.addEventListener("change", () => populateSettingsTable(settingsLocationSelect.value));
+
+  dataModeToggle.querySelectorAll(".loc-chip").forEach(btn => {
+    btn.addEventListener("click", () => setDataModeUI(btn.dataset.mode));
+  });
+
+  document.getElementById("settingsSave").addEventListener("click", async () => {
+    // apply the currently-shown location's edited fields
+    const loc = LOCATIONS.find(l => l.id === settingsLocationSelect.value);
+    settingsTableBody.querySelectorAll(".edit-input").forEach(input => {
+      const field = input.dataset.field;
+      if (field === "name") loc.name = input.value.trim() || loc.name;
+      else if (field === "areaId") loc.areaId = input.value;
+      else loc[field] = parseFloat(input.value) || 0;
+    });
+
+    // apply data-source settings
+    const activeModeBtn = dataModeToggle.querySelector(".loc-chip.active");
+    CONFIG.dataMode = activeModeBtn ? activeModeBtn.dataset.mode : CONFIG.dataMode;
+    CONFIG.api.baseUrl = settingsApiUrl.value.trim() || CONFIG.api.baseUrl;
+
+    saveSettings();
+    refreshLocationLabels();
+    renderLocationBar();
+    renderAreaBar();
+    syncSelectionUI();
+
+    const saveBtn = document.getElementById("settingsSave");
+    const originalLabel = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
+    document.getElementById("chart").innerHTML =
+      '<div style="padding:60px 0; text-align:center; color:var(--muted); font-size:13px;">Reloading data…</div>';
+    try {
+      await DataSource.loadAll(rawStore, dailyDates);
+    } catch (err) {
+      console.error("Failed to reload data after settings change:", err);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalLabel;
+    }
+
+    closeSettingsModal();
+    render();
   });
 
   // ---------- Help modal ----------
@@ -1000,26 +1477,74 @@
   document.getElementById("helpClose").addEventListener("click", () => helpModal.classList.remove("open"));
   helpModal.addEventListener("click", (e) => { if (e.target === helpModal) helpModal.classList.remove("open"); });
 
-  // ---------- Location group filter ----------
+  // ---------- Area & location group filters ----------
+  const areaBar = document.getElementById("areaBar");
   const locationBar = document.getElementById("locationBar");
-  LOCATIONS.forEach(loc => {
-    const btn = document.createElement("button");
-    btn.className = "loc-chip active";
-    btn.textContent = loc.name;
-    btn.dataset.loc = loc.id;
-    btn.addEventListener("click", () => {
-      if (selectedLocations.has(loc.id)) {
-        if (selectedLocations.size === 1) return; // keep at least one location selected
-        selectedLocations.delete(loc.id);
-        btn.classList.remove("active");
-      } else {
-        selectedLocations.add(loc.id);
-        btn.classList.add("active");
-      }
-      render();
+
+  function syncSelectionUI() {
+    document.querySelectorAll("#locationBar .loc-chip[data-loc]").forEach(btn => {
+      btn.classList.toggle("active", selectedLocations.has(btn.dataset.loc));
     });
-    locationBar.appendChild(btn);
-  });
+    document.querySelectorAll("#areaBar .area-chip[data-area]").forEach(btn => {
+      const locsInArea = LOCATIONS.filter(l => l.areaId === btn.dataset.area);
+      const allSelected = locsInArea.length > 0 && locsInArea.every(l => selectedLocations.has(l.id));
+      btn.classList.toggle("active", allSelected);
+    });
+  }
+
+  function renderLocationBar() {
+    locationBar.querySelectorAll(".loc-chip").forEach(el => el.remove());
+    LOCATIONS.forEach(loc => {
+      const btn = document.createElement("button");
+      btn.className = "loc-chip";
+      btn.textContent = loc.name;
+      btn.dataset.loc = loc.id;
+      btn.addEventListener("click", () => {
+        if (selectedLocations.has(loc.id)) {
+          if (selectedLocations.size === 1) return; // keep at least one location selected
+          selectedLocations.delete(loc.id);
+        } else {
+          selectedLocations.add(loc.id);
+        }
+        syncSelectionUI();
+        saveUIState();
+        render();
+      });
+      locationBar.appendChild(btn);
+    });
+  }
+
+  function renderAreaBar() {
+    areaBar.querySelectorAll(".area-chip").forEach(el => el.remove());
+    AREAS.forEach(area => {
+      const btn = document.createElement("button");
+      btn.className = "loc-chip area-chip";
+      btn.textContent = area.name;
+      btn.dataset.area = area.id;
+      btn.title = "Select every location in this area";
+      btn.addEventListener("click", () => {
+        const locsInArea = LOCATIONS.filter(l => l.areaId === area.id).map(l => l.id);
+        if (!locsInArea.length) return;
+        const allSelected = locsInArea.every(id => selectedLocations.has(id));
+        if (allSelected) {
+          const remaining = new Set(selectedLocations);
+          locsInArea.forEach(id => remaining.delete(id));
+          if (remaining.size === 0) return; // keep at least one location selected
+          locsInArea.forEach(id => selectedLocations.delete(id));
+        } else {
+          locsInArea.forEach(id => selectedLocations.add(id));
+        }
+        syncSelectionUI();
+        saveUIState();
+        render();
+      });
+      areaBar.appendChild(btn);
+    });
+  }
+
+  renderLocationBar();
+  renderAreaBar();
+  syncSelectionUI();
 
   // ---------- Edit-data modal ----------
   const editModal = document.getElementById("editModal");
@@ -1119,7 +1644,7 @@
 
   editLocationSelect.addEventListener("change", populateEditTable);
 
-  document.getElementById("editSave").addEventListener("click", () => {
+  document.getElementById("editSave").addEventListener("click", async () => {
     const locId = editLocationSelect.value;
     const dateStr = editDateInput.value;
     const values = readFormValues();
@@ -1132,26 +1657,47 @@
       coqCost: values.coqCost,
       revenue: values.revenue
     };
-    rawStore[locId][dateStr] = record;
 
-    overrides[locId] = overrides[locId] || {};
-    overrides[locId][dateStr] = record;
-    saveOverrides(overrides);
+    const saveBtn = document.getElementById("editSave");
+    const originalLabel = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
 
-    closeEditModal();
-    if (currentTf === "Day") render();
+    try {
+      await DataSource.saveRecord(locId, dateStr, record);
+      closeEditModal();
+      render();
+    } catch (err) {
+      console.error("Could not save record:", err);
+      alert("Couldn't save this entry — please try again.");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalLabel;
+    }
   });
 
   // Initial state
-  document.querySelector('.chip[data-metric="OEE"]').classList.add("active");
-  document.querySelector('.timeframe-bar .w3-button[data-tf="Day"]').classList.add("active");
-  document.querySelector('.view-toggle .w3-button[data-view="trend"]').classList.add("active");
-  render();
+  document.querySelector(`.chip[data-metric="${currentMetric}"]`).classList.add("active");
+  document.querySelector(`.timeframe-bar .w3-button[data-tf="${currentTf}"]`).classList.add("active");
+  document.querySelector(`.view-toggle .w3-button[data-view="${currentView}"]`).classList.add("active");
+
+  // Load data — sample generator or real API, depending on CONFIG.dataMode above — then render.
+  (async () => {
+    document.getElementById("chart").innerHTML =
+      '<div style="padding:60px 0; text-align:center; color:var(--muted); font-size:13px;">Loading data…</div>';
+    try {
+      await DataSource.loadAll(rawStore, dailyDates);
+    } catch (err) {
+      console.error("Failed to load data:", err);
+    }
+    render();
+  })();
 
   document.getElementById("resetEdits").addEventListener("click", (e) => {
     e.preventDefault();
-    if (confirm("Clear all saved edits and go back to the original sample data?")) {
+    if (confirm("Clear all saved edits and selections, and go back to the original sample data?")) {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(UI_STATE_KEY);
       location.reload();
     }
   });
