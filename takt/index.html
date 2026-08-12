@@ -501,13 +501,11 @@
   }
   .stat-row{
     margin-top:18px;
-    display:flex;
-    flex-wrap:wrap;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:16px;
   }
-  .stat-row > .w3-col{
-    display:flex;
-    padding:8px !important;
-  }
+  .stat-col{ display:flex; }
   .stat-card{
     background:var(--bg2);
     border:1px solid var(--line);
@@ -633,6 +631,16 @@
     .mobile-locations-trigger{ display:flex; }
 
     .help-box, .modal-box{ width:92vw; }
+
+    /* 2x2 grid with matched row heights, so "Current" having an extra delta line doesn't
+       leave the two rows looking stair-stepped against each other */
+    .stat-row{
+      grid-template-columns:repeat(2, 1fr);
+      grid-auto-rows:1fr;
+      gap:10px;
+    }
+    .stat-card{ padding:12px 14px; }
+    .stat-value{ font-size:22px; }
   }
 
   /* ---------- Themed scrollbars ---------- */
@@ -1070,27 +1078,27 @@
         </table>
       </div>
 
-      <div class="w3-row-padding stat-row">
-        <div class="w3-col m3 s6">
+      <div class="stat-row">
+        <div class="stat-col">
           <div class="stat-card">
             <p class="stat-label">Current</p>
             <p class="stat-value" id="statCurrent">—</p>
             <p class="stat-delta" id="statDelta">—</p>
           </div>
         </div>
-        <div class="w3-col m3 s6">
+        <div class="stat-col">
           <div class="stat-card">
             <p class="stat-label">Period Avg</p>
             <p class="stat-value" id="statAvg">—</p>
           </div>
         </div>
-        <div class="w3-col m3 s6">
+        <div class="stat-col">
           <div class="stat-card">
             <p class="stat-label">Best</p>
             <p class="stat-value" id="statBest">—</p>
           </div>
         </div>
-        <div class="w3-col m3 s6">
+        <div class="stat-col">
           <div class="stat-card">
             <p class="stat-label">Worst</p>
             <p class="stat-value" id="statWorst">—</p>
@@ -1826,9 +1834,12 @@
     if (currentView === "polar") {
       // Polar charts are circular, so a plain wide container leaves dead space on either
       // side. A right-hand legend (with each location's real value alongside its color)
-      // fills that space with something useful instead of leaving it blank.
+      // fills that space with something useful instead of leaving it blank. On a narrow
+      // phone screen there's no side space to fill — a right-side legend there just squeezes
+      // the circle itself down to a sliver, so the legend moves to the bottom instead.
+      const isPhonePolar = window.innerWidth <= 480;
       options = {
-        chart: { ...baseOptions.chart, type: "polarArea", height: 320 },
+        chart: { ...baseOptions.chart, type: "polarArea", height: isPhonePolar ? 420 : 320 },
         series: data,
         labels: categories,
         colors: categories.map((_, i) => LOCATION_COLORS[i % LOCATION_COLORS.length]),
@@ -1837,11 +1848,11 @@
         yaxis: { show: false },
         legend: {
           show: true,
-          position: "right",
-          fontSize: "12.5px",
+          position: isPhonePolar ? "bottom" : "right",
+          fontSize: isPhonePolar ? "11px" : "12.5px",
           labels: { colors: "#F5F3EF" },
           markers: { width: 10, height: 10, radius: 3 },
-          itemMargin: { vertical: 6 },
+          itemMargin: { vertical: isPhonePolar ? 3 : 6, horizontal: isPhonePolar ? 6 : 0 },
           // Legend shows each location's real metric value (unlike the wedge labels below,
           // which show share of the group total) so both readings are available at a glance.
           formatter: (label, opts) => {
