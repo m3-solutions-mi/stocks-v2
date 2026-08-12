@@ -300,6 +300,28 @@
     border-bottom:1px solid var(--line);
     font-size:14px;
   }
+  .edit-group-header{
+    padding:16px 0 6px 0 !important;
+    border-bottom:none !important;
+  }
+  .edit-table tr:first-child .edit-group-header{ padding-top:0 !important; }
+  .edit-group-label{
+    display:block;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--ink);
+  }
+  .edit-group-hint{
+    display:block;
+    font-size:11.5px;
+    color:var(--muted);
+    font-weight:400;
+    text-transform:none;
+    letter-spacing:normal;
+    margin-top:2px;
+  }
 
   .data-table{width:100%; border-collapse:collapse;}
   .data-table th{
@@ -762,10 +784,19 @@
       <div class="help-section">
         <p class="help-heading">The seven inputs</p>
         <p class="help-desc">
-          <strong>Planned Time</strong> — planned production minutes for the day.<br>
+          The table is split into two groups, same as in the modal itself:
+        </p>
+        <p class="help-desc">
+          <strong>Daily Actuals</strong> — what the operator actually observed on the floor;
+          update these every time.<br>
           <strong>Downtime</strong> — unplanned downtime minutes; Run Time = Planned Time − Downtime.<br>
           <strong>Total Units</strong> — total units produced, good and bad.<br>
-          <strong>Good Units</strong> — units that passed quality; must be ≤ Total Units.<br>
+          <strong>Good Units</strong> — units that passed quality; must be ≤ Total Units.
+        </p>
+        <p class="help-desc">
+          <strong>Planned / Target</strong> — set periodically, usually by planning or finance
+          rather than the operator entering daily production.<br>
+          <strong>Planned Time</strong> — planned production minutes for the day.<br>
           <strong>Ideal Cycle Time</strong> — minutes per unit at the ideal rate for this location.<br>
           <strong>Cost of Poor Quality ($)</strong> — cost of scrap, rework, and defects for the day.<br>
           <strong>Revenue ($)</strong> — revenue for the day, used as CoQ's denominator.
@@ -2066,7 +2097,7 @@
 
     const newLoc = {
       id, name, areaId: settingsAreaFilterId,
-      idealCycleTime: 0.45, plannedTime: 480, totalUnits: 800, coqCost: 1500, revenue: 30000
+      idealCycleTime: 60, plannedTime: 480, totalUnits: 800, coqCost: 2000, revenue: 8000
     };
     LOCATIONS.push(newLoc);
     selectedLocations.add(newLoc.id); // include it in the current group by default
@@ -2429,14 +2460,18 @@
   const maxDate = dailyDates[dailyDates.length - 1];
 
   const INPUT_FIELDS = [
-    { key: "planned",        label: "Planned Time (min)",  step: 1,   min: 60,  max: 1440 },
-    { key: "downtime",       label: "Downtime (min)",      step: 1,   min: 0,   max: 1440 },
-    { key: "totalUnits",     label: "Total Units",         step: 1,   min: 0,   max: 100000 },
-    { key: "goodUnits",      label: "Good Units",          step: 1,   min: 0,   max: 100000 },
-    { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10 },
-    { key: "coqCost",        label: "Cost of Poor Quality ($)",    step: 10, min: 0,   max: 1000000 },
-    { key: "revenue",        label: "Revenue ($)",         step: 10,  min: 0,   max: 5000000 }
+    { key: "downtime",       label: "Downtime (min)",              step: 1,    min: 0,    max: 1440,    group: "actual" },
+    { key: "totalUnits",     label: "Total Units",                 step: 1,    min: 0,    max: 100000,  group: "actual" },
+    { key: "goodUnits",      label: "Good Units",                  step: 1,    min: 0,    max: 100000,  group: "actual" },
+    { key: "planned",        label: "Planned Time (min)",          step: 1,    min: 60,   max: 1440,    group: "planned" },
+    { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10,      group: "planned" },
+    { key: "coqCost",        label: "Cost of Poor Quality ($)",    step: 10,   min: 0,    max: 1000000, group: "planned" },
+    { key: "revenue",        label: "Revenue ($)",                 step: 10,   min: 0,    max: 5000000, group: "planned" }
   ];
+  const FIELD_GROUPS = {
+    planned: { label: "Planned / Target", hint: "Set periodically (usually by planning/finance) — not something the operator filling in daily production needs to know or update." },
+    actual:  { label: "Daily Actuals", hint: "What the operator actually observed on the floor this day — update these every time." }
+  };
 
   rebuildEditLocationOptions();
 
@@ -2470,7 +2505,19 @@
     const record = currentEditRecord();
     editBaseline = { ...record };
     editTableBody.innerHTML = "";
+    let lastGroup = null;
     INPUT_FIELDS.forEach(f => {
+      if (f.group !== lastGroup) {
+        lastGroup = f.group;
+        const g = FIELD_GROUPS[f.group];
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = `
+          <td colspan="2" class="edit-group-header">
+            <span class="edit-group-label">${g.label}</span>
+            <span class="edit-group-hint">${g.hint}</span>
+          </td>`;
+        editTableBody.appendChild(headerRow);
+      }
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${f.label}</td>
