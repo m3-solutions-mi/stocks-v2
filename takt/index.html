@@ -634,6 +634,18 @@
 
     .help-box, .modal-box{ width:92vw; }
   }
+
+  /* ---------- Themed scrollbars ---------- */
+  html{ scrollbar-width:thin; scrollbar-color:var(--line) var(--bg); }
+  *{ scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  ::-webkit-scrollbar-thumb{
+    background:var(--line);
+    border-radius:6px;
+  }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--muted); }
+  ::-webkit-scrollbar-corner{ background:transparent; }
 </style>
 </head>
 <body>
