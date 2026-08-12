@@ -478,6 +478,104 @@
   }
   .up{color:#7FA872;}
   .down{color:#B96B6B;}
+
+  .mobile-controls{ display:none; } /* shown only on phone, see media query below */
+  .mobile-select{
+    flex:1;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--ink);
+    padding:9px 10px;
+    font-size:13px;
+    font-weight:600;
+    color-scheme:dark;
+  }
+
+  .mobile-locations-trigger{
+    display:none; /* shown only on phone, see media query below */
+    width:100%;
+    align-items:center;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--ink);
+    padding:10px 12px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    margin-bottom:14px;
+  }
+
+  /* ---------- Locations popover checklist ---------- */
+  .loc-pop-area{ margin-bottom:14px; }
+  .loc-pop-area:last-child{ margin-bottom:0; }
+  .loc-pop-area-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    margin-bottom:6px;
+    cursor:pointer;
+  }
+  .loc-pop-area-header span{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .loc-pop-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 4px 9px 20px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .loc-pop-row:hover{ background:var(--bg2); }
+  .loc-pop-row input, .loc-pop-area-header input{
+    width:18px; height:18px;
+    accent-color:var(--ink);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .loc-pop-row span{ font-size:13.5px; }
+
+  /* ==========================================================================================
+     Phone-only compacting. Scoped tight (max-width:480px) so tablets and desktop are untouched —
+     wrapping button rows become single-row horizontal-scroll strips instead of stacking into
+     several lines, which is what was eating vertical space on small phones.
+     ========================================================================================== */
+  @media (max-width: 480px) {
+    .banner{ padding:14px 16px; }
+    .banner-inner{ gap:12px; }
+    .wordmark{ font-size:26px; }
+    .subtitle{ display:none; } /* redundant with the visible metric title below it */
+    .word-block{ margin-right:2px; }
+
+    .chip{ padding:4px 10px; border-radius:10px; gap:0; }
+    .chip-label{ font-size:9px; }
+    .chip-value{ font-size:13px; }
+    .chip-settings{ padding:6px 9px; font-size:13px; border-radius:12px; }
+
+    .wrap{ padding:14px 12px 30px; }
+    .panel{ padding:14px; }
+
+    .metric-title{ font-size:16px; }
+    .metric-sub{ font-size:11.5px; }
+
+    /* Timeframe/View button rows are replaced by the dropdowns below on phone */
+    .tf-col, .view-toggle-row{ display:none; }
+    .mobile-controls{ display:flex; gap:8px; margin:10px 0 14px; }
+
+    /* Area/Group chip rows are replaced by the single Locations popover trigger on phone */
+    #areaBar, #locationBar{ display:none; }
+    .mobile-locations-trigger{ display:flex; }
+
+    .help-box, .modal-box{ width:92vw; }
+  }
 </style>
 </head>
 <body>
@@ -630,6 +728,11 @@
           location or day, and only affects the Day view and anything built from it — Week/Month/YTD
           trends are separate synthetic data in this demo.
         </p>
+        <p class="help-note" style="margin-top:8px;">
+          Only the fields you actually change are sent — if someone else edited a different field
+          on the same entry while you had it open, their change is kept rather than being reverted
+          by your save. If you both change the same field, the more recent save wins.
+        </p>
       </div>
 
       </div>
@@ -708,6 +811,23 @@
     </div>
   </div>
 
+  <!-- ===== Locations popover (phone) ===== -->
+  <div class="modal-overlay" id="locationsPopover">
+    <div class="modal-box">
+      <div class="modal-header">
+        <p class="modal-title">Locations</p>
+        <button class="modal-close" id="locationsPopoverClose" aria-label="Close"><i class="fa fa-times"></i></button>
+      </div>
+      <p style="color:var(--muted); font-size:12px; margin:-6px 0 14px 0;">
+        Tap an area to select all its locations, or check individual locations below.
+      </p>
+      <div id="locationsPopoverList"></div>
+      <div class="modal-actions">
+        <button class="btn-save" id="locationsPopoverDone" style="width:100%;">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Settings modal ===== -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
@@ -758,17 +878,17 @@
           <p class="metric-title" id="metricTitle">Overall Equipment Effectiveness</p>
           <p class="metric-sub" id="metricSub">Availability × Performance × Quality</p>
         </div>
-        <div class="w3-col m5" style="text-align:right;">
+        <div class="w3-col m5 tf-col" style="text-align:right;">
           <div class="timeframe-bar w3-bar">
-            <button class="w3-button" data-tf="Day">Day</button>
-            <button class="w3-button" data-tf="Week">Week</button>
-            <button class="w3-button" data-tf="Month">Month</button>
+            <button class="w3-button" data-tf="Day">Days</button>
+            <button class="w3-button" data-tf="Week">Weeks</button>
+            <button class="w3-button" data-tf="Month">Months</button>
             <button class="w3-button" data-tf="YTD">YTD</button>
           </div>
         </div>
       </div>
 
-      <div class="w3-row-padding" style="align-items:center; margin-top:2px;">
+      <div class="w3-row-padding view-toggle-row" style="align-items:center; margin-top:2px;">
         <div class="w3-col m12" style="text-align:right;">
           <div class="view-toggle w3-bar">
             <button class="w3-button" data-view="trend"><i class="fa fa-line-chart" style="margin-right:6px;"></i>Trend</button>
@@ -778,6 +898,21 @@
         </div>
       </div>
 
+      <!-- Phone-only: dropdowns replace the two button rows above (hidden via CSS on phone) -->
+      <div class="mobile-controls">
+        <select class="mobile-select" id="timeframeSelect" aria-label="Timeframe">
+          <option value="Day">Days</option>
+          <option value="Week">Weeks</option>
+          <option value="Month">Months</option>
+          <option value="YTD">YTD</option>
+        </select>
+        <select class="mobile-select" id="viewSelect" aria-label="Chart view">
+          <option value="trend">Trend</option>
+          <option value="byLocation">Locations</option>
+          <option value="polar">Overview</option>
+        </select>
+      </div>
+
       <div id="areaBar" class="location-bar">
         <span class="location-label">Area:</span>
       </div>
@@ -785,6 +920,13 @@
       <div id="locationBar" class="location-bar">
         <span class="location-label">Group:</span>
       </div>
+
+      <!-- Phone-only: replaces the two rows above with a single button that opens a checklist -->
+      <button type="button" class="mobile-locations-trigger" id="locationsTrigger">
+        <i class="fa fa-map-marker" style="margin-right:6px;"></i>
+        <span id="locationsTriggerLabel">Locations</span>
+        <i class="fa fa-chevron-down" style="margin-left:auto; font-size:11px; opacity:.7;"></i>
+      </button>
 
       <div id="chart" style="margin-top:10px;"></div>
 
@@ -842,14 +984,19 @@
     dataMode: "sample", // "sample" | "api"
     api: {
       baseUrl: "/api",
-      // Expected shape for both GET and PUT bodies:
+      // Expected shape for GET and PUT bodies (full record):
       // { planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue }
+      // PATCH body is a partial object with just the changed keys; the server should merge
+      // it into the existing record atomically and return the resulting full record.
       endpoints: {
-        // GET  -> a single day's raw record for one location
+        // GET   -> a single day's raw record for one location
         getRecord: (locationId, dateStr) => `${CONFIG.api.baseUrl}/locations/${locationId}/days/${dateStr}`,
-        // PUT  -> save/replace a single day's raw record for one location
+        // PUT   -> save/replace a single day's raw record for one location
         saveRecord: (locationId, dateStr) => `${CONFIG.api.baseUrl}/locations/${locationId}/days/${dateStr}`,
-        // GET  -> bulk fetch a date range for one location (used at startup)
+        // PATCH -> merge just the changed fields into a single day's record, server-side and
+        //          atomically — the preferred path for concurrent-safe partial edits
+        patchRecord: (locationId, dateStr) => `${CONFIG.api.baseUrl}/locations/${locationId}/days/${dateStr}`,
+        // GET   -> bulk fetch a date range for one location (used at startup)
         listRecords: (locationId, startDate, endDate) =>
           `${CONFIG.api.baseUrl}/locations/${locationId}/days?start=${startDate}&end=${endDate}`
       },
@@ -1166,6 +1313,43 @@
         saveOverrides(overrides);
       }
       rawStore[locationId][dateStr] = record;
+    },
+
+    // Protects against two people editing the same day/location at once. Rather than writing
+    // whatever the form had for all 7 fields (which could silently revert someone else's
+    // concurrent edit to a field this user never touched), it saves only the fields this user
+    // actually changed and lets the merge happen against whatever's newest.
+    // It's still "last write wins" — just per field instead of per record.
+    // Returns { record, conflictFields } — conflictFields lists any fields someone else changed
+    // in the meantime that this save did NOT touch (kept at their newer value).
+    async savePartial(locationId, dateStr, changedFields, baseline) {
+      if (CONFIG.dataMode === "api") {
+        // Real PATCH: only the changed fields go over the wire, and the server merges them
+        // into the current record atomically — no GET-then-PUT window for another write to
+        // land in between. The server returns the resulting full record.
+        const res = await fetch(CONFIG.api.endpoints.patchRecord(locationId, dateStr), {
+          method: "PATCH",
+          headers: CONFIG.api.headers,
+          body: JSON.stringify(changedFields)
+        });
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const merged = await res.json();
+        rawStore[locationId][dateStr] = merged;
+        const conflictFields = Object.keys(baseline).filter(key =>
+          !(key in changedFields) && merged[key] !== undefined && merged[key] !== baseline[key]
+        );
+        return { record: merged, conflictFields };
+      }
+
+      // Sample mode has no real backend to merge atomically, so approximate the same
+      // behavior locally: read whatever's freshest, merge just the changed fields on top.
+      const latest = await this.getRecord(locationId, dateStr) || {};
+      const conflictFields = Object.keys(baseline).filter(key =>
+        !(key in changedFields) && latest[key] !== undefined && latest[key] !== baseline[key]
+      );
+      const merged = { ...latest, ...changedFields };
+      await this.saveRecord(locationId, dateStr, merged);
+      return { record: merged, conflictFields };
     }
   };
 
@@ -1535,25 +1719,35 @@
     });
   });
 
+  const timeframeSelect = document.getElementById("timeframeSelect");
+  const viewSelect = document.getElementById("viewSelect");
+
+  function setTimeframe(tf) {
+    currentTf = tf;
+    document.querySelectorAll(".timeframe-bar .w3-button").forEach(b => b.classList.toggle("active", b.dataset.tf === tf));
+    timeframeSelect.value = tf;
+    saveUIState();
+    render();
+  }
+
+  function setView(view) {
+    currentView = view;
+    document.querySelectorAll(".view-toggle .w3-button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+    viewSelect.value = view;
+    saveUIState();
+    render();
+  }
+
   document.querySelectorAll(".timeframe-bar .w3-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".timeframe-bar .w3-button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentTf = btn.dataset.tf;
-      saveUIState();
-      render();
-    });
+    btn.addEventListener("click", () => setTimeframe(btn.dataset.tf));
   });
 
   document.querySelectorAll(".view-toggle .w3-button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".view-toggle .w3-button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentView = btn.dataset.view;
-      saveUIState();
-      render();
-    });
+    btn.addEventListener("click", () => setView(btn.dataset.view));
   });
+
+  timeframeSelect.addEventListener("change", () => setTimeframe(timeframeSelect.value));
+  viewSelect.addEventListener("change", () => setView(viewSelect.value));
 
   // ---------- Settings modal ----------
   const settingsModal = document.getElementById("settingsModal");
@@ -1926,7 +2120,114 @@
       const allSelected = locsInArea.length > 0 && locsInArea.every(l => selectedLocations.has(l.id));
       btn.classList.toggle("active", allSelected);
     });
+    updateLocationsTriggerLabel();
+    syncLocationsPopoverCheckboxes();
   }
+
+  // ---------- Locations popover (phone) ----------
+  function updateLocationsTriggerLabel() {
+    const labelEl = document.getElementById("locationsTriggerLabel");
+    if (!labelEl) return;
+    const total = LOCATIONS.length;
+    const selected = selectedLocations.size;
+    if (selected === total) {
+      labelEl.textContent = `Locations — All ${total}`;
+    } else if (selected === 1) {
+      const loc = LOCATIONS.find(l => selectedLocations.has(l.id));
+      labelEl.textContent = `Locations — ${loc.name}`;
+    } else {
+      labelEl.textContent = `Locations — ${selected} of ${total}`;
+    }
+  }
+
+  function syncLocationsPopoverCheckboxes() {
+    const list = document.getElementById("locationsPopoverList");
+    if (!list) return;
+    list.querySelectorAll('input[data-loc]').forEach(cb => {
+      cb.checked = selectedLocations.has(cb.dataset.loc);
+    });
+    list.querySelectorAll('input[data-area]').forEach(cb => {
+      const locsInArea = LOCATIONS.filter(l => l.areaId === cb.dataset.area);
+      const selectedCount = locsInArea.filter(l => selectedLocations.has(l.id)).length;
+      cb.checked = selectedCount === locsInArea.length && locsInArea.length > 0;
+      cb.indeterminate = selectedCount > 0 && selectedCount < locsInArea.length;
+    });
+  }
+
+  function toggleLocationInPopover(locId) {
+    if (selectedLocations.has(locId)) {
+      if (selectedLocations.size === 1) return; // keep at least one selected
+      selectedLocations.delete(locId);
+    } else {
+      selectedLocations.add(locId);
+    }
+    syncSelectionUI();
+    saveUIState();
+    render();
+  }
+
+  function toggleAreaInPopover(areaId) {
+    const locsInArea = LOCATIONS.filter(l => l.areaId === areaId).map(l => l.id);
+    if (!locsInArea.length) return;
+    const allSelected = locsInArea.every(id => selectedLocations.has(id));
+    if (allSelected) {
+      const remaining = new Set(selectedLocations);
+      locsInArea.forEach(id => remaining.delete(id));
+      if (remaining.size === 0) return; // keep at least one selected
+      locsInArea.forEach(id => selectedLocations.delete(id));
+    } else {
+      locsInArea.forEach(id => selectedLocations.add(id));
+    }
+    syncSelectionUI();
+    saveUIState();
+    render();
+  }
+
+  function renderLocationsPopoverList() {
+    const list = document.getElementById("locationsPopoverList");
+    list.innerHTML = "";
+    AREAS.forEach(area => {
+      const locsInArea = LOCATIONS.filter(l => l.areaId === area.id);
+      if (!locsInArea.length) return;
+
+      const areaBlock = document.createElement("div");
+      areaBlock.className = "loc-pop-area";
+
+      const header = document.createElement("label");
+      header.className = "loc-pop-area-header";
+      header.innerHTML = `<input type="checkbox" data-area="${area.id}"><span>${area.name}</span>`;
+      header.querySelector("input").addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleAreaInPopover(area.id);
+      });
+      areaBlock.appendChild(header);
+
+      locsInArea.forEach(loc => {
+        const row = document.createElement("label");
+        row.className = "loc-pop-row";
+        row.innerHTML = `<input type="checkbox" data-loc="${loc.id}"><span>${loc.name}</span>`;
+        row.querySelector("input").addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleLocationInPopover(loc.id);
+        });
+        areaBlock.appendChild(row);
+      });
+
+      list.appendChild(areaBlock);
+    });
+    syncLocationsPopoverCheckboxes();
+  }
+
+  const locationsPopover = document.getElementById("locationsPopover");
+  document.getElementById("locationsTrigger").addEventListener("click", () => {
+    renderLocationsPopoverList();
+    locationsPopover.classList.add("open");
+    lockPageScroll();
+  });
+  function closeLocationsPopover() { locationsPopover.classList.remove("open"); unlockPageScroll(); }
+  document.getElementById("locationsPopoverClose").addEventListener("click", closeLocationsPopover);
+  document.getElementById("locationsPopoverDone").addEventListener("click", closeLocationsPopover);
+  locationsPopover.addEventListener("click", (e) => { if (e.target === locationsPopover) closeLocationsPopover(); });
 
   function renderLocationBar() {
     locationBar.querySelectorAll(".loc-chip").forEach(el => el.remove());
@@ -2028,8 +2329,11 @@
       </div>`).join("");
   }
 
+  let editBaseline = null; // snapshot of the record as loaded, used to detect which fields the user actually changed
+
   function populateEditTable() {
     const record = currentEditRecord();
+    editBaseline = { ...record };
     editTableBody.innerHTML = "";
     INPUT_FIELDS.forEach(f => {
       const row = document.createElement("tr");
@@ -2083,15 +2387,21 @@
     const locId = editLocationSelect.value;
     const dateStr = editDateInput.value;
     const values = readFormValues();
-    const record = {
-      planned: values.planned,
-      downtime: values.downtime,
-      totalUnits: values.totalUnits,
-      goodUnits: values.goodUnits,
-      idealCycleTime: values.idealCycleTime,
-      coqCost: values.coqCost,
-      revenue: values.revenue
-    };
+
+    // Only send the fields that actually differ from what was loaded — untouched fields
+    // are left for savePartial to fill in from whatever's newest, rather than overwriting
+    // them with this form's (possibly now-stale) copy.
+    const changedFields = {};
+    INPUT_FIELDS.forEach(f => {
+      if (!editBaseline || values[f.key] !== editBaseline[f.key]) {
+        changedFields[f.key] = values[f.key];
+      }
+    });
+
+    if (Object.keys(changedFields).length === 0) {
+      closeEditModal();
+      return;
+    }
 
     const saveBtn = document.getElementById("editSave");
     const originalLabel = saveBtn.textContent;
@@ -2099,9 +2409,16 @@
     saveBtn.textContent = "Saving…";
 
     try {
-      await DataSource.saveRecord(locId, dateStr, record);
+      const { conflictFields } = await DataSource.savePartial(locId, dateStr, changedFields, editBaseline || {});
       closeEditModal();
       render();
+      if (conflictFields.length) {
+        alert(
+          "Saved your changes. Note: " + conflictFields.join(", ") +
+          (conflictFields.length === 1 ? " was" : " were") +
+          " updated by someone else since you opened this entry — kept their newer value(s) rather than overwriting them."
+        );
+      }
     } catch (err) {
       console.error("Could not save record:", err);
       alert("Couldn't save this entry — please try again.");
@@ -2115,6 +2432,8 @@
   document.querySelector(`.chip[data-metric="${currentMetric}"]`).classList.add("active");
   document.querySelector(`.timeframe-bar .w3-button[data-tf="${currentTf}"]`).classList.add("active");
   document.querySelector(`.view-toggle .w3-button[data-view="${currentView}"]`).classList.add("active");
+  timeframeSelect.value = currentTf;
+  viewSelect.value = currentView;
 
   // Load data — sample generator or real API, depending on CONFIG.dataMode above — then render.
   (async () => {
