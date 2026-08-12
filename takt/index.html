@@ -364,6 +364,22 @@
     text-align:right;
   }
   .edit-input:focus{outline:none; border-color:var(--muted);}
+  .edit-input[readonly]{
+    color:var(--muted);
+    background:var(--bg);
+    cursor:not-allowed;
+  }
+  #editUpTimeInput{
+    width:80px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    padding:6px 8px;
+    font-size:14px;
+    text-align:right;
+  }
+  #editUpTimeInput:focus{outline:none; border-color:var(--muted);}
   .modal-actions{
     display:flex;
     justify-content:flex-end;
@@ -866,9 +882,16 @@
         <p class="help-desc">
           <strong>Daily Actuals</strong> — what the operator actually observed on the floor;
           update these every time.<br>
-          <strong>Downtime</strong> — unplanned downtime minutes; Run Time = Planned Time − Downtime.<br>
-          <strong>Total Units</strong> — total units produced, good and bad.<br>
-          <strong>Good Units</strong> — units that passed quality; must be ≤ Total Units.<br>
+          <strong>Up Time</strong> — hours the line actually ran; you enter this one directly.<br>
+          <strong>Downtime</strong> — calculated automatically as Planned Time − Up Time (Up
+          Time is converted to minutes first), not typed in directly, so the two can never
+          disagree.<br>
+          <strong>Total Units</strong> — calculated as Up Time ÷ Ideal Cycle Time (again
+          converting Up Time to minutes to match Ideal Cycle Time's units): how many units
+          should have come off the line in the time it actually ran.<br>
+          <strong>Good Units</strong> — units that passed quality; capped at Total Units. When
+          Up Time changes, this defaults to match Total Units (assuming 100% quality) until
+          someone actually types a number in — see the Saving note below for why that matters.<br>
           <strong>Reason for Loss</strong> — optional; one of 5 codes configured per area under
           Settings, for whenever Good Units is less than Total Units.
         </p>
@@ -901,6 +924,13 @@
           Only the fields you actually change are sent — if someone else edited a different field
           on the same entry while you had it open, their change is kept rather than being reverted
           by your save. If you both change the same field, the more recent save wins.
+        </p>
+        <p class="help-note" style="margin-top:8px;">
+          Good Units gets this same protection even when its displayed value changes on screen:
+          entering Up Time before quality has been checked defaults Good Units to match Total
+          Units, but that default is never actually sent unless you edit it yourself — so
+          entering Up Time first and having someone else record the real Good Units count later
+          (or having already recorded it before you touched Up Time) won't get overwritten either way.
         </p>
       </div>
 
@@ -2785,9 +2815,9 @@
   const maxDate = dailyDates[dailyDates.length - 1];
 
   const INPUT_FIELDS = [
-    { key: "downtime",       label: "Downtime (min)",              step: 1,    min: 0,    max: 1440,    group: "actual" },
-    { key: "totalUnits",     label: "Total Units",                 step: 1,    min: 0,    max: 100000,  group: "actual" },
     { key: "goodUnits",      label: "Good Units",                  step: 1,    min: 0,    max: 100000,  group: "actual" },
+    { key: "downtime",       label: "Downtime (min)",              type: "calculated", group: "actual" },
+    { key: "totalUnits",     label: "Total Units",                 type: "calculated", group: "actual" },
     { key: "scrapReason",    label: "Reason for Loss",             type: "select", group: "actual" },
     { key: "planned",        label: "Planned Time (min)",          step: 1,    min: 60,   max: 1440,    group: "planned" },
     { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10,      group: "planned" },
@@ -2827,10 +2857,56 @@
   }
 
   let editBaseline = null; // snapshot of the record as loaded, used to detect which fields the user actually changed
+  let goodUnitsTouched = false; // true only once the operator actually types into Good Units themselves
+
+  // Recomputes the read-only Downtime field from Planned Time − Up Time, live as either changes.
+  function recalcDowntime() {
+    const upTimeInput = document.getElementById("editUpTimeInput");
+    const downtimeInput = editTableBody.querySelector('[data-field="downtime"]');
+    const plannedInput = editTableBody.querySelector('[data-field="planned"]');
+    if (!upTimeInput || !downtimeInput || !plannedInput) return;
+    const planned = parseFloat(plannedInput.value) || 0;
+    const upTimeHours = Math.max(0, parseFloat(upTimeInput.value) || 0);
+    const upTimeMinutes = upTimeHours * 60; // Up Time is entered in hours; everything downstream stays in minutes
+    upTimeInput.max = (planned / 60).toFixed(2); // can't be up longer than the planned time
+    const downtime = Math.max(0, planned - upTimeMinutes);
+    downtimeInput.value = downtime;
+    updatePreview();
+  }
+
+  // Total Units is how many units *should* have come off the line in the time it actually ran,
+  // at this location's ideal rate. Good Units is capped at that so it can never exceed a
+  // physically possible number.
+  //
+  // When `applyDefault` is true (a real Up Time or Ideal Cycle Time edit just happened) and the
+  // operator hasn't typed into Good Units themselves yet, Good Units is defaulted to match Total
+  // Units — i.e. "assume 100% quality until someone checks." That default is intentionally NOT
+  // sent on save unless the operator actually edits it (see the Save handler below), so it can
+  // never overwrite a real Good Units figure someone else enters later, e.g. after QA review.
+  function recalcTotalUnits(applyDefault) {
+    const upTimeInput = document.getElementById("editUpTimeInput");
+    const totalUnitsInput = editTableBody.querySelector('[data-field="totalUnits"]');
+    const goodUnitsInput = editTableBody.querySelector('[data-field="goodUnits"]');
+    const idealCycleInput = editTableBody.querySelector('[data-field="idealCycleTime"]');
+    if (!upTimeInput || !totalUnitsInput || !idealCycleInput) return;
+    const upTimeHours = Math.max(0, parseFloat(upTimeInput.value) || 0);
+    const upTimeMinutes = upTimeHours * 60; // Ideal Cycle Time is minutes/unit, so convert to match
+    const idealCycleTime = Math.max(0.01, parseFloat(idealCycleInput.value) || 0.01);
+    const totalUnits = Math.max(0, upTimeMinutes / idealCycleTime);
+    totalUnitsInput.value = totalUnits.toFixed(2);
+    if (goodUnitsInput) {
+      goodUnitsInput.max = totalUnits.toFixed(2);
+      if (applyDefault && !goodUnitsTouched) {
+        goodUnitsInput.value = totalUnits.toFixed(2);
+      }
+    }
+    updatePreview();
+  }
 
   function populateEditTable() {
     const record = currentEditRecord();
     editBaseline = { ...record };
+    goodUnitsTouched = false;
     editTableBody.innerHTML = "";
     let lastGroup = null;
     INPUT_FIELDS.forEach(f => {
@@ -2845,9 +2921,27 @@
           </td>`;
         editTableBody.appendChild(headerRow);
       }
+
+      if (f.key === "goodUnits") {
+        // Up Time is what the operator actually enters, in hours — Good Units right below it
+        // is the one other real input; Downtime and Total Units further down are both derived
+        // from these, converting Up Time to minutes internally so those formulas stay stable.
+        const initialUpTimeHours = Math.max(0, ((record.planned || 0) - (record.downtime || 0)) / 60);
+        const upTimeRow = document.createElement("tr");
+        upTimeRow.innerHTML = `
+          <td>Up Time (hours)</td>
+          <td style="text-align:right;">
+            <input type="number" id="editUpTimeInput" min="0" max="${((record.planned || 1440) / 60).toFixed(2)}" step="0.25" value="${initialUpTimeHours.toFixed(2)}">
+          </td>`;
+        editTableBody.appendChild(upTimeRow);
+      }
+
       const row = document.createElement("tr");
       let inputHtml;
-      if (f.type === "select") {
+      if (f.type === "calculated") {
+        inputHtml = `<input type="number" class="edit-input" data-field="${f.key}" value="${record[f.key]}" readonly tabindex="-1">`;
+        row.innerHTML = `<td>${f.label} <span style="color:var(--muted); font-size:10.5px;">— calculated</span></td><td style="text-align:right;">${inputHtml}</td>`;
+      } else if (f.type === "select") {
         const loc = LOCATIONS.find(l => l.id === editLocationSelect.value);
         const area = AREAS.find(a => a.id === (loc && loc.areaId));
         const reasons = (area && Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
@@ -2859,16 +2953,31 @@
       } else {
         inputHtml = `<input type="number" class="edit-input" data-field="${f.key}"
                  min="${f.min}" max="${f.max}" step="${f.step}" value="${record[f.key]}">`;
-        row.innerHTML = `
+        if (f.key === "goodUnits") {
+          row.innerHTML = `<td>${f.label} <span style="color:var(--muted); font-size:10.5px;">— defaults to Total Units until edited</span></td><td style="text-align:right;">${inputHtml}</td>`;
+        } else {
+          row.innerHTML = `
         <td>${f.label}</td>
         <td style="text-align:right;">${inputHtml}</td>`;
+        }
       }
       editTableBody.appendChild(row);
     });
+
     editTableBody.querySelectorAll(".edit-input").forEach(input => {
       input.addEventListener("input", updatePreview);
     });
-    updatePreview();
+    const goodUnitsInputEl = editTableBody.querySelector('[data-field="goodUnits"]');
+    if (goodUnitsInputEl) goodUnitsInputEl.addEventListener("input", () => { goodUnitsTouched = true; });
+    const upTimeInput = document.getElementById("editUpTimeInput");
+    if (upTimeInput) upTimeInput.addEventListener("input", () => { recalcDowntime(); recalcTotalUnits(true); });
+    const plannedInputEl = editTableBody.querySelector('[data-field="planned"]');
+    if (plannedInputEl) plannedInputEl.addEventListener("input", recalcDowntime);
+    const idealCycleInputEl = editTableBody.querySelector('[data-field="idealCycleTime"]');
+    if (idealCycleInputEl) idealCycleInputEl.addEventListener("input", () => recalcTotalUnits(true));
+
+    recalcDowntime();        // syncs Downtime's displayed value
+    recalcTotalUnits(false); // syncs Total Units' displayed value only — never overwrites the stored Good Units on initial load
   }
 
   function openEditModal() {
@@ -2913,6 +3022,10 @@
     // them with this form's (possibly now-stale) copy.
     const changedFields = {};
     INPUT_FIELDS.forEach(f => {
+      // Good Units may have auto-updated to match Total Units as a placeholder default — only
+      // send it if the operator actually typed into it, so an untouched default can never
+      // overwrite a real figure someone else has already entered (or enters later).
+      if (f.key === "goodUnits" && !goodUnitsTouched) return;
       if (!editBaseline || values[f.key] !== editBaseline[f.key]) {
         changedFields[f.key] = values[f.key];
       }
