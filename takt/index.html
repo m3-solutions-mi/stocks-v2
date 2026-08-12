@@ -155,6 +155,12 @@
     font-size:12.5px;
     color:var(--ink);
   }
+  .area-manage-chip.selectable{cursor:pointer; transition:all .15s ease;}
+  .area-manage-chip.selectable:hover{border-color:var(--muted);}
+  .area-manage-chip.selected{
+    border-color:var(--ink);
+    background:color-mix(in srgb, var(--ink) 12%, var(--bg2));
+  }
   .area-manage-chip button{
     background:transparent;
     border:none;
@@ -320,6 +326,30 @@
 
   /* ---------- Help modal ---------- */
   .help-box{width:520px;}
+  .help-tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:14px;
+  }
+  .help-tab{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:7px 16px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .help-tab.active{
+    background:var(--ink);
+    color:#12151A;
+    border-color:var(--ink);
+  }
+  .help-tab:hover:not(.active){border-color:var(--muted); color:var(--ink);}
   .help-section{
     padding:14px 0;
     border-bottom:1px solid var(--line);
@@ -497,9 +527,16 @@
   <div class="modal-overlay" id="helpModal">
     <div class="modal-box help-box">
       <div class="modal-header">
-        <p class="modal-title">How these are calculated</p>
+        <p class="modal-title">Help</p>
         <button class="modal-close" id="helpClose" aria-label="Close"><i class="fa fa-times"></i></button>
       </div>
+
+      <div class="help-tabs" id="helpTabs">
+        <button type="button" class="help-tab active" data-tab="metrics">Metrics</button>
+        <button type="button" class="help-tab" data-tab="settings">Settings</button>
+      </div>
+
+      <div class="help-panel" id="helpPanelMetrics">
 
       <div class="help-section">
         <p class="help-heading"><span class="help-swatch" style="background:#5B7FA6"></span>OEE — Overall Equipment Effectiveness</p>
@@ -546,6 +583,50 @@
           Averaging each location's percentage instead would overweight smaller lines — summing first
           keeps the group number accurate to actual production volume.
         </p>
+      </div>
+
+      </div>
+
+      <div class="help-panel" id="helpPanelSettings" style="display:none;">
+
+      <div class="help-section">
+        <p class="help-heading">Data source</p>
+        <p class="help-desc">
+          Switches TAKT between generated sample data and a real backend. In Live API mode, set the API
+          base URL — every read and save goes through that endpoint instead of local sample generation.
+          If a request fails, TAKT quietly falls back to sample data so the demo keeps working.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Areas</p>
+        <p class="help-desc">
+          A grouping layer above locations. Add or delete areas here, and reassign a location to a
+          different area from its Area field below. On the main screen, clicking an area chip selects
+          every location that belongs to it in one click — a shortcut for the Group filter, not a
+          separate calculation.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Location targets</p>
+        <p class="help-desc">
+          Pick an area, then a location, to edit its settings:
+        </p>
+        <p class="help-desc">
+          <strong>Location Name</strong> — shown throughout the app.<br>
+          <strong>Area</strong> — which area this location belongs to.<br>
+          <strong>Planned Time</strong> — planned production minutes per day; feeds Availability and Utilization.<br>
+          <strong>Ideal Cycle Time</strong> — minutes per unit at the ideal rate; feeds Performance.<br>
+          <strong>Total Units Target</strong> — typical daily output, used to center generated sample data.<br>
+          <strong>CoQ Cost Baseline</strong> and <strong>Revenue Baseline</strong> — typical daily $ figures sample data varies around.
+        </p>
+        <p class="help-note">
+          These targets only shape generated sample data — they don't change how real numbers are
+          calculated once you're on Live API or have entered actual daily figures.
+        </p>
+      </div>
+
       </div>
     </div>
   </div>
@@ -600,7 +681,12 @@
       </div>
 
       <p class="settings-section-label" style="margin-top:20px;">Location targets</p>
-      <select class="edit-select" id="settingsLocation"></select>
+      <div id="locationAreaFilter" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
+      <div class="area-manage-row" id="locationManageList"></div>
+      <div style="display:flex; gap:8px; margin-top:8px; margin-bottom:16px;">
+        <input type="text" class="edit-select" id="newLocationName" placeholder="New location name" style="margin-bottom:0;">
+        <button type="button" class="btn-save" id="addLocationBtn" style="white-space:nowrap;">Add</button>
+      </div>
 
       <table class="edit-table">
         <tbody id="settingsTableBody"></tbody>
@@ -958,28 +1044,28 @@
     // Called once at startup. In API mode, falls back to sample data per-location on failure
     // so the UI never breaks if the backend is unreachable during development.
     async loadAll(store, dates) {
-      if (CONFIG.dataMode === "api") {
-        await Promise.all(LOCATIONS.map(async loc => {
-          try {
-            const url = CONFIG.api.endpoints.listRecords(loc.id, dates[0], dates[dates.length - 1]);
-            const res = await fetch(url, { headers: CONFIG.api.headers });
-            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-            const rows = await res.json(); // expected: [{ date, planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue }, ...]
-            store[loc.id] = {};
-            rows.forEach(row => {
-              const { date, ...record } = row;
-              store[loc.id][date] = record;
-            });
-          } catch (err) {
-            console.warn(`API load failed for ${loc.name}, using sample data instead:`, err);
-            this._fillSampleForLocation(store, loc, dates);
-          }
-        }));
-        return;
-      }
+      await Promise.all(LOCATIONS.map(loc => this.loadOne(store, loc, dates)));
+    },
 
-      // sample mode
-      LOCATIONS.forEach(loc => this._fillSampleForLocation(store, loc, dates));
+    // Hydrates a single location's data — used at startup and whenever a location is added.
+    async loadOne(store, loc, dates) {
+      if (CONFIG.dataMode === "api") {
+        try {
+          const url = CONFIG.api.endpoints.listRecords(loc.id, dates[0], dates[dates.length - 1]);
+          const res = await fetch(url, { headers: CONFIG.api.headers });
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+          const rows = await res.json(); // expected: [{ date, planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue }, ...]
+          store[loc.id] = {};
+          rows.forEach(row => {
+            const { date, ...record } = row;
+            store[loc.id][date] = record;
+          });
+          return;
+        } catch (err) {
+          console.warn(`API load failed for ${loc.name}, using sample data instead:`, err);
+        }
+      }
+      this._fillSampleForLocation(store, loc, dates);
     },
 
     _fillSampleForLocation(store, loc, dates) {
@@ -1134,6 +1220,38 @@
     const categories = locs.map(l => l.name);
     const data = locs.map(l => computeAggregateMetrics(dates.map(d => rawStore[l.id][d]))[metricKey]);
     return { categories, data, mode: "byLocation" };
+  }
+
+  // ---------- Modal scroll lock ----------
+  // Any modal open/close should call these so the page behind it can't scroll.
+  // overflow:hidden on body alone isn't reliable in Chrome (it can still scroll the
+  // <html> element), so this pins the body in place with position:fixed and restores
+  // the exact scroll offset afterward — the approach that works consistently everywhere.
+  let openModalCount = 0;
+  let savedScrollY = 0;
+  function lockPageScroll() {
+    if (openModalCount === 0) {
+      savedScrollY = window.scrollY;
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${savedScrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.overflow = "hidden";
+    }
+    openModalCount++;
+  }
+  function unlockPageScroll() {
+    openModalCount = Math.max(0, openModalCount - 1);
+    if (openModalCount === 0) {
+      document.documentElement.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflow = "";
+      window.scrollTo(0, savedScrollY);
+    }
   }
 
   // ---------- Chart ----------
@@ -1293,9 +1411,10 @@
   // ---------- Settings modal ----------
   const settingsModal = document.getElementById("settingsModal");
   const settingsApiUrl = document.getElementById("settingsApiUrl");
-  const settingsLocationSelect = document.getElementById("settingsLocation");
   const settingsTableBody = document.getElementById("settingsTableBody");
   const dataModeToggle = document.getElementById("dataModeToggle");
+  let selectedSettingsLocationId = LOCATIONS[0].id;
+  let settingsAreaFilterId = AREAS[0].id;
 
   const SETTINGS_FIELDS = [
     { key: "name",           label: "Location Name",             type: "text" },
@@ -1307,23 +1426,24 @@
     { key: "revenue",        label: "Revenue Baseline ($)",      step: 10,   min: 0,    max: 5000000 }
   ];
 
-  LOCATIONS.forEach(loc => {
-    const opt = document.createElement("option");
-    opt.value = loc.id;
-    opt.textContent = loc.name;
-    settingsLocationSelect.appendChild(opt);
-  });
+  function rebuildEditLocationOptions() {
+    editLocationSelect.innerHTML = "";
+    LOCATIONS.forEach(loc => {
+      const opt = document.createElement("option");
+      opt.value = loc.id;
+      opt.textContent = loc.name;
+      editLocationSelect.appendChild(opt);
+    });
+  }
 
   function refreshLocationLabels() {
     document.querySelectorAll(".loc-chip[data-loc]").forEach(btn => {
       const loc = LOCATIONS.find(l => l.id === btn.dataset.loc);
       if (loc) btn.textContent = loc.name;
     });
-    [editLocationSelect, settingsLocationSelect].forEach(sel => {
-      Array.from(sel.options).forEach(opt => {
-        const loc = LOCATIONS.find(l => l.id === opt.value);
-        if (loc) opt.textContent = loc.name;
-      });
+    Array.from(editLocationSelect.options).forEach(opt => {
+      const loc = LOCATIONS.find(l => l.id === opt.value);
+      if (loc) opt.textContent = loc.name;
     });
   }
 
@@ -1377,7 +1497,8 @@
     saveSettings();
     renderAreaManageList();
     renderAreaBar();
-    populateSettingsTable(settingsLocationSelect.value); // new area now selectable
+    renderLocationAreaFilter();
+    populateSettingsTable(selectedSettingsLocationId); // new area now selectable
   }
 
   function deleteArea(id) {
@@ -1388,12 +1509,138 @@
     const fallback = AREAS.find(a => a.id !== id);
     LOCATIONS.forEach(loc => { if (loc.areaId === id) loc.areaId = fallback.id; });
     AREAS.splice(AREAS.findIndex(a => a.id === id), 1);
+    if (settingsAreaFilterId === id) settingsAreaFilterId = fallback.id;
     saveSettings();
     renderAreaManageList();
     renderAreaBar();
     renderLocationBar();
     syncSelectionUI();
-    populateSettingsTable(settingsLocationSelect.value);
+    renderLocationAreaFilter();
+    renderLocationManageList();
+    populateSettingsTable(selectedSettingsLocationId);
+  }
+
+  // ---------- Location management (inside Settings) ----------
+  function renderLocationAreaFilter() {
+    const filterBar = document.getElementById("locationAreaFilter");
+    filterBar.innerHTML = "";
+    AREAS.forEach(area => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "loc-chip" + (area.id === settingsAreaFilterId ? " active" : "");
+      btn.textContent = area.name;
+      btn.addEventListener("click", () => {
+        settingsAreaFilterId = area.id;
+        const locsInArea = LOCATIONS.filter(l => l.areaId === settingsAreaFilterId);
+        if (locsInArea.length && !locsInArea.some(l => l.id === selectedSettingsLocationId)) {
+          selectedSettingsLocationId = locsInArea[0].id;
+          populateSettingsTable(selectedSettingsLocationId);
+        }
+        renderLocationAreaFilter();
+        renderLocationManageList();
+      });
+      filterBar.appendChild(btn);
+    });
+  }
+
+  function renderLocationManageList() {
+    const list = document.getElementById("locationManageList");
+    list.innerHTML = "";
+    const locsInArea = LOCATIONS.filter(loc => loc.areaId === settingsAreaFilterId);
+    if (!locsInArea.length) {
+      list.innerHTML = `<span style="color:var(--muted); font-size:12.5px;">No locations in this area yet — add one below.</span>`;
+      return;
+    }
+    locsInArea.forEach(loc => {
+      const chip = document.createElement("div");
+      chip.className = "area-manage-chip selectable" + (loc.id === selectedSettingsLocationId ? " selected" : "");
+      const label = document.createElement("span");
+      label.textContent = loc.name;
+      label.addEventListener("click", () => {
+        selectedSettingsLocationId = loc.id;
+        populateSettingsTable(loc.id);
+        renderLocationManageList();
+      });
+      chip.appendChild(label);
+      const delBtn = document.createElement("button");
+      delBtn.innerHTML = '<i class="fa fa-times"></i>';
+      delBtn.title = "Delete location";
+      delBtn.addEventListener("click", () => deleteLocation(loc.id));
+      chip.appendChild(delBtn);
+      list.appendChild(chip);
+    });
+  }
+
+  async function addLocation() {
+    const input = document.getElementById("newLocationName");
+    const name = input.value.trim();
+    if (!name) return;
+    let base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "line";
+    let id = base, n = 2;
+    while (LOCATIONS.some(l => l.id === id)) id = `${base}-${n++}`;
+
+    const newLoc = {
+      id, name, areaId: settingsAreaFilterId,
+      idealCycleTime: 0.45, plannedTime: 480, totalUnits: 800, coqCost: 1500, revenue: 30000
+    };
+    LOCATIONS.push(newLoc);
+    selectedLocations.add(newLoc.id); // include it in the current group by default
+    selectedSettingsLocationId = newLoc.id;
+    input.value = "";
+
+    const addBtn = document.getElementById("addLocationBtn");
+    addBtn.disabled = true;
+    try {
+      await DataSource.loadOne(rawStore, newLoc, dailyDates);
+    } catch (err) {
+      console.error("Failed to load data for new location:", err);
+    } finally {
+      addBtn.disabled = false;
+    }
+
+    saveSettings();
+    rebuildEditLocationOptions();
+    renderLocationAreaFilter();
+    renderLocationManageList();
+    renderLocationBar();
+    renderAreaBar();
+    syncSelectionUI();
+    populateSettingsTable(newLoc.id);
+    saveUIState();
+    render();
+  }
+
+  function deleteLocation(id) {
+    if (LOCATIONS.length <= 1) { alert("You need at least one location."); return; }
+    const loc = LOCATIONS.find(l => l.id === id);
+    if (!loc) return;
+    if (!confirm(`Delete "${loc.name}"? Its shift data will be removed.`)) return;
+
+    LOCATIONS.splice(LOCATIONS.findIndex(l => l.id === id), 1);
+    delete rawStore[id];
+    if (overrides[id]) { delete overrides[id]; saveOverrides(overrides); }
+    if (selectedLocations.has(id)) {
+      selectedLocations.delete(id);
+      if (selectedLocations.size === 0) selectedLocations.add(LOCATIONS[0].id);
+    }
+    if (selectedSettingsLocationId === id) {
+      // prefer another location still in the current area filter; otherwise follow it to wherever that location lives
+      const stillInArea = LOCATIONS.find(l => l.areaId === settingsAreaFilterId);
+      const fallback = stillInArea || LOCATIONS[0];
+      selectedSettingsLocationId = fallback.id;
+      settingsAreaFilterId = fallback.areaId;
+    }
+
+    saveSettings();
+    saveUIState();
+    rebuildEditLocationOptions();
+    renderLocationAreaFilter();
+    renderLocationManageList();
+    renderLocationBar();
+    renderAreaBar();
+    syncSelectionUI();
+    populateSettingsTable(selectedSettingsLocationId);
+    render();
   }
 
   function setDataModeUI(mode) {
@@ -1406,13 +1653,21 @@
     setDataModeUI(CONFIG.dataMode);
     settingsApiUrl.value = CONFIG.api.baseUrl;
     renderAreaManageList();
-    settingsLocationSelect.value = LOCATIONS[0].id;
-    populateSettingsTable(settingsLocationSelect.value);
+
+    settingsAreaFilterId = AREAS[0].id; // default to the first area every time Settings opens
+    const firstInArea = LOCATIONS.find(l => l.areaId === settingsAreaFilterId);
+    selectedSettingsLocationId = (firstInArea || LOCATIONS[0]).id;
+
+    renderLocationAreaFilter();
+    renderLocationManageList();
+    populateSettingsTable(selectedSettingsLocationId);
     settingsModal.classList.add("open");
+    lockPageScroll();
   }
 
   function closeSettingsModal() {
     settingsModal.classList.remove("open");
+    unlockPageScroll();
   }
 
   document.getElementById("settingsChip").addEventListener("click", openSettingsModal);
@@ -1425,7 +1680,10 @@
     if (e.key === "Enter") { e.preventDefault(); addArea(); }
   });
 
-  settingsLocationSelect.addEventListener("change", () => populateSettingsTable(settingsLocationSelect.value));
+  document.getElementById("addLocationBtn").addEventListener("click", addLocation);
+  document.getElementById("newLocationName").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); addLocation(); }
+  });
 
   dataModeToggle.querySelectorAll(".loc-chip").forEach(btn => {
     btn.addEventListener("click", () => setDataModeUI(btn.dataset.mode));
@@ -1433,7 +1691,7 @@
 
   document.getElementById("settingsSave").addEventListener("click", async () => {
     // apply the currently-shown location's edited fields
-    const loc = LOCATIONS.find(l => l.id === settingsLocationSelect.value);
+    const loc = LOCATIONS.find(l => l.id === selectedSettingsLocationId);
     settingsTableBody.querySelectorAll(".edit-input").forEach(input => {
       const field = input.dataset.field;
       if (field === "name") loc.name = input.value.trim() || loc.name;
@@ -1448,6 +1706,9 @@
 
     saveSettings();
     refreshLocationLabels();
+    settingsAreaFilterId = loc.areaId; // keep the just-edited location visible if its area changed
+    renderLocationAreaFilter();
+    renderLocationManageList();
     renderLocationBar();
     renderAreaBar();
     syncSelectionUI();
@@ -1473,9 +1734,25 @@
 
   // ---------- Help modal ----------
   const helpModal = document.getElementById("helpModal");
-  document.getElementById("helpChip").addEventListener("click", () => helpModal.classList.add("open"));
-  document.getElementById("helpClose").addEventListener("click", () => helpModal.classList.remove("open"));
-  helpModal.addEventListener("click", (e) => { if (e.target === helpModal) helpModal.classList.remove("open"); });
+  document.getElementById("helpChip").addEventListener("click", () => {
+    document.querySelectorAll("#helpTabs .help-tab").forEach(t => t.classList.remove("active"));
+    document.querySelector('#helpTabs .help-tab[data-tab="metrics"]').classList.add("active");
+    document.getElementById("helpPanelMetrics").style.display = "";
+    document.getElementById("helpPanelSettings").style.display = "none";
+    helpModal.classList.add("open");
+    lockPageScroll();
+  });
+  document.getElementById("helpClose").addEventListener("click", () => { helpModal.classList.remove("open"); unlockPageScroll(); });
+  helpModal.addEventListener("click", (e) => { if (e.target === helpModal) { helpModal.classList.remove("open"); unlockPageScroll(); } });
+
+  document.querySelectorAll("#helpTabs .help-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll("#helpTabs .help-tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("helpPanelMetrics").style.display = tab.dataset.tab === "metrics" ? "" : "none";
+      document.getElementById("helpPanelSettings").style.display = tab.dataset.tab === "settings" ? "" : "none";
+    });
+  });
 
   // ---------- Area & location group filters ----------
   const areaBar = document.getElementById("areaBar");
@@ -1566,12 +1843,7 @@
     { key: "revenue",        label: "Revenue ($)",         step: 10,  min: 0,   max: 5000000 }
   ];
 
-  LOCATIONS.forEach(loc => {
-    const opt = document.createElement("option");
-    opt.value = loc.id;
-    opt.textContent = loc.name;
-    editLocationSelect.appendChild(opt);
-  });
+  rebuildEditLocationOptions();
 
   function currentEditRecord() {
     const locId = editLocationSelect.value;
@@ -1623,10 +1895,12 @@
     editLocationSelect.value = LOCATIONS[0].id;
     populateEditTable();
     editModal.classList.add("open");
+    lockPageScroll();
   }
 
   function closeEditModal() {
     editModal.classList.remove("open");
+    unlockPageScroll();
   }
 
   document.getElementById("editChip").addEventListener("click", openEditModal);
