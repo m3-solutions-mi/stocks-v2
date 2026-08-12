@@ -341,10 +341,12 @@
   }
   .data-table tbody tr:hover{ background:var(--bg2); }
   .data-table tbody tr:last-child td{ border-bottom:none; }
-  .data-table td:last-child, .data-table th:last-child{ text-align:right; font-weight:700; }
+  .data-table td:nth-child(2), .data-table th:nth-child(2),
+  .data-table td:nth-child(3), .data-table th:nth-child(3){ text-align:right; font-weight:700; }
   .data-table .dt-up{ color:#83B573; }
   .data-table .dt-down{ color:#C96A6A; }
   .data-table .dt-delta{ font-size:11.5px; font-weight:600; margin-left:8px; }
+  .data-table .dt-benchmark{ font-size:11.5px; font-weight:600; color:var(--muted); margin-left:6px; }
   .edit-swatch{
     display:inline-block;
     width:10px;height:10px;
@@ -1127,7 +1129,7 @@
       <div id="dataTableWrap" style="display:none; margin-top:10px;">
         <table class="data-table">
           <thead>
-            <tr><th id="dataTableCol1">Period</th><th style="text-align:right;">Value</th></tr>
+            <tr><th id="dataTableCol1">Period</th><th style="text-align:right;">Value</th><th style="text-align:right;">vs Benchmark</th></tr>
           </thead>
           <tbody id="dataTableBody"></tbody>
         </table>
@@ -1777,6 +1779,8 @@
     document.getElementById("dataTableWrap").style.display = "block";
     document.getElementById("dataTableCol1").textContent = "Period";
 
+    const benchmark = getGroupBenchmark(currentMetric);
+
     const tbody = document.getElementById("dataTableBody");
     tbody.innerHTML = "";
     data.forEach((v, i) => {
@@ -1787,8 +1791,17 @@
         const positive = m.betterUp ? d >= 0 : d <= 0;
         deltaHtml = `<span class="dt-delta ${positive ? "dt-up" : "dt-down"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d).toFixed(1)}</span>`;
       }
+      // Sign is always plain "actual minus target" so it matches what you'd get subtracting
+      // by hand — for CoQ (lower is better) that means a value above target still shows "+",
+      // it just colors red and says "over" instead of green/"under". Flipping the sign itself
+      // for CoQ was more confusing than the color+wording doing that job instead.
+      const rawDiff = v - benchmark;
+      const goodDirection = m.betterUp ? rawDiff >= 0 : rawDiff <= 0;
+      const word = rawDiff >= 0 ? "over" : "under";
+      const benchmarkHtml = `<span class="${goodDirection ? "dt-up" : "dt-down"}">${rawDiff >= 0 ? "+" : "−"}${Math.abs(rawDiff).toFixed(1)} ${word}</span>` +
+        `<span class="dt-benchmark">(target ${benchmark.toFixed(1)}${m.unit})</span>`;
       const row = document.createElement("tr");
-      row.innerHTML = `<td>${categories[i]}</td><td>${v.toFixed(1)}${m.unit}${deltaHtml}</td>`;
+      row.innerHTML = `<td>${categories[i]}</td><td>${v.toFixed(1)}${m.unit}${deltaHtml}</td><td>${benchmarkHtml}</td>`;
       tbody.appendChild(row);
     });
   }
