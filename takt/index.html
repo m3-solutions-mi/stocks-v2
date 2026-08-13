@@ -90,6 +90,14 @@
     background:var(--c);
     color:#0F1319;
   }
+  /* In Today/Compare, every metric shows at once — clicking a chip wouldn't do anything, so
+     they're muted and made non-interactive rather than implying a selection that has no effect.
+     #metricChipRow itself is display:contents (so it doesn't disturb the surrounding flex row),
+     which means opacity/pointer-events have to target the chips directly, not the wrapper. */
+  #metricChipRow.chips-muted .chip{
+    opacity:.4;
+    pointer-events:none;
+  }
   .chip-settings{
     font-size:15px;
     padding:8px 12px;
@@ -536,6 +544,14 @@
   }
   .view-toggle{margin-top:4px;}
   .view-toggle .w3-button{padding:6px 14px; font-size:12.5px;}
+  .view-toggle-sep{
+    display:inline-block;
+    vertical-align:middle;
+    width:1px;
+    height:20px;
+    background:var(--line);
+    margin:0 10px 0 2px;
+  }
   .metric-title{
     font-size:20px;
     font-weight:800;
@@ -739,10 +755,12 @@
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:auto;">
-        <button class="chip" data-metric="OEE"   style="--c:var(--oee)"><span class="chip-label">OEE</span><span class="chip-value" data-value="OEE">—</span></button>
-        <button class="chip" data-metric="TEEP"  style="--c:var(--teep)"><span class="chip-label">TEEP</span><span class="chip-value" data-value="TEEP">—</span></button>
-        <button class="chip" data-metric="Yield" style="--c:var(--yield)"><span class="chip-label">YIELD</span><span class="chip-value" data-value="Yield">—</span></button>
-        <button class="chip" data-metric="CoQ"   style="--c:var(--coq)"><span class="chip-label">CoQ</span><span class="chip-value" data-value="CoQ">—</span></button>
+        <div id="metricChipRow" style="display:contents;">
+          <button class="chip" data-metric="OEE"   style="--c:var(--oee)"><span class="chip-label">OEE</span><span class="chip-value" data-value="OEE">—</span></button>
+          <button class="chip" data-metric="TEEP"  style="--c:var(--teep)"><span class="chip-label">TEEP</span><span class="chip-value" data-value="TEEP">—</span></button>
+          <button class="chip" data-metric="Yield" style="--c:var(--yield)"><span class="chip-label">YIELD</span><span class="chip-value" data-value="Yield">—</span></button>
+          <button class="chip" data-metric="CoQ"   style="--c:var(--coq)"><span class="chip-label">CoQ</span><span class="chip-value" data-value="CoQ">—</span></button>
+        </div>
         <button class="chip-settings" id="editChip" title="Edit daily data" aria-label="Edit daily data">
           <i class="fa fa-pencil-square-o"></i>
         </button>
@@ -1170,15 +1188,16 @@
         </div>
       </div>
 
-      <div class="w3-row-padding view-toggle-row" style="align-items:center; margin-top:2px;">
+      <div class="w3-row-padding view-toggle-row" style="align-items:center; margin-top:16px;">
         <div class="w3-col m12" style="text-align:right;">
           <div class="view-toggle w3-bar">
             <button class="w3-button" data-view="today"><i class="fa fa-list" style="margin-right:6px;"></i>Today</button>
+            <button class="w3-button" data-view="compare"><i class="fa fa-th-large" style="margin-right:6px;"></i>Compare</button>
+            <span class="view-toggle-sep"></span>
             <button class="w3-button" data-view="trend"><i class="fa fa-line-chart" style="margin-right:6px;"></i>Trend</button>
             <button class="w3-button" data-view="byLocation"><i class="fa fa-bar-chart" style="margin-right:6px;"></i>Locations</button>
             <button class="w3-button" data-view="polar"><i class="fa fa-pie-chart" style="margin-right:6px;"></i>Overview</button>
             <button class="w3-button" data-view="table"><i class="fa fa-table" style="margin-right:6px;"></i>Table</button>
-            <button class="w3-button" data-view="compare"><i class="fa fa-th-large" style="margin-right:6px;"></i>Compare</button>
           </div>
         </div>
       </div>
@@ -1193,11 +1212,11 @@
         </select>
         <select class="mobile-select" id="viewSelect" aria-label="Chart view">
           <option value="today">Today</option>
+          <option value="compare">Compare</option>
           <option value="trend">Trend</option>
           <option value="byLocation">Locations</option>
           <option value="polar">Overview</option>
           <option value="table">Table</option>
-          <option value="compare">Compare</option>
         </select>
       </div>
 
@@ -2080,6 +2099,9 @@
 
   function render() {
     const m = METRICS[currentMetric];
+    const isAllMetricsView = currentView === "today" || currentView === "compare";
+    document.getElementById("metricChipRow").classList.toggle("chips-muted", isAllMetricsView);
+
     const usesLocationData = currentView === "byLocation" || currentView === "polar";
     const { categories, data, mode } = usesLocationData
       ? generateByLocationSeries(currentMetric, currentTf)
