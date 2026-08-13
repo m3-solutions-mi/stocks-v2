@@ -377,12 +377,26 @@
     .compare-grid{ grid-template-columns:1fr; }
   }
 
-  .today-table{ min-width:760px; } /* wide table — .today-table's parent wrapper scrolls horizontally on narrow screens */
+  .today-table{ min-width:820px; } /* wide table — .today-table's parent wrapper scrolls horizontally on narrow screens */
   .today-table td:nth-child(2), .today-table th:nth-child(2),
-  .today-table td:nth-child(3), .today-table th:nth-child(3){ font-weight:400; } /* override .data-table's generic 2nd/3rd-column bolding — this table has 9 columns */
-  .today-table td, .today-table th{ white-space:nowrap; padding-right:14px; }
-  .today-table .today-reason{ color:var(--muted); font-size:12.5px; white-space:normal; }
-  .today-table .today-metric{ font-weight:700; }
+  .today-table td:nth-child(3), .today-table th:nth-child(3){ font-weight:400; } /* override .data-table's generic 2nd/3rd-column bolding */
+  .today-table td:nth-child(3), .today-table th:nth-child(3){ text-align:left; } /* Assigned is text, not a number — 2nd/3rd-col right-align doesn't apply here */
+  .today-table td, .today-table th{ white-space:nowrap; padding-right:10px; }
+  .today-input{
+    width:100%;
+    min-width:70px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--ink);
+    padding:5px 7px;
+    font-size:13px;
+  }
+  .today-input:focus{ outline:none; border-color:var(--muted); }
+  select.today-input{ min-width:110px; transition:border-color .2s ease, background-color .2s ease; }
+  .today-table tr{ transition:background-color .5s ease; }
+  .today-table tr.today-row-saved{ background-color:color-mix(in srgb, #83B573 18%, transparent); }
+  .today-table tr.today-row-error{ background-color:color-mix(in srgb, #C96A6A 20%, transparent); }
   .edit-swatch{
     display:inline-block;
     width:10px;height:10px;
@@ -400,6 +414,7 @@
     text-align:right;
   }
   .edit-input:focus{outline:none; border-color:var(--muted);}
+  #editPrioritySelect{ transition:border-color .2s ease, background-color .2s ease; }
   .edit-input[readonly]{
     color:var(--muted);
     background:var(--bg);
@@ -565,9 +580,12 @@
   .stat-row{
     margin-top:18px;
     display:grid;
-    grid-template-columns:repeat(4, 1fr);
+    grid-template-columns:repeat(4, 1fr); /* fallback; actual count set per-render via data-count below */
     gap:16px;
   }
+  .stat-row[data-count="2"]{ grid-template-columns:repeat(2, 1fr); }
+  .stat-row[data-count="3"]{ grid-template-columns:repeat(3, 1fr); }
+  .stat-row[data-count="4"]{ grid-template-columns:repeat(4, 1fr); }
   .stat-col{ display:flex; }
   .stat-card{
     background:var(--bg2);
@@ -702,10 +720,10 @@
     .metric-title{ font-size:16px; }
     .metric-sub{ font-size:11.5px; }
 
-    /* 2x2 grid with matched row heights, so "Current" having an extra delta line doesn't
-       leave the two rows looking stair-stepped against each other */
+    /* Always 2 columns on phone regardless of how many cards this view has — !important because
+       the data-count attribute selectors above have higher specificity than this plain class */
     .stat-row{
-      grid-template-columns:repeat(2, 1fr);
+      grid-template-columns:repeat(2, 1fr) !important;
       grid-auto-rows:1fr;
       gap:10px;
     }
@@ -905,6 +923,28 @@
       </div>
 
       <div class="help-section">
+        <p class="help-heading">The cards below the chart</p>
+        <p class="help-desc">
+          The four cards under the chart change based on which view is active — they're not
+          always "Current / Average / Best / Worst."
+        </p>
+        <p class="help-desc">
+          <strong>Trend</strong> — Current (with the change vs the prior period), Period Average,
+          Best, and Worst for the selected metric.<br>
+          <strong>Locations / Overview</strong> — Best Location and Worst Location (with their
+          values), Spread (the gap between them), and On Target (how many locations are
+          currently at or beyond the benchmark).<br>
+          <strong>Table</strong> — Net Change from the first period shown to the last, and On
+          Target (how many periods were at or beyond the benchmark).<br>
+          <strong>Compare</strong> — Needs Attention (whichever of the four metrics has the
+          biggest gap from its own target right now) and On Target (how many of the four metrics
+          are currently meeting theirs).<br>
+          <strong>Today</strong> — hidden entirely; this view is a status board of raw inputs,
+          not a performance summary, so a metric-based card row wouldn't fit it.
+        </p>
+      </div>
+
+      <div class="help-section">
         <p class="help-heading">Combining locations into a group</p>
         <p class="help-note">
           When more than one location is selected, TAKT sums the raw inputs (time, units, cost, revenue)
@@ -945,8 +985,9 @@
           <strong>Good Units</strong> — units that passed quality; capped at Total Units. When
           Up Time changes, this defaults to match Total Units (assuming 100% quality) until
           someone actually types a number in — see the Saving note below for why that matters.<br>
-          <strong>Reason for Loss</strong> — optional; one of 5 codes configured per area under
-          Settings, for whenever Good Units is less than Total Units.
+          <strong>Reason for Downtime</strong> — optional; one of 5 codes configured per area under
+          Settings, for whenever there was downtime — describes why the line stopped, not why a
+          part failed quality (that's what Good Units measures independently).
         </p>
         <p class="help-desc">
           <strong>Planned / Target</strong> — set periodically, usually by planning or finance
@@ -954,7 +995,10 @@
           <strong>Planned Time</strong> — planned production minutes for the day.<br>
           <strong>Ideal Cycle Time</strong> — minutes per unit at the ideal rate for this location.<br>
           <strong>Cost of Poor Quality ($)</strong> — cost of scrap, rework, and defects for the day.<br>
-          <strong>Revenue ($)</strong> — revenue for the day, used as CoQ's denominator.
+          <strong>Revenue ($)</strong> — revenue for the day, used as CoQ's denominator.<br>
+          <strong>Assigned To</strong> — who's responsible for this location's plan; free text,
+          purely informational and doesn't affect any calculation.<br>
+          <strong>Priority</strong> — Low/Medium/High/Critical; also informational only.
         </p>
       </div>
 
@@ -1029,9 +1073,20 @@
         <p class="help-heading">Scrap Reasons</p>
         <p class="help-desc">
           Five reason codes, pulled from the "Machine" category of the standard 6M root-cause
-          framework, offered as a dropdown in the Edit modal whenever Good Units is less than
-          Total Units. Each area can reword all five to match its own terminology or equipment —
-          the count stays fixed at five.
+          framework, offered as a dropdown in the Edit modal whenever there was downtime — they
+          describe why the line stopped, distinct from Good Units, which measures quality on its
+          own. Each area can reword all five to match its own terminology or equipment — the
+          count stays fixed at five.
+        </p>
+      </div>
+
+      <div class="help-section">
+        <p class="help-heading">Priority Options</p>
+        <p class="help-desc">
+          The urgency levels offered for Priority in the Edit modal and Today view. Unlike scrap
+          reasons, this is one shared list rather than per-area, and you can add or remove
+          levels — it isn't fixed at a specific count. Sample data and the default selection
+          both bias toward whichever level sits in the middle of the list.
         </p>
       </div>
 
@@ -1142,12 +1197,22 @@
 
       <p class="settings-section-label" style="margin-top:20px;">Scrap Reasons</p>
       <p style="color:var(--muted); font-size:11.5px; margin:-4px 0 10px 0;">
-        The 5 reason codes offered in the Edit modal when Good Units is less than Total Units.
+        The 5 reason codes offered in the Edit modal whenever there's downtime.
         Each area can reword these to match its own terminology — the count stays at 5.
       </p>
       <div id="scrapReasonAreaFilter" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
       <table class="edit-table">
         <tbody id="scrapReasonTableBody"></tbody>
+      </table>
+
+      <p class="settings-section-label" style="margin-top:20px;">Priority Options</p>
+      <p style="color:var(--muted); font-size:11.5px; margin:-4px 0 10px 0;">
+        The 4 urgency levels offered for Priority in the Edit modal and Today view — one shared
+        list, not per-area. Color is assigned by position (calm → urgent), so it stays meaningful
+        no matter how these 4 are relabeled — the count stays fixed at 4.
+      </p>
+      <table class="edit-table">
+        <tbody id="priorityTableBody"></tbody>
       </table>
 
       <p class="settings-section-label" style="margin-top:20px;">Location targets</p>
@@ -1255,47 +1320,19 @@
           <thead>
             <tr>
               <th>Location</th>
+              <th style="text-align:right;">Planned Time</th>
+              <th>Assigned</th>
+              <th>Priority</th>
               <th style="text-align:right;">Up Time</th>
-              <th style="text-align:right;">Total Units</th>
-              <th style="text-align:right;">Good Units</th>
-              <th>Reason for Loss</th>
-              <th style="text-align:right;">OEE</th>
-              <th style="text-align:right;">TEEP</th>
-              <th style="text-align:right;">Yield</th>
-              <th style="text-align:right;">CoQ</th>
+              <th style="text-align:right;">Down Time</th>
+              <th>Reason for Downtime</th>
             </tr>
           </thead>
           <tbody id="todayTableBody"></tbody>
         </table>
       </div>
 
-      <div class="stat-row">
-        <div class="stat-col">
-          <div class="stat-card">
-            <p class="stat-label">Current</p>
-            <p class="stat-value" id="statCurrent">—</p>
-            <p class="stat-delta" id="statDelta">—</p>
-          </div>
-        </div>
-        <div class="stat-col">
-          <div class="stat-card">
-            <p class="stat-label">Period Avg</p>
-            <p class="stat-value" id="statAvg">—</p>
-          </div>
-        </div>
-        <div class="stat-col">
-          <div class="stat-card">
-            <p class="stat-label">Best</p>
-            <p class="stat-value" id="statBest">—</p>
-          </div>
-        </div>
-        <div class="stat-col">
-          <div class="stat-card">
-            <p class="stat-label">Worst</p>
-            <p class="stat-value" id="statWorst">—</p>
-          </div>
-        </div>
-      </div>
+      <div class="stat-row" id="statRow"></div>
 
     </div>
 
@@ -1324,7 +1361,7 @@
     api: {
       baseUrl: "/api",
       // Expected shape for GET and PUT bodies (full record):
-      // { planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue, scrapReason }
+      // { planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue, scrapReason, assigned, priority }
       // PATCH body is a partial object with just the changed keys; the server should merge
       // it into the existing record atomically and return the resulting full record.
       endpoints: {
@@ -1373,6 +1410,16 @@
     "Preventive maintenance overdue"
   ];
 
+  // ---------- Priority options ----------
+  // Unlike scrap reasons, priority is a universal urgency scale rather than area-specific
+  // terminology, so this is one shared, ordered list (not per-area). Fixed at exactly 4 slots,
+  // same pattern as scrap reasons — labels are editable, the count isn't. Color is assigned by
+  // position (calm → urgent), not by matching specific words, so it stays meaningful no matter
+  // how the 4 slots get relabeled.
+  const DEFAULT_PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
+  const PRIORITY_COLORS = ["#6B8C9C", "#D4B65C", "#D98A4A", "#C96A6A"]; // calm → urgent, by index
+  let PRIORITY_OPTIONS = [...DEFAULT_PRIORITY_OPTIONS];
+
   // ---------- Areas ----------
   // A grouping layer above locations — editable and selectable from the UI. Each location
   // belongs to exactly one area (areaId). Selecting an area in the Group filter toggles
@@ -1386,7 +1433,7 @@
   const LOCATIONS = [
     {
       id: "line1",
-      name: "Line 1 — Mesa, AZ",
+      name: "L001",
       areaId: "na",
       idealCycleTime: 0.42,     // minutes per unit at ideal rate
       plannedTime: 480,         // planned production minutes per day
@@ -1396,7 +1443,7 @@
     },
     {
       id: "line2",
-      name: "Line 2 — Dayton, OH",
+      name: "L002",
       areaId: "na",
       idealCycleTime: 0.55,
       plannedTime: 480,
@@ -1406,7 +1453,7 @@
     },
     {
       id: "line3",
-      name: "Line 3 — Querétaro, MX",
+      name: "M003",
       areaId: "latam",
       idealCycleTime: 0.38,
       plannedTime: 450,
@@ -1442,7 +1489,8 @@
           id: l.id, name: l.name, areaId: l.areaId, plannedTime: l.plannedTime,
           idealCycleTime: l.idealCycleTime, totalUnits: l.totalUnits,
           coqCost: l.coqCost, revenue: l.revenue
-        }))
+        })),
+        priorityOptions: [...PRIORITY_OPTIONS]
       }));
     } catch (e) {
       console.warn("Could not save settings:", e);
@@ -1470,6 +1518,9 @@
         plannedTime: sl.plannedTime, idealCycleTime: sl.idealCycleTime,
         totalUnits: sl.totalUnits, coqCost: sl.coqCost, revenue: sl.revenue
       }));
+    }
+    if (Array.isArray(saved.priorityOptions) && saved.priorityOptions.length) {
+      PRIORITY_OPTIONS = saved.priorityOptions;
     }
   })();
 
@@ -1607,15 +1658,28 @@
       const coqCost = Math.max(0, Math.round(loc.coqCost * (0.7 + rand() * 0.6)));
       const revenue = Math.max(0, Math.round(loc.revenue * (0.85 + rand() * 0.3)));
 
-      // Give a reason for the loss whenever there was one, picked from this location's area.
+      // Give a reason whenever there was downtime, picked from this location's area. The reason
+      // codes describe why the line stopped (Machine category), not why parts failed quality —
+      // that's what Good Units already measures on its own.
       let scrapReason = "";
-      if (goodUnits < totalUnits) {
+      if (downtime > 0) {
         const area = AREAS.find(a => a.id === loc.areaId);
         const reasons = (area && Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
         scrapReason = reasons[Math.floor(rand() * reasons.length)];
       }
 
-      return { planned, downtime, totalUnits, goodUnits, idealCycleTime: loc.idealCycleTime, coqCost, revenue, scrapReason };
+      // Assigned/Priority are planning metadata — they don't feed any calculation, just context
+      // for whoever's looking at the record. Priority is weighted toward whichever option sits
+      // in the middle of the configured list (not hardcoded to "Medium"), so a customized list
+      // still gets a realistic "most days are routine" distribution.
+      const SAMPLE_ASSIGNEES = ["J. Rivera", "M. Chen", "A. Patel", "S. Novak", "T. Okafor"];
+      const priorityOpts = PRIORITY_OPTIONS.length ? PRIORITY_OPTIONS : DEFAULT_PRIORITY_OPTIONS;
+      const midIdx = Math.floor((priorityOpts.length - 1) / 2);
+      const weightedPriorityIdxs = priorityOpts.flatMap((_, i) => i === midIdx ? [i, i, i] : [i]);
+      const assigned = SAMPLE_ASSIGNEES[Math.floor(rand() * SAMPLE_ASSIGNEES.length)];
+      const priority = priorityOpts[weightedPriorityIdxs[Math.floor(rand() * weightedPriorityIdxs.length)]];
+
+      return { planned, downtime, totalUnits, goodUnits, idealCycleTime: loc.idealCycleTime, coqCost, revenue, scrapReason, assigned, priority };
     },
 
     // Populates `store[locationId][dateStr]` for every location across `dates`.
@@ -1632,7 +1696,7 @@
           const url = CONFIG.api.endpoints.listRecords(loc.id, dates[0], dates[dates.length - 1]);
           const res = await fetch(url, { headers: CONFIG.api.headers });
           if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-          const rows = await res.json(); // expected: [{ date, planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue, scrapReason }, ...]
+          const rows = await res.json(); // expected: [{ date, planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue, scrapReason, assigned, priority }, ...]
           store[loc.id] = {};
           rows.forEach(row => {
             const { date, ...record } = row;
@@ -1745,13 +1809,20 @@
     const runTime = Math.max(1, planned - downtime);
     const availability = Math.min(1, runTime / planned);
     const performance = Math.min(1.1, idealUnitsWeighted / runTime);
-    const quality = totalUnits > 0 ? goodUnits / totalUnits : 0;
+    // Capped at 1 like Availability and Performance already are — Good Units should never
+    // legitimately exceed Total Units, but nothing enforced that here, so a record with a
+    // stale Good Units figure (e.g. from before Total Units' formula changed) could push
+    // Quality — and therefore OEE, which multiplies all three together — well past 100%.
+    const quality = totalUnits > 0 ? Math.min(1, goodUnits / totalUnits) : 0;
     const oee = availability * performance * quality * 100;
     const calendarTotal = 1440 * records.length; // full calendar minutes for each location's day
     const utilization = Math.min(1, planned / calendarTotal);
     const teep = (oee / 100) * utilization * 100;
     const yieldPct = quality * 100;
-    const coq = revenue > 0 ? (coqCost / revenue) * 100 : 0;
+    // Clamped to a generous but sane ceiling — an unusually low Revenue figure relative to CoQ
+    // Cost (a data-entry slip, or Revenue not yet filled in) would otherwise produce a runaway
+    // percentage that then poisons every stat built from it (Worst, Spread, benchmark deltas).
+    const coq = revenue > 0 ? Math.min(200, (coqCost / revenue) * 100) : 0;
     return { OEE: round1(oee), TEEP: round1(teep), Yield: round1(yieldPct), CoQ: round1(coq) };
   }
 
@@ -1947,6 +2018,36 @@
     });
   }
 
+  // Builds the bottom stat-card row from whatever cards the current view supplies — each view
+  // shows different content here (Trend: current/avg/best/worst; Locations: best/worst
+  // location; Table: net change; Compare: which metric needs attention) rather than one fixed
+  // set that only really made sense for Trend.
+  // Priority color is assigned by position in PRIORITY_OPTIONS (calm → urgent), not by
+  // matching specific label text, so it stays meaningful regardless of how the 4 slots are
+  // relabeled. Applied as the select's left border/background tint, live as the value changes.
+  function priorityColorFor(label) {
+    const idx = PRIORITY_OPTIONS.indexOf(label);
+    return PRIORITY_COLORS[idx] ?? PRIORITY_COLORS[0];
+  }
+  function stylePrioritySelect(selectEl) {
+    const color = priorityColorFor(selectEl.value);
+    selectEl.style.borderLeft = `4px solid ${color}`;
+    selectEl.style.background = `color-mix(in srgb, ${color} 12%, var(--bg2))`;
+  }
+
+  function renderStatCards(cards) {
+    const container = document.getElementById("statRow");
+    container.dataset.count = cards.length;
+    container.innerHTML = cards.map(c => `
+      <div class="stat-col">
+        <div class="stat-card">
+          <p class="stat-label">${c.label}</p>
+          <p class="stat-value">${c.value}</p>
+          ${c.sub ? `<p class="stat-delta ${c.subClass || ""}">${c.sub}</p>` : ""}
+        </div>
+      </div>`).join("");
+  }
+
   // Keeps the dashed benchmark line on every screen size, but drops the text label box on
   // phones — at that width the label often overlaps the chart or gets clipped.
   function buildBenchmarkAnnotation(benchmark) {
@@ -2061,9 +2162,15 @@
   }
 
   // A per-location roll call for today: the raw inputs (Up Time, Total Units, Good Units,
-  // Reason for Loss) side by side with what they calculate to — the same fields the Edit modal
+  // Reason for Downtime) side by side with what they calculate to — the same fields the Edit modal
   // shows for one location/day at a time, here shown for every location in the current group at
   // once. Respects the Area/Group filter, same as every other view.
+  // A fast, editable roll call for today — one row per selected location, no percentages.
+  // Every visible field is directly editable except Down Time, which is derived the same way
+  // it is in the Edit modal (Planned − Up Time). Each field saves on change (blur, or selecting
+  // a dropdown option) — there's no separate Save button, this is meant for quick updates across
+  // many testbeds. Good Units gets the same "untouched default never overwrites a real entry"
+  // protection the Edit modal uses, since the same multi-person editing concern applies here.
   function renderTodayView() {
     document.getElementById("todayWrap").style.display = "block";
     const todayDate = dailyDates[dailyDates.length - 1];
@@ -2072,28 +2179,104 @@
 
     const locs = LOCATIONS.filter(l => selectedLocations.has(l.id));
     if (!locs.length) {
-      tbody.innerHTML = `<tr><td colspan="9" style="color:var(--muted);">No locations selected.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="color:var(--muted);">No locations selected.</td></tr>`;
       return;
     }
 
     locs.forEach(loc => {
       const record = rawStore[loc.id] && rawStore[loc.id][todayDate];
       if (!record) return;
-      const upTimeHours = Math.max(0, (record.planned - record.downtime) / 60);
-      const metrics = computeAggregateMetrics([record]);
+
+      const area = AREAS.find(a => a.id === loc.areaId);
+      const reasons = (area && Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
+      const initialUpTimeHours = Math.max(0, (record.planned - record.downtime) / 60);
 
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${loc.name}</td>
-        <td style="text-align:right;">${upTimeHours.toFixed(2)}h</td>
-        <td style="text-align:right;">${record.totalUnits.toFixed(2)}</td>
-        <td style="text-align:right;">${record.goodUnits}</td>
-        <td class="today-reason">${record.scrapReason || "—"}</td>
-        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.OEE.color}">${metrics.OEE.toFixed(1)}%</span></td>
-        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.TEEP.color}">${metrics.TEEP.toFixed(1)}%</span></td>
-        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.Yield.color}">${metrics.Yield.toFixed(1)}%</span></td>
-        <td style="text-align:right;" class="today-metric"><span style="color:${METRICS.CoQ.color}">${metrics.CoQ.toFixed(1)}%</span></td>`;
+        <td style="text-align:right;"><input type="number" class="today-input" data-field="planned" min="60" max="1440" step="1" value="${record.planned}"></td>
+        <td><input type="text" class="today-input" data-field="assigned" value="${record.assigned || ""}" placeholder="Unassigned"></td>
+        <td>
+          <select class="today-input" data-field="priority">
+            ${PRIORITY_OPTIONS.map(p => `<option value="${p}" ${p === (record.priority || PRIORITY_OPTIONS[Math.min(1, PRIORITY_OPTIONS.length - 1)]) ? "selected" : ""}>${p}</option>`).join("")}
+          </select>
+        </td>
+        <td style="text-align:right;"><input type="number" class="today-input" data-field="upTime" min="0" step="0.25" value="${initialUpTimeHours.toFixed(2)}"></td>
+        <td style="text-align:right;" class="today-downtime">${record.downtime}<span style="color:var(--muted); font-size:10.5px;"> min</span></td>
+        <td>
+          <select class="today-input" data-field="scrapReason">
+            <option value="">— none —</option>
+            ${reasons.map(r => `<option value="${r}" ${r === record.scrapReason ? "selected" : ""}>${r}</option>`).join("")}
+          </select>
+        </td>`;
       tbody.appendChild(row);
+
+      // Per-row state: a baseline snapshot for the save diff. Good Units isn't touched from
+      // this view at all — it's validated later, for a past date, via the Edit modal — so
+      // Total Units is still computed here (Downtime and Total Units save together, same as
+      // the Edit modal treats them) but nothing in this view reads or writes Good Units.
+      const rowState = { baseline: { ...record } };
+      const els = {
+        planned: row.querySelector('[data-field="planned"]'),
+        assigned: row.querySelector('[data-field="assigned"]'),
+        priority: row.querySelector('[data-field="priority"]'),
+        upTime: row.querySelector('[data-field="upTime"]'),
+        downtime: row.querySelector(".today-downtime"),
+        scrapReason: row.querySelector('[data-field="scrapReason"]')
+      };
+
+      function recalc() {
+        const planned = parseFloat(els.planned.value) || 0;
+        const upTimeMinutes = Math.max(0, parseFloat(els.upTime.value) || 0) * 60;
+        els.upTime.max = (planned / 60).toFixed(2);
+        const downtime = Math.max(0, planned - upTimeMinutes);
+        els.downtime.innerHTML = `${downtime.toFixed(0)}<span style="color:var(--muted); font-size:10.5px;"> min</span>`;
+        const totalUnits = Math.max(0, upTimeMinutes / Math.max(0.01, loc.idealCycleTime));
+        return { planned, downtime, totalUnits };
+      }
+
+      async function saveRow() {
+        const { planned, downtime, totalUnits } = recalc();
+        const values = {
+          planned,
+          downtime,
+          totalUnits,
+          assigned: els.assigned.value,
+          priority: els.priority.value,
+          scrapReason: els.scrapReason.value
+        };
+        const changedFields = {};
+        Object.keys(values).forEach(key => {
+          if (values[key] !== rowState.baseline[key]) changedFields[key] = values[key];
+        });
+        if (Object.keys(changedFields).length === 0) return;
+
+        try {
+          const result = await DataSource.savePartial(loc.id, todayDate, changedFields, rowState.baseline);
+          if (result) {
+            rowState.baseline = { ...result.record };
+            row.classList.add("today-row-saved");
+            setTimeout(() => row.classList.remove("today-row-saved"), 700);
+            if (result.conflictFields && result.conflictFields.length) {
+              row.title = `Note: ${result.conflictFields.join(", ")} changed elsewhere and was kept.`;
+            }
+          }
+        } catch (e) {
+          console.warn("Save failed for", loc.name, e);
+          row.classList.add("today-row-error");
+          setTimeout(() => row.classList.remove("today-row-error"), 1200);
+        }
+      }
+
+      els.upTime.addEventListener("change", () => { recalc(); saveRow(); });
+      els.planned.addEventListener("change", () => { recalc(); saveRow(); });
+      [els.assigned, els.priority, els.scrapReason].forEach(el => {
+        el.addEventListener("change", saveRow);
+      });
+      stylePrioritySelect(els.priority);
+      els.priority.addEventListener("change", () => stylePrioritySelect(els.priority));
+
+      recalc(); // sync Down Time's initial display
     });
   }
 
@@ -2101,6 +2284,7 @@
     const m = METRICS[currentMetric];
     const isAllMetricsView = currentView === "today" || currentView === "compare";
     document.getElementById("metricChipRow").classList.toggle("chips-muted", isAllMetricsView);
+    document.getElementById("statRow").style.display = currentView === "today" ? "none" : "";
 
     const usesLocationData = currentView === "byLocation" || currentView === "polar";
     const { categories, data, mode } = usesLocationData
@@ -2112,31 +2296,6 @@
       ? `${m.sub} — by location, ${currentTf.toLowerCase()}`
       : m.sub;
 
-    const avg = data.reduce((a,b)=>a+b,0) / data.length;
-    const best = m.betterUp ? Math.max(...data) : Math.min(...data);
-    const worst = m.betterUp ? Math.min(...data) : Math.max(...data);
-
-    const current = computeCurrentValue(currentMetric);
-    let delta, positive;
-    if (mode === "byLocation") {
-      delta = current - avg;
-      positive = m.betterUp ? current >= avg : current <= avg;
-    } else {
-      const prev = data.length > 1 ? data[data.length - 2] : current;
-      delta = current - prev;
-      positive = m.betterUp ? delta >= 0 : delta <= 0;
-    }
-
-    document.getElementById("statCurrent").textContent = current.toFixed(1) + m.unit;
-    document.getElementById("statAvg").textContent = avg.toFixed(1) + m.unit;
-    document.getElementById("statBest").textContent = best.toFixed(1) + m.unit;
-    document.getElementById("statWorst").textContent = worst.toFixed(1) + m.unit;
-    const deltaEl = document.getElementById("statDelta");
-    deltaEl.textContent = mode === "byLocation"
-      ? (delta >= 0 ? "▲ " : "▼ ") + Math.abs(delta).toFixed(1) + m.unit + " vs location avg"
-      : (delta >= 0 ? "▲ " : "▼ ") + Math.abs(delta).toFixed(1) + m.unit + " vs prior";
-    deltaEl.className = "stat-delta " + (positive ? "up" : "down");
-
     renderChipValues();
 
     if (currentView === "table") {
@@ -2145,6 +2304,18 @@
       document.getElementById("compareWrap").style.display = "none";
       document.getElementById("todayWrap").style.display = "none";
       renderDataTable(m.label, categories, data, m);
+
+      const benchmark = getGroupBenchmark(currentMetric);
+      const netChange = data[data.length - 1] - data[0];
+      const netPositive = m.betterUp ? netChange >= 0 : netChange <= 0;
+      const onTarget = data.filter(v => m.betterUp ? v >= benchmark : v <= benchmark).length;
+      renderStatCards([
+        {
+          label: "Net Change", value: (netChange >= 0 ? "+" : "−") + Math.abs(netChange).toFixed(1) + m.unit,
+          sub: `${categories[0]} → ${categories[categories.length - 1]}`, subClass: netPositive ? "up" : "down"
+        },
+        { label: "On Target", value: `${onTarget} of ${data.length}`, sub: "periods at/beyond benchmark" }
+      ]);
       return;
     }
 
@@ -2154,6 +2325,24 @@
       document.getElementById("todayWrap").style.display = "none";
       document.getElementById("chart").style.display = "none";
       renderCompareView();
+
+      const gaps = Object.keys(METRICS).map(key => {
+        const mm = METRICS[key];
+        const current = computeCurrentValue(key);
+        const benchmark = getGroupBenchmark(key);
+        const rawDiff = mm.betterUp ? (current - benchmark) : (benchmark - current); // positive = good
+        return { key, rawDiff };
+      });
+      const onTargetCount = gaps.filter(g => g.rawDiff >= 0).length;
+      const worstGap = gaps.reduce((a, b) => (b.rawDiff < a.rawDiff ? b : a));
+      renderStatCards([
+        {
+          label: "Needs Attention", value: worstGap.key,
+          sub: `${worstGap.rawDiff >= 0 ? "+" : "−"}${Math.abs(worstGap.rawDiff).toFixed(1)} vs target`,
+          subClass: worstGap.rawDiff >= 0 ? "up" : "down"
+        },
+        { label: "On Target", value: `${onTargetCount} of 4`, sub: "metrics at/beyond benchmark" }
+      ]);
       return;
     }
 
@@ -2172,6 +2361,46 @@
     document.getElementById("dataTableWrap").style.display = "none";
     document.getElementById("todayWrap").style.display = "none";
     document.getElementById("chart").style.display = "block";
+
+    // Function-scoped (not declared inside the if/else below) because the polar chart's
+    // dataLabels formatter, built further down in this same render() call, also closes over
+    // this — it needs a value regardless of which branch (Trend vs Locations/Overview) runs.
+    const current = computeCurrentValue(currentMetric);
+
+    if (usesLocationData) {
+      const benchmark = getGroupBenchmark(currentMetric);
+      let bestIdx = 0, worstIdx = 0;
+      data.forEach((v, i) => {
+        if (m.betterUp ? v > data[bestIdx] : v < data[bestIdx]) bestIdx = i;
+        if (m.betterUp ? v < data[worstIdx] : v > data[worstIdx]) worstIdx = i;
+      });
+      const spread = Math.abs(data[bestIdx] - data[worstIdx]);
+      const onTarget = data.filter(v => m.betterUp ? v >= benchmark : v <= benchmark).length;
+      renderStatCards([
+        { label: "Best Location", value: categories[bestIdx], sub: data[bestIdx].toFixed(1) + m.unit },
+        { label: "Worst Location", value: categories[worstIdx], sub: data[worstIdx].toFixed(1) + m.unit },
+        { label: "Spread", value: spread.toFixed(1) + m.unit },
+        { label: "On Target", value: `${onTarget} of ${data.length}` }
+      ]);
+    } else {
+      // Trend
+      const avg = data.reduce((a, b) => a + b, 0) / data.length;
+      const best = m.betterUp ? Math.max(...data) : Math.min(...data);
+      const worst = m.betterUp ? Math.min(...data) : Math.max(...data);
+      const prev = data.length > 1 ? data[data.length - 2] : current;
+      const delta = current - prev;
+      const positive = m.betterUp ? delta >= 0 : delta <= 0;
+      renderStatCards([
+        {
+          label: "Current", value: current.toFixed(1) + m.unit,
+          sub: (delta >= 0 ? "▲ " : "▼ ") + Math.abs(delta).toFixed(1) + m.unit + " vs prior",
+          subClass: positive ? "up" : "down"
+        },
+        { label: "Period Avg", value: avg.toFixed(1) + m.unit },
+        { label: "Best", value: best.toFixed(1) + m.unit },
+        { label: "Worst", value: worst.toFixed(1) + m.unit }
+      ]);
+    }
 
     const baseOptions = {
       chart: {
@@ -2461,6 +2690,21 @@
     });
   }
 
+  function populatePriorityTable() {
+    const tbody = document.getElementById("priorityTableBody");
+    tbody.innerHTML = "";
+    PRIORITY_OPTIONS.forEach((label, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="width:24px;"><span class="edit-swatch" style="background:${PRIORITY_COLORS[i]}"></span></td>
+        <td style="color:var(--muted); font-size:11px; letter-spacing:1px; text-transform:uppercase; width:60px;">Level ${i + 1}</td>
+        <td>
+          <input type="text" class="edit-input" data-priority="${i}" value="${label}" style="width:100%; text-align:left;">
+        </td>`;
+      tbody.appendChild(row);
+    });
+  }
+
   function addArea() {
     const input = document.getElementById("newAreaName");
     const name = input.value.trim();
@@ -2719,6 +2963,8 @@
     renderScrapReasonAreaFilter();
     populateScrapReasonTable(scrapReasonAreaFilterId);
 
+    populatePriorityTable();
+
     settingsAreaFilterId = AREAS[0].id; // default to the first area every time Settings opens
     const firstInArea = LOCATIONS.find(l => l.areaId === settingsAreaFilterId);
     selectedSettingsLocationId = (firstInArea || LOCATIONS[0]).id;
@@ -2786,6 +3032,15 @@
       });
       scrapReasonArea.scrapReasons = updated;
     }
+
+    // apply priority option edits — fixed at 4 slots, same pattern as scrap reasons
+    const updatedPriorities = [...DEFAULT_PRIORITY_OPTIONS];
+    document.getElementById("priorityTableBody").querySelectorAll(".edit-input").forEach(input => {
+      const idx = parseInt(input.dataset.priority, 10);
+      const text = input.value.trim();
+      if (!isNaN(idx) && idx >= 0 && idx < 4) updatedPriorities[idx] = text || DEFAULT_PRIORITY_OPTIONS[idx];
+    });
+    PRIORITY_OPTIONS = updatedPriorities;
 
     // apply data-source settings
     const activeModeBtn = dataModeToggle.querySelector(".loc-chip.active");
@@ -3035,11 +3290,13 @@
     { key: "goodUnits",      label: "Good Units",                  step: 1,    min: 0,    max: 100000,  group: "actual" },
     { key: "downtime",       label: "Downtime (min)",              type: "calculated", group: "actual" },
     { key: "totalUnits",     label: "Total Units",                 type: "calculated", group: "actual" },
-    { key: "scrapReason",    label: "Reason for Loss",             type: "select", group: "actual" },
+    { key: "scrapReason",    label: "Reason for Downtime",             type: "select", group: "actual" },
     { key: "planned",        label: "Planned Time (min)",          step: 1,    min: 60,   max: 1440,    group: "planned" },
     { key: "idealCycleTime", label: "Ideal Cycle Time (min/unit)", step: 0.01, min: 0.01, max: 10,      group: "planned" },
     { key: "coqCost",        label: "Cost of Poor Quality ($)",    step: 10,   min: 0,    max: 1000000, group: "planned" },
-    { key: "revenue",        label: "Revenue ($)",                 step: 10,   min: 0,    max: 5000000, group: "planned" }
+    { key: "revenue",        label: "Revenue ($)",                 step: 10,   min: 0,    max: 5000000, group: "planned" },
+    { key: "assigned",       label: "Assigned To",                 type: "text", group: "planned" },
+    { key: "priority",       label: "Priority",                    type: "staticSelect", group: "planned" }
   ];
   const FIELD_GROUPS = {
     planned: { label: "Planned / Target", hint: "Set periodically (usually by planning/finance) — not something the operator filling in daily production needs to know or update." },
@@ -3057,8 +3314,9 @@
   function readFormValues() {
     const values = {};
     editTableBody.querySelectorAll(".edit-input").forEach(input => {
-      const isSelect = input.tagName === "SELECT";
-      values[input.dataset.field] = isSelect ? input.value : (parseFloat(input.value) || 0);
+      const field = INPUT_FIELDS.find(f => f.key === input.dataset.field);
+      const isTextual = input.tagName === "SELECT" || (field && field.type === "text");
+      values[input.dataset.field] = isTextual ? input.value : (parseFloat(input.value) || 0);
     });
     return values;
   }
@@ -3167,6 +3425,16 @@
           .concat(reasons.map(r => `<option value="${r}" ${r === current ? "selected" : ""}>${r}</option>`));
         inputHtml = `<select class="edit-input" data-field="${f.key}" style="width:100%; text-align:left;">${options.join("")}</select>`;
         row.innerHTML = `<td colspan="2">${f.label}<br>${inputHtml}</td>`;
+      } else if (f.type === "text") {
+        const current = record[f.key] || "";
+        inputHtml = `<input type="text" class="edit-input" data-field="${f.key}" value="${current}" placeholder="Unassigned" style="width:100%; text-align:left;">`;
+        row.innerHTML = `<td colspan="2">${f.label}<br>${inputHtml}</td>`;
+      } else if (f.type === "staticSelect") {
+        const opts = PRIORITY_OPTIONS.length ? PRIORITY_OPTIONS : DEFAULT_PRIORITY_OPTIONS;
+        const current = record[f.key] || opts[Math.min(1, opts.length - 1)];
+        const options = opts.map(o => `<option value="${o}" ${o === current ? "selected" : ""}>${o}</option>`);
+        inputHtml = `<select id="editPrioritySelect" class="edit-input" data-field="${f.key}" style="width:100%; text-align:left;">${options.join("")}</select>`;
+        row.innerHTML = `<td colspan="2">${f.label}<br>${inputHtml}</td>`;
       } else {
         inputHtml = `<input type="number" class="edit-input" data-field="${f.key}"
                  min="${f.min}" max="${f.max}" step="${f.step}" value="${record[f.key]}">`;
@@ -3192,6 +3460,12 @@
     if (plannedInputEl) plannedInputEl.addEventListener("input", recalcDowntime);
     const idealCycleInputEl = editTableBody.querySelector('[data-field="idealCycleTime"]');
     if (idealCycleInputEl) idealCycleInputEl.addEventListener("input", () => recalcTotalUnits(true));
+
+    const prioritySelect = document.getElementById("editPrioritySelect");
+    if (prioritySelect) {
+      stylePrioritySelect(prioritySelect);
+      prioritySelect.addEventListener("change", () => stylePrioritySelect(prioritySelect));
+    }
 
     recalcDowntime();        // syncs Downtime's displayed value
     recalcTotalUnits(false); // syncs Total Units' displayed value only — never overwrites the stored Good Units on initial load
@@ -3299,9 +3573,10 @@
 
   document.getElementById("resetEdits").addEventListener("click", (e) => {
     e.preventDefault();
-    if (confirm("Clear all saved edits and selections, and go back to the original sample data?")) {
+    if (confirm("Clear all saved edits, settings (areas, locations, benchmarks, scrap reasons), and selections, and go back to the original defaults?")) {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(UI_STATE_KEY);
+      localStorage.removeItem(SETTINGS_KEY);
       location.reload();
     }
   });
