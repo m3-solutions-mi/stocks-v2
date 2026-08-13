@@ -552,6 +552,8 @@
     font-weight:600;
     letter-spacing:.5px;
   }
+  .timeframe-bar.disabled{ opacity:.35; pointer-events:none; }
+  #timeframeSelect:disabled{ opacity:.35; cursor:not-allowed; }
   .timeframe-bar .w3-button.active, .view-toggle .w3-button.active{
     background:var(--ink);
     color:#0F1319;
@@ -985,9 +987,12 @@
           <strong>Good Units</strong> — units that passed quality; capped at Total Units. When
           Up Time changes, this defaults to match Total Units (assuming 100% quality) until
           someone actually types a number in — see the Saving note below for why that matters.<br>
-          <strong>Reason for Downtime</strong> — optional; one of 5 codes configured per area under
-          Settings, for whenever there was downtime — describes why the line stopped, not why a
-          part failed quality (that's what Good Units measures independently).
+          <strong>Reason for Downtime</strong> — optional; one of 5 reasons configured per area
+          under Settings, for whenever there was downtime — describes why the line stopped, not
+          why a part failed quality (that's what Good Units measures independently). What gets
+          saved is a stable code (e.g. "T1"), not the text you see in the dropdown — so
+          renaming a reason's wording in Settings later doesn't disconnect it from records
+          already saved against it.
         </p>
         <p class="help-desc">
           <strong>Planned / Target</strong> — set periodically, usually by planning or finance
@@ -1072,11 +1077,13 @@
       <div class="help-section">
         <p class="help-heading">Scrap Reasons</p>
         <p class="help-desc">
-          Five reason codes, pulled from the "Machine" category of the standard 6M root-cause
+          Five reasons, pulled from the "Machine" category of the standard 6M root-cause
           framework, offered as a dropdown in the Edit modal whenever there was downtime — they
           describe why the line stopped, distinct from Good Units, which measures quality on its
-          own. Each area can reword all five to match its own terminology or equipment — the
-          count stays fixed at five.
+          own. Each has a <strong>Code</strong> (short, stable — what a billing or accounting
+          report would key off) and a <strong>Text</strong> label (freely reworded any time,
+          without breaking the link to records saved under that code). Each area can customize
+          both — the count stays fixed at five.
         </p>
       </div>
 
@@ -1197,11 +1204,20 @@
 
       <p class="settings-section-label" style="margin-top:20px;">Scrap Reasons</p>
       <p style="color:var(--muted); font-size:11.5px; margin:-4px 0 10px 0;">
-        The 5 reason codes offered in the Edit modal whenever there's downtime.
-        Each area can reword these to match its own terminology — the count stays at 5.
+        The 5 reason codes offered in the Edit modal whenever there's downtime. Each reason has a
+        stable <strong>Code</strong> (what billing/accounting reports key off — keep it steady)
+        and a <strong>Text</strong> label ops can reword any time without breaking historical
+        data. Each area can customize both — the count stays fixed at 5.
       </p>
       <div id="scrapReasonAreaFilter" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
       <table class="edit-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th style="text-align:left; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted);">Code</th>
+            <th style="text-align:left; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted);">Text</th>
+          </tr>
+        </thead>
         <tbody id="scrapReasonTableBody"></tbody>
       </table>
 
@@ -1362,6 +1378,8 @@
       baseUrl: "/api",
       // Expected shape for GET and PUT bodies (full record):
       // { planned, downtime, totalUnits, goodUnits, idealCycleTime, coqCost, revenue, scrapReason, assigned, priority }
+      // scrapReason is a stable reason CODE (e.g. "T1"), not display text — resolve it against
+      // the matching area's scrapReasons list (Settings) to get the current label.
       // PATCH body is a partial object with just the changed keys; the server should merge
       // it into the existing record atomically and return the resulting full record.
       endpoints: {
@@ -1401,13 +1419,19 @@
   // ---------- Scrap reasons ----------
   // Five reason codes from the "Machine" bucket of the classic 6M root-cause framework —
   // the most common category for a straight equipment-tracking app like this. Each area can
-  // reword these to match its own terminology; the count stays fixed at five by design.
+  // reword the text to match its own terminology; the count stays fixed at five by design.
+  //
+  // Each reason has a stable `code` and an editable `text`. Records store the code, not the
+  // text — so a billing/accounting report keyed off "T1" keeps working even after ops renames
+  // its label from "Troubleshooting" to something else next quarter, and old records
+  // automatically pick up the new wording rather than freezing whatever text was current
+  // when they were saved.
   const DEFAULT_SCRAP_REASONS = [
-    "Equipment malfunction mid-run",
-    "Tooling wear or damage",
-    "Calibration drift",
-    "Unplanned breakdown/jam",
-    "Preventive maintenance overdue"
+    { code: "T1", text: "Equipment malfunction mid-run" },
+    { code: "T2", text: "Tooling wear or damage" },
+    { code: "T3", text: "Calibration drift" },
+    { code: "T4", text: "Unplanned breakdown/jam" },
+    { code: "T5", text: "Preventive maintenance overdue" }
   ];
 
   // ---------- Priority options ----------
@@ -1426,8 +1450,8 @@
   // every location that belongs to it. Each area also carries its own benchmark targets,
   // shown as a reference line on the Trend chart, and its own set of scrap reason codes.
   const AREAS = [
-    { id: "na",    name: "North America", benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: [...DEFAULT_SCRAP_REASONS] },
-    { id: "latam", name: "Latin America", benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: [...DEFAULT_SCRAP_REASONS] }
+    { id: "na",    name: "North America", benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: DEFAULT_SCRAP_REASONS.map(r => ({ ...r })) },
+    { id: "latam", name: "Latin America", benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: DEFAULT_SCRAP_REASONS.map(r => ({ ...r })) }
   ];
 
   const LOCATIONS = [
@@ -1504,12 +1528,16 @@
     if (typeof saved.apiBaseUrl === "string" && saved.apiBaseUrl.trim()) CONFIG.api.baseUrl = saved.apiBaseUrl.trim();
     if (Array.isArray(saved.areas) && saved.areas.length) {
       AREAS.length = 0;
-      saved.areas.forEach(a => AREAS.push({
-        id: a.id,
-        name: a.name,
-        benchmarks: { ...DEFAULT_BENCHMARKS, ...(a.benchmarks || {}) },
-        scrapReasons: (Array.isArray(a.scrapReasons) && a.scrapReasons.length === 5) ? a.scrapReasons : [...DEFAULT_SCRAP_REASONS]
-      }));
+      saved.areas.forEach(a => {
+        const validReasons = Array.isArray(a.scrapReasons) && a.scrapReasons.length === 5 &&
+          a.scrapReasons.every(r => r && typeof r === "object" && typeof r.code === "string" && typeof r.text === "string");
+        AREAS.push({
+          id: a.id,
+          name: a.name,
+          benchmarks: { ...DEFAULT_BENCHMARKS, ...(a.benchmarks || {}) },
+          scrapReasons: validReasons ? a.scrapReasons : DEFAULT_SCRAP_REASONS.map(r => ({ ...r }))
+        });
+      });
     }
     if (Array.isArray(saved.locations) && saved.locations.length) {
       LOCATIONS.length = 0;
@@ -1665,7 +1693,7 @@
       if (downtime > 0) {
         const area = AREAS.find(a => a.id === loc.areaId);
         const reasons = (area && Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
-        scrapReason = reasons[Math.floor(rand() * reasons.length)];
+        scrapReason = reasons[Math.floor(rand() * reasons.length)].code;
       }
 
       // Assigned/Priority are planning metadata — they don't feed any calculation, just context
@@ -2206,7 +2234,7 @@
         <td>
           <select class="today-input" data-field="scrapReason">
             <option value="">— none —</option>
-            ${reasons.map(r => `<option value="${r}" ${r === record.scrapReason ? "selected" : ""}>${r}</option>`).join("")}
+            ${reasons.map(r => `<option value="${r.code}" ${r.code === record.scrapReason ? "selected" : ""}>${r.text}</option>`).join("")}
           </select>
         </td>`;
       tbody.appendChild(row);
@@ -2285,6 +2313,8 @@
     const isAllMetricsView = currentView === "today" || currentView === "compare";
     document.getElementById("metricChipRow").classList.toggle("chips-muted", isAllMetricsView);
     document.getElementById("statRow").style.display = currentView === "today" ? "none" : "";
+    document.querySelector(".timeframe-bar").classList.toggle("disabled", currentView === "today");
+    document.getElementById("timeframeSelect").disabled = currentView === "today";
 
     const usesLocationData = currentView === "byLocation" || currentView === "polar";
     const { categories, data, mode } = usesLocationData
@@ -2712,7 +2742,7 @@
     let base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "area";
     let id = base, n = 2;
     while (AREAS.some(a => a.id === id)) id = `${base}-${n++}`;
-    AREAS.push({ id, name, benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: [...DEFAULT_SCRAP_REASONS] });
+    AREAS.push({ id, name, benchmarks: { ...DEFAULT_BENCHMARKS }, scrapReasons: DEFAULT_SCRAP_REASONS.map(r => ({ ...r })) });
     input.value = "";
     saveSettings();
     renderAreaManageList();
@@ -2833,12 +2863,15 @@
     const reasons = (Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
     const tbody = document.getElementById("scrapReasonTableBody");
     tbody.innerHTML = "";
-    reasons.forEach((text, i) => {
+    reasons.forEach((r, i) => {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td style="color:var(--muted); font-size:11px; letter-spacing:1px; text-transform:uppercase; width:70px;">Reason ${i + 1}</td>
+        <td style="width:64px;">
+          <input type="text" class="edit-input" data-scrap-reason-code="${i}" value="${r.code}" title="Code — what billing/accounting reports key off; keep this stable" style="width:100%; text-align:left; text-transform:uppercase;">
+        </td>
         <td>
-          <input type="text" class="edit-input" data-scrap-reason="${i}" value="${text}" style="width:100%; text-align:left;">
+          <input type="text" class="edit-input" data-scrap-reason-text="${i}" value="${r.text}" title="Text — freely reword this any time" style="width:100%; text-align:left;">
         </td>`;
       tbody.appendChild(row);
     });
@@ -3024,11 +3057,16 @@
     // apply the currently-shown area's scrap-reason edits
     const scrapReasonArea = AREAS.find(a => a.id === scrapReasonAreaFilterId);
     if (scrapReasonArea) {
-      const updated = [...DEFAULT_SCRAP_REASONS];
-      document.getElementById("scrapReasonTableBody").querySelectorAll(".edit-input").forEach(input => {
-        const idx = parseInt(input.dataset.scrapReason, 10);
+      const updated = DEFAULT_SCRAP_REASONS.map(r => ({ ...r }));
+      document.getElementById("scrapReasonTableBody").querySelectorAll("[data-scrap-reason-code]").forEach(input => {
+        const idx = parseInt(input.dataset.scrapReasonCode, 10);
+        const code = input.value.trim().toUpperCase();
+        if (!isNaN(idx) && idx >= 0 && idx < 5) updated[idx].code = code || DEFAULT_SCRAP_REASONS[idx].code;
+      });
+      document.getElementById("scrapReasonTableBody").querySelectorAll("[data-scrap-reason-text]").forEach(input => {
+        const idx = parseInt(input.dataset.scrapReasonText, 10);
         const text = input.value.trim();
-        if (!isNaN(idx) && idx >= 0 && idx < 5) updated[idx] = text || DEFAULT_SCRAP_REASONS[idx];
+        if (!isNaN(idx) && idx >= 0 && idx < 5) updated[idx].text = text || DEFAULT_SCRAP_REASONS[idx].text;
       });
       scrapReasonArea.scrapReasons = updated;
     }
@@ -3422,7 +3460,7 @@
         const reasons = (area && Array.isArray(area.scrapReasons) && area.scrapReasons.length === 5) ? area.scrapReasons : DEFAULT_SCRAP_REASONS;
         const current = record[f.key] || "";
         const options = ['<option value="">— none —</option>']
-          .concat(reasons.map(r => `<option value="${r}" ${r === current ? "selected" : ""}>${r}</option>`));
+          .concat(reasons.map(r => `<option value="${r.code}" ${r.code === current ? "selected" : ""}>${r.text}</option>`));
         inputHtml = `<select class="edit-input" data-field="${f.key}" style="width:100%; text-align:left;">${options.join("")}</select>`;
         row.innerHTML = `<td colspan="2">${f.label}<br>${inputHtml}</td>`;
       } else if (f.type === "text") {
