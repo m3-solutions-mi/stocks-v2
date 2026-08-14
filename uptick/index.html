@@ -1395,9 +1395,9 @@
 
             <div class="help-panel" id="helpPanelOverview">
                 <div class="help-section">
-                    <p class="help-heading">What Pulse shows</p>
+                    <p class="help-heading">What Uptick shows</p>
                     <p class="help-desc">
-                        Pulse tracks your watchlist against a live (or simulated) price feed. Each ticker's
+                        Uptick tracks your watchlist against a live (or simulated) price feed. Each ticker's
                         close price is plotted against a configurable simple moving average (SMA), with the
                         gap between the two shown as a histogram underneath — a quick read on whether a
                         ticker is running hot above its own trend or cooling off below it.
@@ -1419,8 +1419,7 @@
                     <p class="help-heading"><span class="help-swatch" style="background:#5C89B9"></span>SMA</p>
                     <div class="help-formula">SMA(n) = average of the last n closes</div>
                     <p class="help-desc">The blue line — the reference trend the delta bars measure against.
-                        <code>n</code> is set in Settings.
-                    </p>
+                        <code>n</code> is set in Settings.</p>
                 </div>
                 <div class="help-section">
                     <p class="help-heading"><span class="help-swatch" style="background:#83B573"></span>Delta bars</p>
@@ -1494,12 +1493,10 @@
                     <p class="help-desc">Expected series response:
                         <code>{"bars":{"SYMBOL":[{"o":n,"h":n,"l":n,"c":n,"t":"ISO string","e":epochMs,"v":n}, ...]}}</code>
                         — the symbol key sits under a top-level <code>bars</code> object. Only <code>t</code> and
-                        <code>c</code> are used today; SMA is computed client-side from <code>c</code>.
-                    </p>
+                        <code>c</code> are used today; SMA is computed client-side from <code>c</code>.</p>
                     <p class="help-desc"><b>Today</b> comes from the account resource's <code>equity</code> and
                         <code>last_equity</code> fields (today's change = equity − last_equity) — the account-level
-                        number, not derived from individual positions.
-                    </p>
+                        number, not derived from individual positions.</p>
                     <p class="help-desc"><b>Positions</b> comes from the positions resource: an array, one entry per
                         open position, each with <code>cost_basis</code> and <code>unrealized_pl</code> (numeric
                         strings). Aggregated dollar-weighted across every returned position, not averaged per-position.
@@ -1510,8 +1507,7 @@
                         buy $10,000, <span style="color:#EF4444">red</span> = sell (full position). The amount is
                         editable via a prompt before confirming; Sell is gated behind a confirm dialog. Neither fires
                         without that explicit step, and neither actually places an order until Live API mode is fully
-                        configured — otherwise clicking opens Settings instead.
-                    </p>
+                        configured — otherwise clicking opens Settings instead.</p>
                     <p class="help-desc"><b>Liquidate account</b> is the small <i class="fa fa-ban"></i> icon in the
                         top-right corner of the Positions card — not per-symbol, exists once. It closes every open
                         position immediately, gated behind a confirm dialog.</p>
@@ -1519,8 +1515,7 @@
                         <code>/v2/positions</code>, <code>/v2/orders</code>). Every request sends your API key/secret as
                         <code>APCA-API-KEY-ID</code> and <code>APCA-API-SECRET-KEY</code> headers — Alpaca's actual
                         header names, not a generic placeholder. Stored only in this browser's local storage, never
-                        written into the app's source.
-                    </p>
+                        written into the app's source.</p>
                 </div>
             </div>
         </div>
@@ -1574,8 +1569,13 @@
                             max="200" step="1"></td>
                 </tr>
                 <tr>
-                    <td>Auto-refresh (seconds, 0 = off)</td>
-                    <td style="text-align:right;"><input type="number" id="settingsRefreshSec" class="edit-input"
+                    <td>Chart refresh (seconds, 0 = off)</td>
+                    <td style="text-align:right;"><input type="number" id="settingsChartRefreshSec" class="edit-input"
+                            min="0" max="600" step="5"></td>
+                </tr>
+                <tr>
+                    <td>Account refresh (seconds, 0 = off)</td>
+                    <td style="text-align:right;"><input type="number" id="settingsAccountRefreshSec" class="edit-input"
                             min="0" max="600" step="5"></td>
                 </tr>
             </table>
@@ -1614,6 +1614,7 @@
                         <button class="w3-button" data-tf="today">Today</button>
                         <button class="w3-button" data-tf="10d">10D</button>
                         <button class="w3-button" data-tf="30d">30D</button>
+                        <button class="w3-button" data-tf="90d">90D</button>
                     </div>
                     <div class="view-toggle" id="viewToggle">
                         <button class="w3-button" data-view="trend"><i class="fa fa-line-chart"></i> Combined</button>
@@ -1663,14 +1664,15 @@
                 accountApiSecret: ""
             },
             smaPeriod: 5,
-            refreshSeconds: 15
+            chartRefreshSeconds: 15,   // macro chips + ticker symbol data
+            accountRefreshSeconds: 15  // account equity + positions — independent rate, matching the reference app's pattern of updating charts and account on their own cadences
         };
 
         function activeSymbolBaseUrl() {
             return CONFIG.api.activeSymbolSource === "B" ? CONFIG.api.symbolBaseUrlB : CONFIG.api.symbolBaseUrlA;
         }
 
-        const SETTINGS_KEY = "pulse-settings-v1";
+        const SETTINGS_KEY = "uptick-settings-v1";
 
         // Fixed market-context chips (top right). Structurally identical to a watchlist ticker —
         // just always shown, never removed from Settings.
@@ -1683,7 +1685,7 @@
 
         // Watchlist — editable from Settings. No per-ticker color: symbol text already does the
         // identifying, so every ticker shares one neutral accent (see ACCENT below) instead.
-        const ACCENT = "#5C89B9";
+        const ACCENT = "#F5A623";
         let TICKERS = [
             { id: "QQQ", symbol: "QQQ", name: "Invesco QQQ Trust" },
             { id: "SOXL", symbol: "SOXL", name: "Direxion Daily Semi Bull 3X" },
@@ -1703,7 +1705,6 @@
         let currentTf = "today";      // today | 5d | 1m
         let currentView = "trend";    // trend | compare | table
         let seriesCache = {};         // symbol -> { times, close }
-        let refreshTimer = null;
         let trendChart = null;
         let compareCharts = {};
         let compareWatchlistSignature = null; // tracks the full TICKERS list — tiles are built once per watchlist, not once per selection
@@ -1725,7 +1726,8 @@
                     accountApiKey: CONFIG.api.accountApiKey,
                     accountApiSecret: CONFIG.api.accountApiSecret,
                     smaPeriod: CONFIG.smaPeriod,
-                    refreshSeconds: CONFIG.refreshSeconds,
+                    chartRefreshSeconds: CONFIG.chartRefreshSeconds,
+                    accountRefreshSeconds: CONFIG.accountRefreshSeconds,
                     tickers: TICKERS.map(t => ({ id: t.id, symbol: t.symbol, name: t.name })),
                     selectedTickerIds: [...selectedTickerIds],
                     currentTf,
@@ -1744,7 +1746,8 @@
             if (typeof saved.accountApiKey === "string") CONFIG.api.accountApiKey = saved.accountApiKey;
             if (typeof saved.accountApiSecret === "string") CONFIG.api.accountApiSecret = saved.accountApiSecret;
             if (Number.isFinite(saved.smaPeriod)) CONFIG.smaPeriod = saved.smaPeriod;
-            if (Number.isFinite(saved.refreshSeconds)) CONFIG.refreshSeconds = saved.refreshSeconds;
+            if (Number.isFinite(saved.chartRefreshSeconds)) CONFIG.chartRefreshSeconds = saved.chartRefreshSeconds;
+            if (Number.isFinite(saved.accountRefreshSeconds)) CONFIG.accountRefreshSeconds = saved.accountRefreshSeconds;
             if (Array.isArray(saved.tickers) && saved.tickers.length) {
                 TICKERS = saved.tickers.map(t => ({ id: t.id, symbol: t.symbol, name: t.name }));
                 selectedTickerIds = new Set(TICKERS.map(t => t.id));
@@ -1754,7 +1757,7 @@
                 const restored = saved.selectedTickerIds.filter(id => validIds.has(id));
                 if (restored.length) selectedTickerIds = new Set(restored); // ignore ids that no longer exist in the watchlist
             }
-            if (["today", "10d", "30d"].includes(saved.currentTf)) currentTf = saved.currentTf;
+            if (["today", "10d", "30d", "90d"].includes(saved.currentTf)) currentTf = saved.currentTf;
             if (["trend", "compare", "table"].includes(saved.currentView)) currentView = saved.currentView;
         })();
 
@@ -1835,6 +1838,10 @@
             return { sessionStart, sessionEnd, sessionNow, isLive };
         }
 
+        // Trading-day counts for each daily timeframe — one place both getSeriesWindow() and
+        // generateSample() read from, so adding/changing a timeframe can't leave them out of sync.
+        const TF_DAYS = { "10d": 10, "30d": 30, "90d": 90 };
+
         // Returns the boundaries needed to generate/fetch enough lookback for a fully warmed-up SMA
         // (wideStart), plus the boundary to trim back down to what should actually be displayed
         // (displayStart). Both the sample generator and the real API path share this, so they can't
@@ -1846,7 +1853,7 @@
                 const wideStart = new Date(sessionStart.getTime() - CONFIG.smaPeriod * 5 * 60 * 1000);
                 return { timeframe: "5Min", wideStart, displayStart: sessionStart, end };
             }
-            const days = tf === "10d" ? 10 : 30;
+            const days = TF_DAYS[tf];
             const displayStart = tradingDayNDaysAgo(days); displayStart.setHours(0, 0, 0, 0);
             const wideStart = tradingDayNDaysAgo(days + CONFIG.smaPeriod); wideStart.setHours(0, 0, 0, 0);
             return { timeframe: "1D", wideStart, displayStart, end };
@@ -1885,7 +1892,7 @@
                     t = new Date(t.getTime() + 5 * 60 * 1000);
                 }
             } else {
-                const days = tf === "10d" ? 10 : 30;
+                const days = TF_DAYS[tf];
                 // Walk back by calendar day but only collect weekdays, anchored to the most recent
                 // trading day (today if it's a weekday, otherwise Friday) — matches the same weekend
                 // handling already used for the intraday "Today" view. Collects days+smaPeriod bars
@@ -1984,7 +1991,17 @@
                     // wideStart deliberately requests more history than displayStart needs, purely so SMA
                     // has a real lookback window; trimmed back down to the display window right after.
                     const wideTimes = bars.map(b => new Date(b.t).getTime());
-                    const wideClose = bars.map(b => b.c);
+                    const wideClose = bars.map(b => Number(b.c)); // guard against the API returning close as a string — we already confirmed Alpaca does this for account/positions fields, and a stray string here silently corrupts sma()'s running sum into string concatenation, producing NaN and blowing out the axis scale
+
+                    // The currently-forming intraday bar is often stamped with "right now" rather than a
+                    // clean interval boundary, leaving an irregular gap to the second-to-last bar. ApexCharts
+                    // sizes column width off point spacing, so that one odd gap renders as one visibly
+                    // thinner bar. Matches the reference app's exact fix: force the last timestamp to be
+                    // exactly one interval after the second-to-last, rather than whatever the feed sent.
+                    if (timeframe === "5Min" && wideTimes.length >= 2) {
+                        wideTimes[wideTimes.length - 1] = wideTimes[wideTimes.length - 2] + 5 * 60 * 1000;
+                    }
+
                     const wideSma = sma(wideClose, CONFIG.smaPeriod);
                     seriesCache[key] = trimToDisplayWindow(wideTimes, wideClose, wideSma, displayStart);
                 } else {
@@ -2084,7 +2101,6 @@
             if (btn) btn.disabled = true;
             try {
                 await TradingAPI.liquidateAll();
-                alert("Liquidation submitted — all positions are being closed.");
                 renderAccountRow();
             } catch (err) {
                 alert(`Liquidate failed: ${err.message}`);
@@ -2112,7 +2128,6 @@
                     btn.disabled = true;
                     try {
                         await TradingAPI.buy(t.symbol, spend);
-                        alert(`Buy submitted: $${spend} of ${t.symbol}`);
                         renderAccountRow();
                     } catch (err) {
                         alert(`Buy failed: ${err.message}`);
@@ -2131,7 +2146,6 @@
                     btn.disabled = true;
                     try {
                         await TradingAPI.sell(t.symbol);
-                        alert(`Sell submitted for ${t.symbol}`);
                         renderAccountRow();
                     } catch (err) {
                         alert(`Sell failed: ${err.message}`);
@@ -2181,14 +2195,18 @@
         // 2/3 (both seriesName "Close") share the visible price/percent scale, with an explicit
         // min/max computed from the actual data rather than left on auto.
         // =========================================================
-        function buildComboOptions(times, close, smaVals, { height = 220, showXAxis = true, accent = "#5C89B9", valueFormatter, sparkline = false, showAnnotations = true } = {}) {
+        function buildComboOptions(times, close, smaVals, { height = 220, showXAxis = true, accent = "#5C89B9", valueFormatter, sparkline = false, showAnnotations = true, smaWidth = 1.5 } = {}) {
             const fmt = valueFormatter || fmtMoney;
             // One bar series instead of two — ApexCharts colors each bar red/green itself via
             // plotOptions.bar.colors.ranges, based on the value's sign. Half the series to compute
             // and paint per chart compared to splitting into separate up/down series.
             const delta = close.map((c, i) => c - smaVals[i]);
             const maxAbsDelta = Math.max(0.01, ...delta.map(Math.abs));
-            const barPad = maxAbsDelta * 3; // bars' own axis range — independent of the price axis, so this only controls how tall they look
+            // Small headroom only, not a compression multiplier — the reference app uses the data's own
+            // max as the axis bound directly (with just a small floor for numerical stability on flat
+            // data), so the tallest bar reaches nearly to the top. The old `* 3` here meant bars could
+            // only ever fill about a third of the available height, no matter what the data looked like.
+            const barPad = maxAbsDelta * 1.04;
 
             const priceVals = close.concat(smaVals);
             const priceMin = Math.min(...priceVals), priceMax = Math.max(...priceVals);
@@ -2214,7 +2232,7 @@
                 plotOptions: {
                     bar: { colors: { ranges: [{ from: -1e9, to: 0, color: "#EF4444" }, { from: 0, to: 1e9, color: "#22C55E" }] } }
                 },
-                stroke: { width: [0, 2, 1.5], curve: "straight" },
+                stroke: { width: [0, 2, smaWidth], curve: "straight" },
                 grid: { show: !sparkline, borderColor: "#3C4552", strokeDashArray: 3 },
                 legend: { show: false },
                 dataLabels: { enabled: false },
@@ -2320,15 +2338,25 @@
             }
         }
 
+        // Builds the chip DOM exactly once — subsequent calls only update each value's text/color in
+        // place. Previously this rebuilt row.innerHTML (wiping every chip back to "—") on every
+        // refresh; imperceptible with sample data's near-instant resolution, but real network latency
+        // in Live mode stretched that "blank, then refill one by one" window into a visible flicker.
+        // Fetching all four in parallel (not sequentially) also cuts the total latency regardless.
+        let macroChipsBuilt = false;
+
         async function renderMacroChips() {
             const row = document.getElementById("macroChipRow");
-            row.innerHTML = MACROS.map(m => `
-      <button class="chip" style="--c:var(--ink);" disabled>
-        <span class="chip-label">${m.label}</span>
-        <span class="chip-value" id="macroVal-${m.id}">—</span>
-      </button>`).join("");
+            if (!macroChipsBuilt) {
+                row.innerHTML = MACROS.map(m => `
+        <button class="chip" style="--c:var(--ink);" disabled>
+          <span class="chip-label">${m.label}</span>
+          <span class="chip-value" id="macroVal-${m.id}">—</span>
+        </button>`).join("");
+                macroChipsBuilt = true;
+            }
 
-            for (const m of MACROS) {
+            await Promise.all(MACROS.map(async (m) => {
                 try {
                     const s = await DataSource.loadSeries(m.symbol, "today");
                     const first = s.close[0], last = s.close[s.close.length - 1];
@@ -2339,7 +2367,7 @@
                         el.style.color = pct >= 0 ? "#83B573" : "#C96A6A";
                     }
                 } catch (e) { console.warn("macro load failed", m.symbol, e); }
-            }
+            }));
         }
 
         // =========================================================
@@ -2437,7 +2465,7 @@
                 container = document.getElementById("trendChart");
             }
             const pctFmt = v => Number(v).toFixed(2) + "%";
-            const opts = buildComboOptions(times, composite, compositeSma, { height: 340, accent: "#5C89B9", valueFormatter: pctFmt, sparkline: true });
+            const opts = buildComboOptions(times, composite, compositeSma, { height: 340, accent: ACCENT, valueFormatter: pctFmt, sparkline: true });
             opts.series[2].name = "Composite %";
             if (trendChart) {
                 trendChart.updateOptions(opts, true, true);
@@ -2514,7 +2542,7 @@
                 const pctSeries = s.close.map(c => ((c - base) / base) * 100);
                 const smaVals = s.sma.map(v => ((v - base) / base) * 100);
                 const pctFmt = v => Number(v).toFixed(2) + "%";
-                const opts = buildComboOptions(s.times, pctSeries, smaVals, { height: 170, showXAxis: false, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showAnnotations: true });
+                const opts = buildComboOptions(s.times, pctSeries, smaVals, { height: 170, showXAxis: false, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showAnnotations: true, smaWidth: 1.5 });
 
                 if (compareCharts[id]) {
                     // Same instance, updated in place — no new ApexCharts(), no DOM rebuild.
@@ -2588,7 +2616,11 @@
             ]);
         }
 
-        function tfLabel() { return currentTf === "today" ? "today (4:00 AM →)" : currentTf === "10d" ? "last 10 trading days" : "last 30 trading days"; }
+        function tfLabel() {
+            if (currentTf === "today") return "today (4:00 AM →)";
+            if (TF_DAYS[currentTf]) return `last ${TF_DAYS[currentTf]} trading days`;
+            return currentTf;
+        }
 
         async function render() {
             document.querySelectorAll("#viewBody .view-panel").forEach(el => {
@@ -2697,7 +2729,8 @@
         const settingsAccountKey = document.getElementById("settingsAccountKey");
         const settingsAccountSecret = document.getElementById("settingsAccountSecret");
         const settingsSmaPeriod = document.getElementById("settingsSmaPeriod");
-        const settingsRefreshSec = document.getElementById("settingsRefreshSec");
+        const settingsChartRefreshSec = document.getElementById("settingsChartRefreshSec");
+        const settingsAccountRefreshSec = document.getElementById("settingsAccountRefreshSec");
         let draftTickers = [];
 
         function renderTickerManageList() {
@@ -2725,7 +2758,8 @@
             settingsAccountKey.value = CONFIG.api.accountApiKey;
             settingsAccountSecret.value = CONFIG.api.accountApiSecret;
             settingsSmaPeriod.value = CONFIG.smaPeriod;
-            settingsRefreshSec.value = CONFIG.refreshSeconds;
+            settingsChartRefreshSec.value = CONFIG.chartRefreshSeconds;
+            settingsAccountRefreshSec.value = CONFIG.accountRefreshSeconds;
             draftTickers = TICKERS.map(t => ({ ...t }));
             renderTickerManageList();
             settingsModal.classList.add("open");
@@ -2768,7 +2802,8 @@
             CONFIG.api.accountApiKey = settingsAccountKey.value;
             CONFIG.api.accountApiSecret = settingsAccountSecret.value;
             CONFIG.smaPeriod = Math.max(2, parseInt(settingsSmaPeriod.value, 10) || CONFIG.smaPeriod);
-            CONFIG.refreshSeconds = Math.max(0, parseInt(settingsRefreshSec.value, 10) || 0);
+            CONFIG.chartRefreshSeconds = Math.max(0, parseInt(settingsChartRefreshSec.value, 10) || 0);
+            CONFIG.accountRefreshSeconds = Math.max(0, parseInt(settingsAccountRefreshSec.value, 10) || 0);
             if (draftTickers.length) {
                 TICKERS = draftTickers;
                 selectedTickerIds = new Set(TICKERS.map(t => t.id));
@@ -2786,46 +2821,64 @@
         });
 
         // =========================================================
-        // Auto-refresh — timestamp-based countdown (not a per-second decrement), so the bar actually
-        // reaches 0% right before a refresh and 100% right after, rather than jumping between two
-        // values that never quite touch either endpoint.
+        // Auto-refresh — wall-clock aligned, matching the reference app's exact proven pattern:
+        // [0,15,30,45].indexOf(second) checked on a plain 1-second tick, generalized here to
+        // second % rate === 0. Tick rate and check granularity are the same (once per second), so —
+        // same as the reference — there's no need for a duplicate-fire guard; it's structurally
+        // impossible to match the same second twice in one tick.
+        // Chart data (macro chips + ticker series) and account data (equity + positions) run on
+        // independent rates, checked in the same tick — same pattern as the reference app checking
+        // positions on one second-set and chart/account-history data on another, generalized from a
+        // fixed offset into two fully independent, separately configurable intervals.
+        // refreshBarTimer is a separate, purely cosmetic 200ms interval for the countdown bar's
+        // smooth animation — it has no bearing on when either refresh actually fires. The bar itself
+        // sits on the Today card, so it tracks the account rate specifically, not the chart rate.
         // =========================================================
-        let refreshDeadline = 0;
+        let refreshFireTimer = null;
+        let refreshBarTimer = null;
+
+        function msUntilNextMark(rate) {
+            if (rate <= 0) return 0;
+            const now = new Date();
+            const msIntoCycle = (now.getSeconds() % rate) * 1000 + now.getMilliseconds();
+            const cycleMs = rate * 1000;
+            const remaining = cycleMs - msIntoCycle;
+            return remaining <= 0 ? cycleMs : remaining;
+        }
 
         function updateRefreshBar() {
             const wrap = document.getElementById("refreshBar");
             const fill = document.getElementById("refreshBarFill");
             if (!wrap || !fill) return;
-            if (CONFIG.refreshSeconds <= 0 || !getSessionWindow().isLive) { wrap.style.display = "none"; return; }
+            const rate = CONFIG.accountRefreshSeconds;
+            if (rate <= 0 || !getSessionWindow().isLive) { wrap.style.display = "none"; return; }
             wrap.style.display = "";
-            const totalMs = CONFIG.refreshSeconds * 1000;
-            const remainingMs = Math.max(0, refreshDeadline - Date.now());
+            const totalMs = rate * 1000;
+            const remainingMs = msUntilNextMark(rate);
             const pct = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100));
             fill.style.width = pct + "%";
-            wrap.title = `Next update in ${Math.ceil(remainingMs / 1000)}s`;
+            wrap.title = `Next account update in ${Math.ceil(remainingMs / 1000)}s`;
         }
 
         function setupAutoRefresh() {
-            if (refreshTimer) clearInterval(refreshTimer);
-            refreshDeadline = Date.now() + CONFIG.refreshSeconds * 1000;
+            if (refreshFireTimer) clearInterval(refreshFireTimer);
+            if (refreshBarTimer) clearInterval(refreshBarTimer);
             updateRefreshBar();
-            if (CONFIG.refreshSeconds > 0) {
-                refreshTimer = setInterval(() => {
-                    // Nothing to fetch while the market's closed — the "Today" sample data holds at the
-                    // session boundary either way, so refreshing wouldn't change anything. Deadline just
-                    // stays frozen; the moment the session goes live again, it's already in the past, so
-                    // the very next tick fires a real refresh immediately, no special-case needed.
-                    if (!getSessionWindow().isLive) { updateRefreshBar(); return; }
-                    if (Date.now() >= refreshDeadline) {
+            if (CONFIG.chartRefreshSeconds > 0 || CONFIG.accountRefreshSeconds > 0) {
+                refreshFireTimer = setInterval(() => {
+                    if (!getSessionWindow().isLive) return; // nothing to fetch while the market's closed
+                    const second = new Date().getSeconds();
+                    if (CONFIG.chartRefreshSeconds > 0 && second % CONFIG.chartRefreshSeconds === 0) {
                         seriesCache = {};
                         viewSignatures.trend = viewSignatures.compare = viewSignatures.table = null;
                         renderMacroChips();
-                        renderAccountRow();
                         render();
-                        refreshDeadline = Date.now() + CONFIG.refreshSeconds * 1000;
                     }
-                    updateRefreshBar();
-                }, 200); // ticks faster than once/second so the bar tracks smoothly, not in visible steps
+                    if (CONFIG.accountRefreshSeconds > 0 && second % CONFIG.accountRefreshSeconds === 0) {
+                        renderAccountRow();
+                    }
+                }, 1000);
+                refreshBarTimer = setInterval(updateRefreshBar, 200); // visual only — no data-fetching side effects
             }
         }
 
