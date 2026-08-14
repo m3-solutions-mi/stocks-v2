@@ -136,6 +136,14 @@
             pointer-events: none;
         }
 
+        /* Research view: ticker selection genuinely has no bearing here (it charts one typed-in
+     symbol, not the watchlist), unlike Compare where we tried and reverted this same idea —
+     there, selection actually drives what's shown, so muting it would have been wrong. */
+        #tickerBar.chips-muted .loc-chip {
+            opacity: .4;
+            pointer-events: none;
+        }
+
         .chip-settings {
             font-size: 15px;
             padding: 8px 12px;
@@ -1615,8 +1623,10 @@
                         <button class="w3-button" data-tf="10d">10D</button>
                         <button class="w3-button" data-tf="30d">30D</button>
                         <button class="w3-button" data-tf="90d">90D</button>
+                        <button class="w3-button" data-tf="180d">180D</button>
                     </div>
                     <div class="view-toggle" id="viewToggle">
+                        <button class="w3-button" data-view="research"><i class="fa fa-search"></i> Research</button>
                         <button class="w3-button" data-view="trend"><i class="fa fa-line-chart"></i> Combined</button>
                         <button class="w3-button" data-view="compare"><i class="fa fa-columns"></i> Compare</button>
                         <button class="w3-button" data-view="table"><i class="fa fa-table"></i> Table</button>
@@ -1625,6 +1635,11 @@
             </div>
 
             <div style="margin-top:18px;">
+                <div id="researchSearchRow" style="display:none; gap:8px; align-items:center; margin-bottom:8px;">
+                    <input type="text" id="researchSymbolInput" class="edit-select" placeholder="Symbol (e.g. AAPL)"
+                        autocomplete="off" style="margin-bottom:0; max-width:150px;">
+                    <button type="button" id="researchApplyBtn" class="chip-settings">Apply</button>
+                </div>
                 <p class="metric-title" id="viewTitle">Combined</p>
                 <p class="metric-sub" id="viewSub">—</p>
             </div>
@@ -1635,6 +1650,7 @@
                 <div id="trendPanel" class="view-panel"></div>
                 <div id="comparePanel" class="view-panel"></div>
                 <div id="tablePanel" class="view-panel"></div>
+                <div id="researchPanel" class="view-panel"></div>
             </div>
 
             <p style="color:var(--muted); font-size:12px; margin-top:14px;">
@@ -1707,6 +1723,8 @@
         let seriesCache = {};         // symbol -> { times, close }
         let trendChart = null;
         let compareCharts = {};
+        let researchSymbol = null; // applied symbol, session-only — never persisted, resets on reload
+        let researchChart = null;
         let compareWatchlistSignature = null; // tracks the full TICKERS list — tiles are built once per watchlist, not once per selection
 
         function loadSettings() {
@@ -1757,8 +1775,8 @@
                 const restored = saved.selectedTickerIds.filter(id => validIds.has(id));
                 if (restored.length) selectedTickerIds = new Set(restored); // ignore ids that no longer exist in the watchlist
             }
-            if (["today", "10d", "30d", "90d"].includes(saved.currentTf)) currentTf = saved.currentTf;
-            if (["trend", "compare", "table"].includes(saved.currentView)) currentView = saved.currentView;
+            if (["today", "10d", "30d", "90d", "180d"].includes(saved.currentTf)) currentTf = saved.currentTf;
+            if (["trend", "compare", "table", "research"].includes(saved.currentView)) currentView = saved.currentView;
         })();
 
         // =========================================================
@@ -1840,7 +1858,7 @@
 
         // Trading-day counts for each daily timeframe — one place both getSeriesWindow() and
         // generateSample() read from, so adding/changing a timeframe can't leave them out of sync.
-        const TF_DAYS = { "10d": 10, "30d": 30, "90d": 90 };
+        const TF_DAYS = { "10d": 10, "30d": 30, "90d": 90, "180d": 180 };
 
         // Returns the boundaries needed to generate/fetch enough lookback for a fully warmed-up SMA
         // (wideStart), plus the boundary to trim back down to what should actually be displayed
@@ -2422,10 +2440,10 @@
         // changed — switching back to a view you were already on (with the same selection/timeframe/
         // SMA period) just shows the panel that's already built, instead of tearing down and
         // rebuilding every chart again.
-        const viewSignatures = { trend: null, compare: null, table: null };
-        const viewMeta = { trend: null, compare: null, table: null };
+        const viewSignatures = { trend: null, compare: null, table: null, research: null };
+        const viewMeta = { trend: null, compare: null, table: null, research: null };
         function currentSignature() {
-            return [...selectedTickerIds].sort().join(",") + "|" + currentTf + "|" + CONFIG.smaPeriod;
+            return [...selectedTickerIds].sort().join(",") + "|" + currentTf + "|" + CONFIG.smaPeriod + "|" + (researchSymbol || "");
         }
 
         async function renderTrend() {
@@ -2616,6 +2634,93 @@
             ]);
         }
 
+        // Purely a lookup tool — no path connects a researched symbol to the real watchlist. Ticker
+        // selection has no bearing here at all, unlike every other view.
+        async function renderResearch() {
+            const panel = document.getElementById("researchPanel");
+            const titleEl = document.getElementById("viewTitle");
+            const subEl = document.getElementById("viewSub");
+
+            if (!researchSymbol) {
+                titleEl.textContent = "Enter a symbol";
+                subEl.textContent = "";
+                if (researchChart) { try { researchChart.destroy(); } catch (e) { } researchChart = null; }
+                panel.innerHTML = "<p class='metric-sub'>Search for a symbol above to see its chart.</p>";
+                renderStatCards([]);
+                return;
+            }
+
+            let data = null, loadError = null;
+            try {
+                data = await DataSource.loadSeries(researchSymbol, currentTf);
+            } catch (err) {
+                loadError = err;
+            }
+
+            if (loadError) {
+                titleEl.textContent = researchSymbol;
+                subEl.textContent = "Couldn't load data";
+                if (researchChart) { try { researchChart.destroy(); } catch (e) { } researchChart = null; }
+                panel.innerHTML = `<p class="metric-sub">Couldn't load data for "${researchSymbol}": ${loadError.message}</p>`;
+                renderStatCards([]);
+                return;
+            }
+
+            if (!data || !data.close || data.close.length === 0) {
+                // Only meaningful in Live mode — sample data will synthesize a chart for literally any
+                // string, since it's just hashing whatever's typed in.
+                titleEl.textContent = researchSymbol;
+                subEl.textContent = "No data";
+                if (researchChart) { try { researchChart.destroy(); } catch (e) { } researchChart = null; }
+                panel.innerHTML = `<p class="metric-sub">No data found for "${researchSymbol}" — check the symbol and try again.</p>`;
+                renderStatCards([]);
+                return;
+            }
+
+            titleEl.textContent = researchSymbol;
+            subEl.textContent = "% change from session start, " + tfLabel();
+
+            const base = data.close[0];
+            const pctSeries = data.close.map(c => ((c - base) / base) * 100);
+            const smaVals = data.sma.map(v => ((v - base) / base) * 100);
+            const pctFmt = v => Number(v).toFixed(2) + "%";
+
+            let container = document.getElementById("researchChart");
+            if (!container) {
+                panel.innerHTML = `<div id="researchChart"></div>`;
+                container = document.getElementById("researchChart");
+            }
+            const opts = buildComboOptions(data.times, pctSeries, smaVals, { height: 340, accent: ACCENT, valueFormatter: pctFmt, sparkline: true });
+            if (researchChart) {
+                researchChart.updateOptions(opts, true, true);
+            } else {
+                researchChart = new ApexCharts(container, opts);
+                researchChart.render();
+            }
+
+            const last = pctSeries[pctSeries.length - 1];
+            const high = Math.max(...pctSeries), low = Math.min(...pctSeries);
+            renderStatCards([
+                { label: "Change", value: fmtPct(last), up: last >= 0, color: last >= 0 ? "#83B573" : "#C96A6A" },
+                { label: "High", value: fmtPct(high) },
+                { label: "Low", value: fmtPct(low) },
+                { label: "Last Price", value: fmtMoney(data.close[data.close.length - 1]) }
+            ]);
+        }
+
+        function applyResearchSearch() {
+            const input = document.getElementById("researchSymbolInput");
+            const raw = input.value.trim().toUpperCase();
+            if (!raw) return;
+            input.value = ""; // clear immediately — ready for the next symbol without an extra click
+            researchSymbol = raw;
+            render();
+        }
+        document.getElementById("researchApplyBtn").addEventListener("click", applyResearchSearch);
+        document.getElementById("researchSymbolInput").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") { e.preventDefault(); applyResearchSearch(); }
+        });
+
         function tfLabel() {
             if (currentTf === "today") return "today (4:00 AM →)";
             if (TF_DAYS[currentTf]) return `last ${TF_DAYS[currentTf]} trading days`;
@@ -2627,6 +2732,8 @@
                 el.style.display = "none";
             });
             document.getElementById(currentView + "Panel").style.display = "";
+            document.getElementById("researchSearchRow").style.display = currentView === "research" ? "flex" : "none";
+            document.getElementById("tickerBar").classList.toggle("chips-muted", currentView === "research");
 
             const sig = currentSignature();
             if (viewSignatures[currentView] === sig) {
@@ -2642,7 +2749,8 @@
 
             if (currentView === "trend") await renderTrend();
             else if (currentView === "compare") await renderCompare();
-            else await renderTable();
+            else if (currentView === "table") await renderTable();
+            else await renderResearch();
 
             viewMeta[currentView] = {
                 title: document.getElementById("viewTitle").textContent,
