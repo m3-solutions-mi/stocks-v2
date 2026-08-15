@@ -601,7 +601,7 @@
             border-color: var(--muted);
         }
 
-        .trade-amt-1 {
+        .trade-amt-100 {
             color: #8B94A3;
         }
 
@@ -1510,7 +1510,7 @@
                         strings). Aggregated dollar-weighted across every returned position, not averaged per-position.
                     </p>
                     <p class="help-desc"><b>Buy/Sell buttons</b> sit at the bottom of every Compare tile, icon-only —
-                        hover for a tooltip, or use this color key: <span style="color:#8B94A3">grey</span> = buy $1,
+                        hover for a tooltip, or use this color key: <span style="color:#8B94A3">grey</span> = buy $100,
                         <span style="color:#20A8A8">teal</span> = buy $1,000, <span style="color:#22C55E">green</span> =
                         buy $10,000, <span style="color:#EF4444">red</span> = sell (full position). The amount is
                         editable via a prompt before confirming; Sell is gated behind a confirm dialog. Neither fires
@@ -2533,7 +2533,7 @@
                     const t = TICKERS.find(x => x.id === id);
                     const tradeButtons = `
           <div class="trade-btn-row">
-            <button type="button" class="trade-btn trade-amt-1" data-buy="${id}" data-amount="1" title="Buy $1"><i class="fa fa-credit-card"></i></button>
+            <button type="button" class="trade-btn trade-amt-100" data-buy="${id}" data-amount="100" title="Buy $100"><i class="fa fa-credit-card"></i></button>
             <button type="button" class="trade-btn trade-amt-1000" data-buy="${id}" data-amount="1000" title="Buy $1,000"><i class="fa fa-credit-card"></i></button>
             <button type="button" class="trade-btn trade-amt-10000" data-buy="${id}" data-amount="10000" title="Buy $10,000"><i class="fa fa-credit-card"></i></button>
             <button type="button" class="trade-btn trade-sell-btn" data-sell="${id}" title="Sell (full position)"><i class="fa fa-credit-card"></i></button>
@@ -2959,6 +2959,10 @@
             const fill = document.getElementById("refreshBarFill");
             if (!wrap || !fill) return;
             const rate = CONFIG.accountRefreshSeconds;
+            // The bar's visibility is a separate decision from whether account refresh is actually
+            // happening — it still runs 24/7 in setupAutoRefresh() regardless of this check. Outside
+            // trading hours there's nothing actionable to anticipate, so a ticking countdown is just
+            // noise even though the refresh underneath it is correctly still firing.
             if (rate <= 0 || !getSessionWindow().isLive) { wrap.style.display = "none"; return; }
             wrap.style.display = "";
             const totalMs = rate * 1000;
@@ -2974,9 +2978,14 @@
             updateRefreshBar();
             if (CONFIG.chartRefreshSeconds > 0 || CONFIG.accountRefreshSeconds > 0) {
                 refreshFireTimer = setInterval(() => {
-                    if (!getSessionWindow().isLive) return; // nothing to fetch while the market's closed
                     const second = new Date().getSeconds();
-                    if (CONFIG.chartRefreshSeconds > 0 && second % CONFIG.chartRefreshSeconds === 0) {
+                    // Chart data stays gated to trading hours — outside that window our own session logic
+                    // holds "Today" at the same frozen snapshot, so refetching would just repeat identical
+                    // fetches for zero new information (true for regular equities; would need revisiting
+                    // if a 24/7-trading symbol like crypto ever joins the watchlist). Account/positions
+                    // isn't subject to that limitation — extended-hours moves, or just wanting an accurate
+                    // balance at any hour, are real reasons to keep it current around the clock.
+                    if (CONFIG.chartRefreshSeconds > 0 && second % CONFIG.chartRefreshSeconds === 0 && getSessionWindow().isLive) {
                         seriesCache = {};
                         viewSignatures.trend = viewSignatures.compare = viewSignatures.table = null;
                         renderMacroChips();
