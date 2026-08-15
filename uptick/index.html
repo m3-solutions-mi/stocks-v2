@@ -144,6 +144,14 @@
             pointer-events: none;
         }
 
+        /* Same reasoning as tickerBar above — presets only change selectedTickerIds, which Research
+     doesn't use at all. Without muting these too, clicking one while on Research silently does
+     nothing visible, which reads as confusing rather than as "this control isn't active here." */
+        #tickerPresetRow.chips-muted .loc-chip {
+            opacity: .4;
+            pointer-events: none;
+        }
+
         .chip-settings {
             font-size: 15px;
             padding: 8px 12px;
@@ -1499,8 +1507,9 @@
                     <p class="help-heading">Research</p>
                     <p class="help-desc">A one-off symbol lookup, separate from your watchlist — search any symbol, see
                         its chart at any timeframe, without adding it or affecting your selected tickers. Purely for
-                        research: there's no path from here to your real watchlist. Ticker selection has no effect while
-                        this view is active. Not saved between sessions — the searched symbol resets on reload.</p>
+                        research: there's no path from here to your real watchlist. Ticker selection and symbol groups
+                        both grey out and have no effect while this view is active. Not saved between sessions — the
+                        searched symbol resets on reload.</p>
                 </div>
                 <div class="help-section">
                     <p class="help-heading">Picking a past date</p>
@@ -1717,6 +1726,8 @@
                         <button class="w3-button" data-view="trend"><i class="fa fa-line-chart"></i> Combined</button>
                         <button class="w3-button" data-view="compare"><i class="fa fa-columns"></i> Compare</button>
                         <button class="w3-button" data-view="table"><i class="fa fa-table"></i> Table</button>
+                        <button class="w3-button" data-view="positions"><i class="fa fa-briefcase"></i>
+                            Positions</button>
                     </div>
                 </div>
             </div>
@@ -1738,6 +1749,7 @@
                 <div id="comparePanel" class="view-panel"></div>
                 <div id="tablePanel" class="view-panel"></div>
                 <div id="researchPanel" class="view-panel"></div>
+                <div id="positionsPanel" class="view-panel"></div>
             </div>
 
             <p style="color:var(--muted); font-size:12px; margin-top:14px;">
@@ -1873,7 +1885,7 @@
                 tickerPresets = saved.tickerPresets.filter(p => p && typeof p.id === "string" && typeof p.name === "string" && Array.isArray(p.tickerIds));
             }
             if (["today", "10d", "30d", "90d", "180d"].includes(saved.currentTf)) currentTf = saved.currentTf;
-            if (["trend", "compare", "table", "research"].includes(saved.currentView)) currentView = saved.currentView;
+            if (["trend", "compare", "table", "research", "positions"].includes(saved.currentView)) currentView = saved.currentView;
             if (["full", "regular", "last6h"].includes(saved.displayWindow)) displayWindow = saved.displayWindow;
         })();
 
@@ -2190,11 +2202,22 @@
                     const [account, positions] = await Promise.all([accountRes.json(), positionsRes.json()]);
                     heldPositions = new Map((positions || []).map(p => [p.symbol, {
                         dollar: parseFloat(p.unrealized_pl) || 0,
-                        pct: (parseFloat(p.unrealized_plpc) || 0) * 100 // Alpaca sends this as a fraction (0.0325), not already a percentage
+                        pct: (parseFloat(p.unrealized_plpc) || 0) * 100, // Alpaca sends this as a fraction (0.0325), not already a percentage
+                        costBasis: parseFloat(p.cost_basis) || 0, // how much capital is actually tied up — separate from performance, not derived from pl/pct
+                        currentPrice: parseFloat(p.current_price) || 0
                     }]));
                     return combineAccountAndPositions(account, positions);
                 }
-                heldPositions = new Map(); // Sample mode has no real positions concept — cleared, not faked
+                // Fixed, non-moving stub for a small handful of current watchlist tickers — not an
+                // attempt to simulate real position movement (nobody actually trades against Sample data,
+                // and a fake random walk here would add real complexity for zero benefit). This exists
+                // purely so the Positions view has something to look at, given position data can only
+                // ever be inspected by screenshot, not lived in directly.
+                heldPositions = new Map([
+                    [TICKERS[0]?.symbol, { dollar: 42.50, pct: 3.15, costBasis: 1350.00, currentPrice: 723.45 }],
+                    [TICKERS[1]?.symbol, { dollar: -18.20, pct: -1.42, costBasis: 1280.00, currentPrice: 41.20 }],
+                    [TICKERS[2]?.symbol, { dollar: 7.85, pct: 0.62, costBasis: 1265.00, currentPrice: 88.90 }]
+                ].filter(([symbol]) => symbol)); // guards against a watchlist with fewer than 3 tickers
                 return generateSampleAccount();
             }
         };
@@ -2673,8 +2696,8 @@
         // changed — switching back to a view you were already on (with the same selection/timeframe/
         // SMA period) just shows the panel that's already built, instead of tearing down and
         // rebuilding every chart again.
-        const viewSignatures = { trend: null, compare: null, table: null, research: null };
-        const viewMeta = { trend: null, compare: null, table: null, research: null };
+        const viewSignatures = { trend: null, compare: null, table: null, research: null, positions: null };
+        const viewMeta = { trend: null, compare: null, table: null, research: null, positions: null };
         function currentSignature() {
             return [...selectedTickerIds].sort().join(",") + "|" + currentTf + "|" + CONFIG.smaPeriod + "|" + (researchSymbol || "") + "|" + displayWindow + "|" + (selectedDate ? selectedDate.getTime() : "live");
         }
@@ -2896,6 +2919,54 @@
             ]);
         }
 
+        // Reads directly from heldPositions — no chart, no fetch, cheap to render — so this view
+        // deliberately bypasses the currentSignature() caching every other view uses (see render()
+        // below): heldPositions updates on its own account-refresh cadence, independent of anything
+        // currentSignature() tracks, so caching this view risked showing stale data exactly the way
+        // seriesCache once did before it was keyed on selectedDate.
+        async function renderPositions() {
+            document.getElementById("viewTitle").textContent = "Positions";
+            document.getElementById("viewSub").textContent = "Your current open positions, from the live positions payload";
+            const panel = document.getElementById("positionsPanel");
+
+            if (heldPositions.size === 0) {
+                panel.innerHTML = "<p class='metric-sub'>No open positions.</p>";
+                renderStatCards([]);
+                return;
+            }
+
+            const rows = [...heldPositions.entries()].map(([symbol, p]) => ({ symbol, ...p }));
+            const totalDollar = rows.reduce((sum, r) => sum + r.dollar, 0);
+            const totalCostBasis = rows.reduce((sum, r) => sum + r.costBasis, 0);
+            // Dollar-weighted, same formula combineAccountAndPositions() already uses for the
+            // POSITIONS stat card — not a plain average of each row's own %, which would treat a small
+            // position's swing as equally significant as a large one.
+            const totalPct = totalCostBasis !== 0 ? (totalDollar / totalCostBasis) * 100 : 0;
+
+            panel.innerHTML = `
+      <div style="overflow-x:auto;">
+      <table class="data-table" style="table-layout:fixed; width:100%;">
+        <thead><tr><th>Symbol</th><th>$ Change</th><th>% Change</th><th style="text-align:right;">Cost Basis</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td>${r.symbol}</td>
+              <td class="${r.dollar >= 0 ? "dt-up" : "dt-down"}">${r.dollar >= 0 ? "+" : ""}${r.dollar.toFixed(2)}</td>
+              <td class="${r.pct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(r.pct)}</td>
+              <td style="text-align:right;">${fmtMoney(r.costBasis)}</td>
+            </tr>`).join("")}
+          <tr style="font-weight:700; border-top:1px solid var(--line);">
+            <td>TOTAL</td>
+            <td class="${totalDollar >= 0 ? "dt-up" : "dt-down"}">${totalDollar >= 0 ? "+" : ""}${totalDollar.toFixed(2)}</td>
+            <td class="${totalPct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(totalPct)}</td>
+            <td style="text-align:right;">${fmtMoney(totalCostBasis)}</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>`;
+            renderStatCards([]);
+        }
+
         // Purely a lookup tool — no path connects a researched symbol to the real watchlist. Ticker
         // selection has no bearing here at all, unlike every other view.
         async function renderResearch() {
@@ -2997,9 +3068,14 @@
             document.getElementById(currentView + "Panel").style.display = "";
             document.getElementById("researchSearchRow").style.display = currentView === "research" ? "flex" : "none";
             document.getElementById("tickerBar").classList.toggle("chips-muted", currentView === "research");
+            document.getElementById("tickerPresetRow").classList.toggle("chips-muted", currentView === "research");
 
             const sig = currentSignature();
-            if (viewSignatures[currentView] === sig) {
+            // Positions bypasses this cache entirely — it's cheap to rebuild (no chart, no fetch) and
+            // depends on heldPositions, which updates on its own account-refresh cadence rather than
+            // anything currentSignature() tracks. Caching it risked showing stale data the exact way
+            // seriesCache once did before it included selectedDate in its key.
+            if (currentView !== "positions" && viewSignatures[currentView] === sig) {
                 const meta = viewMeta[currentView];
                 if (meta) {
                     document.getElementById("viewTitle").textContent = meta.title;
@@ -3013,6 +3089,7 @@
             if (currentView === "trend") await renderTrend();
             else if (currentView === "compare") await renderCompare();
             else if (currentView === "table") await renderTable();
+            else if (currentView === "positions") await renderPositions();
             else await renderResearch();
 
             viewMeta[currentView] = {
@@ -3358,7 +3435,12 @@
                         render();
                     }
                     if (CONFIG.accountRefreshSeconds > 0 && second % CONFIG.accountRefreshSeconds === 0) {
-                        renderAccountRow();
+                        // .then(), not a bare call — renderAccountRow() is async and this callback isn't
+                        // awaited by setInterval, so calling renderPositions() on the next line unchained
+                        // would run before heldPositions actually finishes updating, showing stale data.
+                        renderAccountRow().then(() => {
+                            if (currentView === "positions") renderPositions();
+                        });
                     }
                 }, 1000);
                 refreshBarTimer = setInterval(updateRefreshBar, 200); // visual only — no data-fetching side effects
