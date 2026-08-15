@@ -574,6 +574,18 @@
             margin: 0 0 4px 0;
         }
 
+        /* Solid dot before the symbol when it's currently in your live positions — hidden entirely
+     in Sample mode (no fabricated demo holdings) and for any symbol you don't hold. Color
+     matches the symbol text's own up/down color rather than introducing a third meaning. */
+        .held-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
         /* Buy/sell buttons — always visible (readiness is gated at click time, not render time).
      Icon-only: color is the icon's own color, not a filled background — labels dropped in
      favor of a title tooltip, documented in Help instead of spelled out on every tile. */
@@ -1718,6 +1730,7 @@
         // State
         // =========================================================
         let selectedTickerIds = new Set(TICKERS.map(t => t.id));
+        let heldPositions = new Map(); // symbol -> { dollar, pct } unrealized gain, from the live positions array — empty in Sample mode, no fabricated demo data
         let currentTf = "today";      // today | 5d | 1m
         let currentView = "trend";    // trend | compare | table
         let seriesCache = {};         // symbol -> { times, close }
@@ -2044,8 +2057,13 @@
                     if (!accountRes.ok) throw new Error("Account request failed: " + accountRes.status);
                     if (!positionsRes.ok) throw new Error("Positions request failed: " + positionsRes.status);
                     const [account, positions] = await Promise.all([accountRes.json(), positionsRes.json()]);
+                    heldPositions = new Map((positions || []).map(p => [p.symbol, {
+                        dollar: parseFloat(p.unrealized_pl) || 0,
+                        pct: (parseFloat(p.unrealized_plpc) || 0) * 100 // Alpaca sends this as a fraction (0.0325), not already a percentage
+                    }]));
                     return combineAccountAndPositions(account, positions);
                 }
+                heldPositions = new Map(); // Sample mode has no real positions concept — cleared, not faked
                 return generateSampleAccount();
             }
         };
@@ -2539,7 +2557,7 @@
             <button type="button" class="trade-btn trade-sell-btn" data-sell="${id}" title="Sell (full position)"><i class="fa fa-credit-card"></i></button>
           </div>`;
                     return `<div class="compare-tile">
-          <p class="compare-tile-title"><span id="compareTitleSym-${id}">${t.symbol}</span> <span style="color:var(--muted); font-weight:400;">${t.name || ""}</span></p>
+          <p class="compare-tile-title" style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;"><span><span class="held-dot" id="compareHeldDot-${id}" style="display:none;"></span><span id="compareTitleSym-${id}">${t.symbol}</span> <span style="color:var(--muted); font-weight:400;">${t.name || ""}</span></span><span id="compareHeldGain-${id}" style="display:none; font-weight:700; font-size:13px; white-space:nowrap;"></span></p>
           <div id="compareChart-${id}"></div>
           ${tradeButtons}
         </div>`;
@@ -2575,6 +2593,31 @@
                 const lastBarUp = pctSeries[pctSeries.length - 1] >= smaVals[smaVals.length - 1];
                 const symEl = document.getElementById(`compareTitleSym-${id}`);
                 if (symEl) symEl.style.color = lastBarUp ? "#22C55E" : "#EF4444";
+
+                // Solid dot = currently held (symbol is in the live positions array). Reuses the exact
+                // same up/down color as the symbol text above, rather than a third independent color.
+                const dotEl = document.getElementById(`compareHeldDot-${id}`);
+                const held = heldPositions.has(t.symbol);
+                if (dotEl) {
+                    dotEl.style.display = held ? "inline-block" : "none";
+                    dotEl.style.backgroundColor = lastBarUp ? "#22C55E" : "#EF4444";
+                }
+
+                // Dollar gain, right-aligned in the title, only when held. Uses the same signed-decimal
+                // convention (no $ prefix) and the same softer green/red pair as the TODAY/POSITIONS
+                // stat cards — this is the same kind of number as those, not the bar/symbol momentum
+                // color, so it gets that color language instead of the brighter one above.
+                const gainEl = document.getElementById(`compareHeldGain-${id}`);
+                if (gainEl) {
+                    if (held) {
+                        const { dollar, pct } = heldPositions.get(t.symbol);
+                        gainEl.style.display = "";
+                        gainEl.textContent = (dollar >= 0 ? "+" : "") + dollar.toFixed(2) + " | " + (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
+                        gainEl.style.color = dollar >= 0 ? "#83B573" : "#C96A6A";
+                    } else {
+                        gainEl.style.display = "none";
+                    }
+                }
 
                 const pct = pctSeries[pctSeries.length - 1];
                 if (pct >= 0) advancers++; else decliners++;
