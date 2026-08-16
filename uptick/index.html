@@ -1807,10 +1807,6 @@
             accountRefreshSeconds: 15  // account equity + positions — independent rate, matching the reference app's pattern of updating charts and account on their own cadences
         };
 
-        function activeSymbolBaseUrl() {
-            return CONFIG.api.activeSymbolSource === "B" ? CONFIG.api.symbolBaseUrlB : CONFIG.api.symbolBaseUrlA;
-        }
-
         const SETTINGS_KEY = "uptick-settings-v1";
 
         // Fixed market-context chips (top right). Structurally identical to a watchlist ticker —
@@ -2182,11 +2178,39 @@
                 const key = symbol + "|" + tf + "|" + (selectedDate ? selectedDate.getTime() : "live");
                 if (seriesCache[key]) return seriesCache[key]; // avoid regenerating/refetching on every view switch
                 if (CONFIG.dataMode === "api") {
-                    const symbolUrl = activeSymbolBaseUrl();
-                    if (!symbolUrl) throw new Error(`Symbol data URL not set for source ${CONFIG.api.activeSymbolSource} (Settings)`);
                     const { timeframe, wideStart, displayStart, end } = getSeriesWindow(tf);
-                    const url = `${symbolUrl.replace(/\/$/, "")}/${encodeURIComponent(symbol)}/${timeframe}/${wideStart.toISOString()}/${end.toISOString()}`;
-                    const res = await fetch(url);
+                    let res;
+                    if (CONFIG.api.activeSymbolSource === "B") {
+                        // A genuinely different request shape than source A, not just a different base URL:
+                        // query-string params (not path segments), a few required extras, and auth headers
+                        // using the same account credentials already collected for trading — not a separate
+                        // symbol-data credential. The base URL below is a default, not hardcoded — the
+                        // configured field for this source overrides it if set, so a future version bump
+                        // (e.g. Alpaca moving from v2 to v3) just needs a Settings change, not a code change.
+                        if (!CONFIG.api.accountApiKey || !CONFIG.api.accountApiSecret) throw new Error("Account API key/secret must be set (Settings) for this data source");
+                        const backupBaseUrl = (CONFIG.api.symbolBaseUrlB || "").trim() || "https://data.alpaca.markets/v2/stocks/bars";
+                        const params = new URLSearchParams({
+                            symbols: symbol,
+                            timeframe,
+                            start: wideStart.toISOString(),
+                            end: end.toISOString(),
+                            feed: "iex",
+                            limit: "5000",
+                            sort: "asc"
+                        });
+                        res = await fetch(`${backupBaseUrl}?${params.toString()}`, {
+                            headers: {
+                                accept: "application/json",
+                                "APCA-API-KEY-ID": CONFIG.api.accountApiKey,
+                                "APCA-API-SECRET-KEY": CONFIG.api.accountApiSecret
+                            }
+                        });
+                    } else {
+                        const symbolUrl = CONFIG.api.symbolBaseUrlA;
+                        if (!symbolUrl) throw new Error(`Symbol data URL not set for source A (Settings)`);
+                        const url = `${symbolUrl.replace(/\/$/, "")}/${encodeURIComponent(symbol)}/${timeframe}/${wideStart.toISOString()}/${end.toISOString()}`;
+                        res = await fetch(url);
+                    }
                     if (!res.ok) throw new Error("Series request failed: " + res.status);
                     const json = await res.json();
                     const bars = (json.bars && json.bars[symbol]) || [];
