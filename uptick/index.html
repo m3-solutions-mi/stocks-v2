@@ -152,6 +152,16 @@
             pointer-events: none;
         }
 
+        /* Positions is driven entirely by heldPositions (the live account payload) — timeframe,
+     window slice, ticker selection, and symbol groups all have zero bearing on what it shows.
+     Muted the same way Research already mutes ticker chips/presets, just a different trigger
+     view and two additional elements. */
+        #timeframeBar.chips-muted .w3-button,
+        #windowBar.chips-muted .w3-button {
+            opacity: .4;
+            pointer-events: none;
+        }
+
         .chip-settings {
             font-size: 15px;
             padding: 8px 12px;
@@ -566,6 +576,17 @@
             font-weight: 600;
             color: var(--muted);
             margin-left: 6px;
+        }
+
+        /* Scoped to Positions specifically — not the shared .data-table default, since Table view
+     (also .data-table) shouldn't be affected. A bit more visual separation between the header
+     and the data rows, and between the data rows and the TOTAL row. */
+        .positions-table thead th {
+            border-bottom-width: 3px;
+        }
+
+        .positions-table .positions-total-row td {
+            border-top: 3px solid var(--line);
         }
 
         .compare-grid {
@@ -1742,9 +1763,12 @@
                 <p class="metric-sub" id="viewSub">—</p>
             </div>
 
+            <button type="button" id="statsToggleBtn" class="controls-toggle-btn">
+                <i class="fa fa-chevron-up"></i> <span id="statsToggleLabel">Hide stats</span>
+            </button>
             <div class="stat-row" id="statRow" data-count="4"></div>
 
-            <div id="viewBody" style="margin-top:18px;">
+            <div id="viewBody" style="margin-top:10px;">
                 <div id="trendPanel" class="view-panel"></div>
                 <div id="comparePanel" class="view-panel"></div>
                 <div id="tablePanel" class="view-panel"></div>
@@ -1824,6 +1848,8 @@
         let currentTf = "today";      // today | 5d | 1m
         let currentView = "trend";    // trend | compare | table
         let displayWindow = "full";   // full | regular | last6h — only meaningful when currentTf === "today"; a pure display-layer slice, doesn't touch fetching/SMA/session logic at all
+        let controlsExpanded = true;  // watchlist/timeframe accordion — moved up here (was declared much later) so applySavedSettings() below can restore it without hitting the temporal dead zone
+        let statsRowExpanded = true;  // stats-row accordion — same reason
         let seriesCache = {};         // symbol -> { times, close }
         let trendChart = null;
         let compareCharts = {};
@@ -1855,7 +1881,9 @@
                     tickerPresets,
                     currentTf,
                     currentView,
-                    displayWindow
+                    displayWindow,
+                    controlsExpanded,
+                    statsRowExpanded
                 }));
             } catch (e) { console.warn("Could not save settings:", e); }
         }
@@ -1887,6 +1915,8 @@
             if (["today", "10d", "30d", "90d", "180d"].includes(saved.currentTf)) currentTf = saved.currentTf;
             if (["trend", "compare", "table", "research", "positions"].includes(saved.currentView)) currentView = saved.currentView;
             if (["full", "regular", "last6h"].includes(saved.displayWindow)) displayWindow = saved.displayWindow;
+            if (typeof saved.controlsExpanded === "boolean") controlsExpanded = saved.controlsExpanded;
+            if (typeof saved.statsRowExpanded === "boolean") statsRowExpanded = saved.statsRowExpanded;
         })();
 
         // =========================================================
@@ -2309,7 +2339,7 @@
         // rejects the click is an easy mistake to make; one that's visibly greyed out isn't.
         function updateTradeButtonsDisabledState() {
             const disabled = !!selectedDate;
-            document.querySelectorAll("[data-buy], [data-sell]").forEach(btn => {
+            document.querySelectorAll("[data-buy], [data-sell], [data-sell-symbol]").forEach(btn => {
                 btn.disabled = disabled;
                 btn.style.opacity = disabled ? "0.35" : "";
                 btn.style.cursor = disabled ? "not-allowed" : "";
@@ -2326,6 +2356,29 @@
             btn.disabled = disabled;
             btn.style.opacity = disabled ? "0.35" : "";
             btn.style.cursor = disabled ? "not-allowed" : "";
+        }
+
+        // Shared by both Compare's sell buttons (id-based, looked up via TICKERS) and the Positions
+        // table's sell buttons (symbol-based directly — a held position isn't guaranteed to be in
+        // your configured watchlist at all). awaits renderAccountRow() internally, not fire-and-forget,
+        // so heldPositions is guaranteed fresh by the time this returns — callers that need to
+        // re-render something depending on it (Positions re-rendering itself) can safely do so right
+        // after, without the same race condition the account-refresh timer had earlier.
+        async function executeSell(symbol, btn) {
+            if (selectedDate) { alert("Buy/Sell aren't available while viewing a past date — click Today to return to live trading."); return false; }
+            if (!isLiveTradingReady()) { promptLiveTradingSetup(); return false; }
+            if (!confirm(`SELL SHARES | ${symbol}`)) return false;
+            if (btn) btn.disabled = true;
+            try {
+                await TradingAPI.sell(symbol);
+                await renderAccountRow();
+                return true;
+            } catch (err) {
+                alert(`Sell failed: ${err.message}`);
+                return false;
+            } finally {
+                if (btn) btn.disabled = false;
+            }
         }
 
         function wireTradeButtons(container) {
@@ -2354,20 +2407,21 @@
             container.querySelectorAll("[data-sell]").forEach(btn => {
                 btn.addEventListener("click", async (e) => {
                     e.stopPropagation();
-                    if (selectedDate) { alert("Buy/Sell aren't available while viewing a past date — click Today to return to live trading."); return; }
-                    if (!isLiveTradingReady()) { promptLiveTradingSetup(); return; }
                     const t = TICKERS.find(x => x.id === btn.dataset.sell);
                     if (!t) return;
-                    if (!confirm(`SELL SHARES | ${t.symbol}`)) return;
-                    btn.disabled = true;
-                    try {
-                        await TradingAPI.sell(t.symbol);
-                        renderAccountRow();
-                    } catch (err) {
-                        alert(`Sell failed: ${err.message}`);
-                    } finally {
-                        btn.disabled = false;
-                    }
+                    await executeSell(t.symbol, btn);
+                });
+            });
+        }
+
+        // Positions table's own sell buttons — symbol-based (not id-based like wireTradeButtons'
+        // Compare buttons), since a held position doesn't have to be in your configured watchlist.
+        function wirePositionsSellButtons(container) {
+            container.querySelectorAll("[data-sell-symbol]").forEach(btn => {
+                btn.addEventListener("click", async (e) => {
+                    e.stopPropagation();
+                    const ok = await executeSell(btn.dataset.sellSymbol, btn);
+                    if (ok) renderPositions(); // heldPositions is already fresh at this point — safe to re-render immediately
                 });
             });
         }
@@ -2659,9 +2713,17 @@
                 const name = prompt("Name this group of symbols:");
                 if (!name || !name.trim()) return;
                 const trimmed = name.trim();
-                const id = "preset_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
-                tickerPresets = tickerPresets.filter(p => p.name.toLowerCase() !== trimmed.toLowerCase()); // replace an existing same-named preset rather than creating a confusing duplicate
-                tickerPresets.push({ id, name: trimmed, tickerIds: [...selectedTickerIds] });
+                const newTickerIds = [...selectedTickerIds];
+                // Update in place if a same-named preset already exists (keeps its position in the row),
+                // rather than removing it and pushing the replacement to the end — a real bug found in
+                // testing where saving over an existing group silently moved it to the far end.
+                const existingIndex = tickerPresets.findIndex(p => p.name.toLowerCase() === trimmed.toLowerCase());
+                if (existingIndex >= 0) {
+                    tickerPresets[existingIndex] = { ...tickerPresets[existingIndex], name: trimmed, tickerIds: newTickerIds };
+                } else {
+                    const id = "preset_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+                    tickerPresets.push({ id, name: trimmed, tickerIds: newTickerIds });
+                }
                 saveSettings();
                 renderTickerPresetRow();
             });
@@ -2945,8 +3007,8 @@
 
             panel.innerHTML = `
       <div style="overflow-x:auto;">
-      <table class="data-table" style="table-layout:fixed; width:100%;">
-        <thead><tr><th>Symbol</th><th>$ Change</th><th>% Change</th><th style="text-align:right;">Cost Basis</th></tr></thead>
+      <table class="data-table positions-table" style="table-layout:fixed; width:100%;">
+        <thead><tr><th>Symbol</th><th>$ Change</th><th>% Change</th><th style="text-align:right;">Cost Basis</th><th style="text-align:center;">Sell</th></tr></thead>
         <tbody>
           ${rows.map(r => `
             <tr>
@@ -2954,16 +3016,20 @@
               <td class="${r.dollar >= 0 ? "dt-up" : "dt-down"}">${r.dollar >= 0 ? "+" : ""}${r.dollar.toFixed(2)}</td>
               <td class="${r.pct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(r.pct)}</td>
               <td style="text-align:right;">${fmtMoney(r.costBasis)}</td>
+              <td style="text-align:center;"><button type="button" class="trade-btn trade-sell-btn" data-sell-symbol="${r.symbol}" title="Sell ${r.symbol} (full position)"><i class="fa fa-credit-card"></i></button></td>
             </tr>`).join("")}
-          <tr style="font-weight:700; border-top:1px solid var(--line);">
+          <tr class="positions-total-row" style="font-weight:700;">
             <td>TOTAL</td>
             <td class="${totalDollar >= 0 ? "dt-up" : "dt-down"}">${totalDollar >= 0 ? "+" : ""}${totalDollar.toFixed(2)}</td>
             <td class="${totalPct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(totalPct)}</td>
             <td style="text-align:right;">${fmtMoney(totalCostBasis)}</td>
+            <td></td>
           </tr>
         </tbody>
       </table>
       </div>`;
+            wirePositionsSellButtons(panel);
+            updateTradeButtonsDisabledState();
             renderStatCards([]);
         }
 
@@ -3067,8 +3133,10 @@
             });
             document.getElementById(currentView + "Panel").style.display = "";
             document.getElementById("researchSearchRow").style.display = currentView === "research" ? "flex" : "none";
-            document.getElementById("tickerBar").classList.toggle("chips-muted", currentView === "research");
-            document.getElementById("tickerPresetRow").classList.toggle("chips-muted", currentView === "research");
+            document.getElementById("tickerBar").classList.toggle("chips-muted", currentView === "research" || currentView === "positions");
+            document.getElementById("tickerPresetRow").classList.toggle("chips-muted", currentView === "research" || currentView === "positions");
+            document.getElementById("timeframeBar").classList.toggle("chips-muted", currentView === "positions");
+            document.getElementById("windowBar").classList.toggle("chips-muted", currentView === "positions");
 
             const sig = currentSignature();
             // Positions bypasses this cache entirely — it's cheap to rebuild (no chart, no fetch) and
@@ -3503,10 +3571,9 @@
             }
         });
 
-        // Session-only accordion for the ticker/timeframe/view-toggle controls — no localStorage,
-        // deliberately: always starts expanded on a fresh load rather than persisting a hidden state
-        // that could confuse a later session into thinking controls are missing.
-        let controlsExpanded = true;
+        // Persisted now — after real iPad use, always-starts-expanded turned out to be more friction
+        // (re-collapsing every reload) than the original "don't confuse a later session" concern was
+        // ever worth. Also now saves immediately on toggle, not just piggybacking on some other save.
         function updateControlsToggleUI() {
             document.getElementById("controlsAccordion").style.display = controlsExpanded ? "" : "none";
             document.querySelector("#controlsToggleBtn i").className = controlsExpanded ? "fa fa-chevron-up" : "fa fa-chevron-down";
@@ -3515,6 +3582,22 @@
         document.getElementById("controlsToggleBtn").addEventListener("click", () => {
             controlsExpanded = !controlsExpanded;
             updateControlsToggleUI();
+            saveSettings();
+        });
+
+        // Same pattern, separate accordion — #statRow is the view-specific stat cards (varies by
+        // view: Research shows Change/High/Low/Last Price, Positions clears it entirely, etc.), not
+        // the account cards (those live in #accountRow, a different element) — "stats" is the
+        // accurate generic name, not "account summary". Also now persisted, same reasoning as above.
+        function updateStatsToggleUI() {
+            document.getElementById("statRow").style.display = statsRowExpanded ? "" : "none";
+            document.querySelector("#statsToggleBtn i").className = statsRowExpanded ? "fa fa-chevron-up" : "fa fa-chevron-down";
+            document.getElementById("statsToggleLabel").textContent = statsRowExpanded ? "Hide stats" : "Show stats";
+        }
+        document.getElementById("statsToggleBtn").addEventListener("click", () => {
+            statsRowExpanded = !statsRowExpanded;
+            saveSettings();
+            updateStatsToggleUI();
         });
 
         // =========================================================
@@ -3524,6 +3607,8 @@
         document.querySelector(`#windowBar .w3-button[data-window="${displayWindow}"]`).classList.add("active");
         document.getElementById("windowBar").style.display = currentTf === "today" ? "flex" : "none";
         document.querySelector(`#viewToggle .w3-button[data-view="${currentView}"]`).classList.add("active");
+        updateControlsToggleUI();
+        updateStatsToggleUI();
         renderTickerBar();
         renderTickerPresetRow();
         renderMacroChips();
