@@ -1119,6 +1119,17 @@
             position: relative;
         }
 
+        /* A calm, steady cue (not a pulse/flash — deliberately, so it doesn't itself become another
+     source of reactive urgency) marking every 5-minute bar close, the very thing this exists to
+     help you not react emotionally to. Held for the whole minute, not an instant, so a glance
+     at any point during that minute still catches it. Blue, since it's otherwise unused
+     elsewhere in the app's color language (green/red/orange/teal/grey all carry other
+     meanings already) — this isn't a gain/loss signal, just a timing one. */
+        .stat-card.five-min-active {
+            border-color: #5C89B9;
+            background: color-mix(in srgb, #5C89B9 10%, var(--bg2));
+        }
+
         .stat-label {
             font-size: 11px;
             letter-spacing: 1.5px;
@@ -1785,7 +1796,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V055</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V057</p>
         </div>
     </div>
 
@@ -2480,8 +2491,14 @@
             return out;
         }
 
-        function fmtMoney(v) { return "$" + Number(v).toFixed(2); }
-        function fmtPct(v) { return (v >= 0 ? "+" : "") + Number(v).toFixed(2) + "%"; }
+        // toFixed(2)'s own rounding can disagree with the intuitive "round half up" convention for
+        // values sitting exactly on a half-cent boundary (e.g. 41.205 → "41.20" from toFixed, but
+        // "41.21" from round2) — a real, observable difference, not just theoretical, verified
+        // numerically before this was added. Every display point below rounds explicitly first,
+        // rather than trusting toFixed()'s own internal rounding to land where expected.
+        const round2 = (v) => Math.round(v * 100) / 100;
+        function fmtMoney(v) { return "$" + round2(Number(v)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function fmtPct(v) { const r = round2(Number(v)); return (r >= 0 ? "+" : "") + r.toFixed(2) + "%"; }
 
         // =========================================================
         // Chart builder — 4 series, 4 yaxis entries, matched positionally one-to-one (no array
@@ -2600,26 +2617,26 @@
                     {
                         key: "today",
                         label: "TODAY",
-                        value: (a.todayPL >= 0 ? "+" : "") + a.todayPL.toFixed(2),
+                        value: (a.todayPL >= 0 ? "+" : "") + round2(a.todayPL).toFixed(2),
                         sub: fmtPct(a.todayPLPct),
                         up: a.todayPL >= 0
                     },
                     {
                         key: "positions",
                         label: "POSITIONS",
-                        value: (a.positionsValue >= 0 ? "+" : "") + a.positionsValue.toFixed(2),
+                        value: (a.positionsValue >= 0 ? "+" : "") + round2(a.positionsValue).toFixed(2),
                         sub: fmtPct(a.positionsPct),
                         up: a.positionsValue >= 0
                     },
                     {
                         label: "CHANGE",
-                        value: change === null ? "—" : (change >= 0 ? "+" : "") + change.toFixed(2),
+                        value: change === null ? "—" : (change >= 0 ? "+" : "") + round2(change).toFixed(2),
                         sub: changePct === null ? "since last update" : fmtPct(changePct),
                         up: change === null ? null : change >= 0
                     }
                 ];
                 row.innerHTML = `<div class="stat-row" data-count="3">` + cards.map(c => `
-        <div class="stat-col"><div class="stat-card">
+        <div class="stat-col"><div class="stat-card" ${c.key === "today" ? `id="todayStatCard"` : ""}>
           <p class="stat-label">${c.label}</p>
           <p class="stat-value" style="${c.up === true ? "color:#83B573" : c.up === false ? "color:#C96A6A" : ""}">${c.value}</p>
           ${c.sub ? `<p class="stat-delta ${c.up === true ? "up" : c.up === false ? "down" : ""}">${c.sub}</p>` : ""}
@@ -2825,7 +2842,7 @@
                 panel.innerHTML = `<div id="trendChart"></div>`;
                 container = document.getElementById("trendChart");
             }
-            const pctFmt = v => Number(v).toFixed(2) + "%";
+            const pctFmt = v => round2(Number(v)).toFixed(2) + "%";
             const opts = buildComboOptions(times, composite, compositeSma, { height: 340, accent: ACCENT, valueFormatter: pctFmt, sparkline: true });
             opts.series[2].name = "Composite %";
             if (trendChart) {
@@ -2903,7 +2920,7 @@
                 const base = s.close[0];
                 const pctSeries = s.close.map(c => ((c - base) / base) * 100);
                 const smaVals = s.sma.map(v => ((v - base) / base) * 100);
-                const pctFmt = v => Number(v).toFixed(2) + "%";
+                const pctFmt = v => round2(Number(v)).toFixed(2) + "%";
                 const opts = buildComboOptions(s.times, pctSeries, smaVals, { height: 170, showXAxis: false, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showAnnotations: true, smaWidth: 1.5 });
 
                 if (compareCharts[id]) {
@@ -2941,7 +2958,7 @@
                     if (held) {
                         const { dollar, pct } = heldPositions.get(t.symbol);
                         gainEl.style.display = "";
-                        gainEl.textContent = (dollar >= 0 ? "+" : "") + dollar.toFixed(2) + " | " + (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
+                        gainEl.textContent = (dollar >= 0 ? "+" : "") + round2(dollar).toFixed(2) + " | " + (pct >= 0 ? "+" : "") + round2(pct).toFixed(2) + "%";
                         gainEl.style.color = dollar >= 0 ? "#83B573" : "#C96A6A";
                     } else {
                         gainEl.style.display = "none";
@@ -2990,7 +3007,7 @@
               <td>${r.t.symbol}</td>
               <td>${fmtMoney(r.start)}</td>
               <td>${fmtMoney(r.end)}</td>
-              <td class="${r.dollarDelta >= 0 ? "dt-up" : "dt-down"}">${r.dollarDelta >= 0 ? "+" : ""}${r.dollarDelta.toFixed(2)}</td>
+              <td class="${r.dollarDelta >= 0 ? "dt-up" : "dt-down"}">${r.dollarDelta >= 0 ? "+" : ""}${round2(r.dollarDelta).toFixed(2)}</td>
               <td class="${r.pctDelta >= 0 ? "dt-up" : "dt-down"}">${fmtPct(r.pctDelta)}</td>
             </tr>`).join("")}
         </tbody>
@@ -3038,14 +3055,14 @@
           ${rows.map(r => `
             <tr>
               <td>${r.symbol}</td>
-              <td class="${r.dollar >= 0 ? "dt-up" : "dt-down"}">${r.dollar >= 0 ? "+" : ""}${r.dollar.toFixed(2)}</td>
+              <td class="${r.dollar >= 0 ? "dt-up" : "dt-down"}">${r.dollar >= 0 ? "+" : ""}${round2(r.dollar).toFixed(2)}</td>
               <td class="${r.pct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(r.pct)}</td>
               <td style="text-align:right;">${fmtMoney(r.costBasis)}</td>
               <td style="text-align:center;"><button type="button" class="trade-btn trade-sell-btn" data-sell-symbol="${r.symbol}" title="Sell ${r.symbol} (full position)"><i class="fa fa-credit-card"></i></button></td>
             </tr>`).join("")}
           <tr class="positions-total-row" style="font-weight:700;">
             <td>TOTAL</td>
-            <td class="${totalDollar >= 0 ? "dt-up" : "dt-down"}">${totalDollar >= 0 ? "+" : ""}${totalDollar.toFixed(2)}</td>
+            <td class="${totalDollar >= 0 ? "dt-up" : "dt-down"}">${totalDollar >= 0 ? "+" : ""}${round2(totalDollar).toFixed(2)}</td>
             <td class="${totalPct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(totalPct)}</td>
             <td style="text-align:right;">${fmtMoney(totalCostBasis)}</td>
             <td></td>
@@ -3108,7 +3125,7 @@
             const base = data.close[0];
             const pctSeries = data.close.map(c => ((c - base) / base) * 100);
             const smaVals = data.sma.map(v => ((v - base) / base) * 100);
-            const pctFmt = v => Number(v).toFixed(2) + "%";
+            const pctFmt = v => round2(Number(v)).toFixed(2) + "%";
 
             let container = document.getElementById("researchChart");
             if (!container) {
@@ -3488,6 +3505,16 @@
         }
 
         function updateRefreshBar() {
+            // Five-minute checkpoint highlight — independent of the countdown bar's own logic below
+            // (and its early-return), so it keeps working even if the bar's specific elements are ever
+            // missing. Gated on isLive — outside trading hours no new bar is actually closing, so
+            // there's nothing to mark.
+            const todayCard = document.getElementById("todayStatCard");
+            if (todayCard) {
+                const isFiveMinMark = getSessionWindow().isLive && (new Date().getMinutes() % 5 === 0);
+                todayCard.classList.toggle("five-min-active", isFiveMinMark);
+            }
+
             const wrap = document.getElementById("refreshBar");
             const fill = document.getElementById("refreshBarFill");
             if (!wrap || !fill) return;
