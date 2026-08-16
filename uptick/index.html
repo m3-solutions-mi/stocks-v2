@@ -1796,7 +1796,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V057</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V058</p>
         </div>
     </div>
 
@@ -2525,6 +2525,7 @@
             const pricePad = (priceMax - priceMin) * 0.15 || Math.max(0.5, priceMax * 0.02); // degenerate case: perfectly flat data
             const priceAxisMin = priceMin - pricePad, priceAxisMax = priceMax + pricePad;
             const sessionMarks = showAnnotations ? marketSessionAnnotations(times) : [];
+            const hourMarks = showAnnotations ? hourlyAnnotations(times) : [];
 
             return {
                 chart: {
@@ -2559,12 +2560,20 @@
                     { seriesName: "Close", show: false, min: priceAxisMin, max: priceAxisMax }
                 ],
                 annotations: !showAnnotations ? {} : {
-                    xaxis: sessionMarks.map(a => ({
-                        x: a.x,
-                        borderColor: "deeppink",
-                        borderWidth: 1,
-                        strokeDashArray: 4
-                    })),
+                    xaxis: [
+                        ...sessionMarks.map(a => ({
+                            x: a.x,
+                            borderColor: "deeppink",
+                            borderWidth: 1,
+                            strokeDashArray: 4
+                        })),
+                        ...hourMarks.map(x => ({
+                            x,
+                            borderColor: "#9FA8B5",
+                            borderWidth: 1
+                            // no strokeDashArray — solid, and no label — deliberately quiet
+                        }))
+                    ],
                     yaxis: [{
                         y: close[close.length - 1],
                         yAxisIndex: 1, // the visible price/percent axis — not the bars' hidden axis
@@ -2594,6 +2603,22 @@
                 { x: open.getTime(), label: "Open" },
                 { x: close.getTime(), label: "Close" }
             ].filter(a => a.x >= times[0] && a.x <= times[times.length - 1]);
+        }
+
+        // On-the-hour marks strictly within the regular 9:30–4:00 session — 10,11,...,15 only,
+        // deliberately excluding 9 and 16 since Open/Close already mark those exact boundaries with
+        // their own (differently styled) line, and two overlapping lines at the same x would be
+        // redundant. Solid, light grey, no label — a quiet reference grid, not something meant to
+        // compete visually with Open/Close for attention.
+        function hourlyAnnotations(times) {
+            if (currentTf !== "today" || !times.length) return [];
+            const day = new Date(times[0]);
+            const marks = [];
+            for (let h = 10; h <= 15; h++) {
+                const mark = new Date(day); mark.setHours(h, 0, 0, 0);
+                marks.push(mark.getTime());
+            }
+            return marks.filter(x => x >= times[0] && x <= times[times.length - 1]);
         }
 
         // =========================================================
