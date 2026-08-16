@@ -565,6 +565,10 @@
             color: #C96A6A;
         }
 
+        .data-table .dt-neutral {
+            color: #9FA8B5;
+        }
+
         .data-table .dt-delta {
             font-size: 11.5px;
             font-weight: 600;
@@ -1163,6 +1167,10 @@
 
         .down {
             color: #C96A6A;
+        }
+
+        .neutral {
+            color: #9FA8B5;
         }
 
         .mobile-controls {
@@ -1809,7 +1817,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V059</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V060</p>
         </div>
     </div>
 
@@ -2513,8 +2521,40 @@
         // numerically before this was added. Every display point below rounds explicitly first,
         // rather than trusting toFixed()'s own internal rounding to land where expected.
         const round2 = (v) => Math.round(v * 100) / 100;
+
+        // Determines up/down/neutral based on the ROUNDED (displayed) value, not the raw one — a raw
+        // value like -0.001 displays as "0.00" after rounding, and coloring or prefixing that as if
+        // it were a real gain or loss would be misleading, even though the raw number is technically
+        // non-zero. Checking the raw value directly (v === 0) — as a reference implementation shown
+        // during this fix did — would almost never actually be exactly zero, silently defeating the
+        // whole point; every consumer below rounds first, then checks that.
+        function signOf(v) {
+            const r = round2(Number(v));
+            if (r === 0) return 0;
+            return r > 0 ? 1 : -1;
+        }
+        const NEUTRAL_COLOR = "#9FA8B5"; // matches var(--muted), already used for chart labels/hourly annotation lines
+        function signColor(v) {
+            const s = signOf(v);
+            return s === 0 ? NEUTRAL_COLOR : (s > 0 ? "#83B573" : "#C96A6A");
+        }
+        function signPrefix(v) {
+            return signOf(v) > 0 ? "+" : "";
+        }
+        function signClass(v) {
+            const s = signOf(v);
+            return s === 0 ? "dt-neutral" : (s > 0 ? "dt-up" : "dt-down");
+        }
+        // Same three-way sign logic, but null-aware — for the few places (like CHANGE before a
+        // second update exists) where "no data yet" is a real, distinct fourth state, not something
+        // that should collapse into "neutral" (which specifically means "rounds to exactly zero").
+        function upDownNeutral(v) {
+            if (v === null) return null;
+            const s = signOf(v);
+            return s === 0 ? "neutral" : (s > 0 ? "up" : "down");
+        }
         function fmtMoney(v) { return "$" + round2(Number(v)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-        function fmtPct(v) { const r = round2(Number(v)); return (r >= 0 ? "+" : "") + r.toFixed(2) + "%"; }
+        function fmtPct(v) { const r = round2(Number(v)); return signPrefix(v) + r.toFixed(2) + "%"; }
 
         // =========================================================
         // Chart builder — 4 series, 4 yaxis entries, matched positionally one-to-one (no array
@@ -2658,29 +2698,29 @@
                     {
                         key: "today",
                         label: "TODAY",
-                        value: (a.todayPL >= 0 ? "+" : "") + round2(a.todayPL).toFixed(2),
+                        value: signPrefix(a.todayPL) + round2(a.todayPL).toFixed(2),
                         sub: fmtPct(a.todayPLPct),
-                        up: a.todayPL >= 0
+                        up: upDownNeutral(a.todayPL)
                     },
                     {
                         key: "positions",
                         label: "POSITIONS",
-                        value: (a.positionsValue >= 0 ? "+" : "") + round2(a.positionsValue).toFixed(2),
+                        value: signPrefix(a.positionsValue) + round2(a.positionsValue).toFixed(2),
                         sub: fmtPct(a.positionsPct),
-                        up: a.positionsValue >= 0
+                        up: upDownNeutral(a.positionsValue)
                     },
                     {
                         label: "CHANGE",
-                        value: change === null ? "—" : (change >= 0 ? "+" : "") + round2(change).toFixed(2),
+                        value: change === null ? "—" : signPrefix(change) + round2(change).toFixed(2),
                         sub: changePct === null ? "since last update" : fmtPct(changePct),
-                        up: change === null ? null : change >= 0
+                        up: upDownNeutral(change)
                     }
                 ];
                 row.innerHTML = `<div class="stat-row" data-count="3">` + cards.map(c => `
         <div class="stat-col"><div class="stat-card" ${c.key === "today" ? `id="todayStatCard"` : ""}${c.key === "positions" ? `id="positionsStatCard"` : ""}>
           <p class="stat-label">${c.label}</p>
-          <p class="stat-value" style="${c.up === true ? "color:#83B573" : c.up === false ? "color:#C96A6A" : ""}">${c.value}</p>
-          ${c.sub ? `<p class="stat-delta ${c.up === true ? "up" : c.up === false ? "down" : ""}">${c.sub}</p>` : ""}
+          <p class="stat-value" style="${c.up === "up" ? "color:#83B573" : c.up === "down" ? "color:#C96A6A" : c.up === "neutral" ? "color:#9FA8B5" : ""}">${c.value}</p>
+          ${c.sub ? `<p class="stat-delta ${c.up === "up" ? "up" : c.up === "down" ? "down" : c.up === "neutral" ? "neutral" : ""}">${c.sub}</p>` : ""}
           ${c.key === "today" ? `<div id="refreshBar" class="refresh-bar" title="Time until next auto-refresh" style="display:none;"><div id="refreshBarFill" class="refresh-bar-fill"></div></div>` : ""}
           ${c.key === "positions" ? `<button type="button" id="liquidateAllBtn" class="liquidate-btn" title="Liquidate account (close all positions)"><i class="fa fa-ban"></i></button>` : ""}
         </div></div>`).join("") + `</div>`;
@@ -2723,7 +2763,7 @@
                     const el = document.getElementById(`macroVal-${m.id}`);
                     if (el) {
                         el.textContent = `${fmtMoney(last)} ${fmtPct(pct)}`;
-                        el.style.color = pct >= 0 ? "#83B573" : "#C96A6A";
+                        el.style.color = signColor(pct);
                     }
                 } catch (e) { console.warn("macro load failed", m.symbol, e); }
             }));
@@ -2828,7 +2868,7 @@
       <div class="stat-col"><div class="stat-card">
         <p class="stat-label">${c.label}</p>
         <p class="stat-value" style="${c.color ? `color:${c.color}` : ""}">${c.value}</p>
-        ${c.sub ? `<p class="stat-delta ${c.up === true ? "up" : c.up === false ? "down" : ""}">${c.sub}</p>` : ""}
+        ${c.sub ? `<p class="stat-delta ${c.up === "up" ? "up" : c.up === "down" ? "down" : c.up === "neutral" ? "neutral" : ""}">${c.sub}</p>` : ""}
       </div></div>`).join("");
         }
 
@@ -2902,7 +2942,7 @@
             const now = composite[composite.length - 1];
             const high = Math.max(...composite), low = Math.min(...composite);
             renderStatCards([
-                { label: "Composite Now", value: fmtPct(now).replace("%", "") + "%", up: now >= 0, color: now >= 0 ? "#83B573" : "#C96A6A" },
+                { label: "Composite Now", value: fmtPct(now).replace("%", "") + "%", up: upDownNeutral(now), color: signColor(now) },
                 { label: "Session High", value: fmtPct(high).replace("%", "") + "%" },
                 { label: "Session Low", value: fmtPct(low).replace("%", "") + "%" },
                 { label: "Tickers Included", value: ids.length }
@@ -3005,8 +3045,8 @@
                     if (held) {
                         const { dollar, pct } = heldPositions.get(t.symbol);
                         gainEl.style.display = "";
-                        gainEl.textContent = (dollar >= 0 ? "+" : "") + round2(dollar).toFixed(2) + " | " + (pct >= 0 ? "+" : "") + round2(pct).toFixed(2) + "%";
-                        gainEl.style.color = dollar >= 0 ? "#83B573" : "#C96A6A";
+                        gainEl.textContent = signPrefix(dollar) + round2(dollar).toFixed(2) + " | " + signPrefix(pct) + round2(pct).toFixed(2) + "%";
+                        gainEl.style.color = signColor(dollar);
                     } else {
                         gainEl.style.display = "none";
                     }
@@ -3054,8 +3094,8 @@
               <td>${r.t.symbol}</td>
               <td>${fmtMoney(r.start)}</td>
               <td>${fmtMoney(r.end)}</td>
-              <td class="${r.dollarDelta >= 0 ? "dt-up" : "dt-down"}">${r.dollarDelta >= 0 ? "+" : ""}${round2(r.dollarDelta).toFixed(2)}</td>
-              <td class="${r.pctDelta >= 0 ? "dt-up" : "dt-down"}">${fmtPct(r.pctDelta)}</td>
+              <td class="${signClass(r.dollarDelta)}">${signPrefix(r.dollarDelta)}${round2(r.dollarDelta).toFixed(2)}</td>
+              <td class="${signClass(r.pctDelta)}">${fmtPct(r.pctDelta)}</td>
             </tr>`).join("")}
         </tbody>
       </table>
@@ -3065,7 +3105,7 @@
             renderStatCards([
                 { label: "Best", value: `${rows[0].t.symbol} ${fmtPct(rows[0].pctDelta)}`, color: "#83B573" },
                 { label: "Worst", value: `${rows[rows.length - 1].t.symbol} ${fmtPct(rows[rows.length - 1].pctDelta)}`, color: "#C96A6A" },
-                { label: "Average Δ", value: fmtPct(avg), color: avg >= 0 ? "#83B573" : "#C96A6A" },
+                { label: "Average Δ", value: fmtPct(avg), color: signColor(avg) },
                 { label: "Tickers", value: rows.length }
             ]);
         }
@@ -3107,15 +3147,15 @@
           ${rows.map(r => `
             <tr>
               <td>${r.symbol}</td>
-              <td class="${r.dollar >= 0 ? "dt-up" : "dt-down"}">${r.dollar >= 0 ? "+" : ""}${round2(r.dollar).toFixed(2)}</td>
-              <td class="${r.pct >= 0 ? "dt-up" : "dt-down"}" style="${r.pct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(r.pct)}</td>
+              <td class="${signClass(r.dollar)}">${signPrefix(r.dollar)}${round2(r.dollar).toFixed(2)}</td>
+              <td class="${signClass(r.pct)}" style="${r.pct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(r.pct)}</td>
               <td style="text-align:right;">${fmtMoney(r.costBasis)}</td>
               <td style="text-align:center;"><button type="button" class="trade-btn trade-sell-btn" data-sell-symbol="${r.symbol}" title="Sell ${r.symbol} (full position)"><i class="fa fa-credit-card"></i></button></td>
             </tr>`).join("")}
           <tr class="positions-total-row" style="font-weight:700;">
             <td>TOTAL</td>
-            <td class="${totalDollar >= 0 ? "dt-up" : "dt-down"}">${totalDollar >= 0 ? "+" : ""}${round2(totalDollar).toFixed(2)}</td>
-            <td class="${totalPct >= 0 ? "dt-up" : "dt-down"}" style="${totalPct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(totalPct)}</td>
+            <td class="${signClass(totalDollar)}">${signPrefix(totalDollar)}${round2(totalDollar).toFixed(2)}</td>
+            <td class="${signClass(totalPct)}" style="${totalPct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(totalPct)}</td>
             <td style="text-align:right;">${fmtMoney(totalCostBasis)}</td>
             <td></td>
           </tr>
@@ -3195,7 +3235,7 @@
             const last = pctSeries[pctSeries.length - 1];
             const high = Math.max(...pctSeries), low = Math.min(...pctSeries);
             renderStatCards([
-                { label: "Change", value: fmtPct(last), up: last >= 0, color: last >= 0 ? "#83B573" : "#C96A6A" },
+                { label: "Change", value: fmtPct(last), up: upDownNeutral(last), color: signColor(last) },
                 { label: "High", value: fmtPct(high) },
                 { label: "Low", value: fmtPct(low) },
                 { label: "Last Price", value: fmtMoney(data.close[data.close.length - 1]) }
