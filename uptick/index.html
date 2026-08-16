@@ -1130,6 +1130,14 @@
             background: color-mix(in srgb, #5C89B9 10%, var(--bg2));
         }
 
+        /* Same steady, non-pulsing treatment as the five-minute cue above, but this one IS a genuine
+     gain/loss signal, so it reuses the app's existing red (#C96A6A — already means "negative"
+     everywhere else) rather than an otherwise-unused color. */
+        .stat-card.loss-alert {
+            border-color: #C96A6A;
+            background: color-mix(in srgb, #C96A6A 10%, var(--bg2));
+        }
+
         .stat-label {
             font-size: 11px;
             letter-spacing: 1.5px;
@@ -1690,6 +1698,11 @@
                             max="200" step="1"></td>
                 </tr>
                 <tr>
+                    <td>Loss alert threshold (%)</td>
+                    <td style="text-align:right;"><input type="number" id="settingsLossAlertPct" class="edit-input"
+                            min="-100" max="0" step="0.1"></td>
+                </tr>
+                <tr>
                     <td>Chart refresh (seconds, 0 = off)</td>
                     <td style="text-align:right;"><input type="number" id="settingsChartRefreshSec" class="edit-input"
                             min="0" max="600" step="5"></td>
@@ -1796,7 +1809,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V058</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V059</p>
         </div>
     </div>
 
@@ -1815,6 +1828,7 @@
                 accountApiSecret: ""
             },
             smaPeriod: 5,
+            lossAlertPct: -0.5, // threshold for the red hue on the Today/Positions cards and the Positions table's % Change cells — one setting drives all three
             chartRefreshSeconds: 15,   // macro chips + ticker symbol data
             accountRefreshSeconds: 15  // account equity + positions — independent rate, matching the reference app's pattern of updating charts and account on their own cadences
         };
@@ -1882,6 +1896,7 @@
                     accountApiKey: CONFIG.api.accountApiKey,
                     accountApiSecret: CONFIG.api.accountApiSecret,
                     smaPeriod: CONFIG.smaPeriod,
+                    lossAlertPct: CONFIG.lossAlertPct,
                     chartRefreshSeconds: CONFIG.chartRefreshSeconds,
                     accountRefreshSeconds: CONFIG.accountRefreshSeconds,
                     tickers: TICKERS.map(t => ({ id: t.id, symbol: t.symbol, name: t.name })),
@@ -1906,6 +1921,7 @@
             if (typeof saved.accountApiKey === "string") CONFIG.api.accountApiKey = saved.accountApiKey;
             if (typeof saved.accountApiSecret === "string") CONFIG.api.accountApiSecret = saved.accountApiSecret;
             if (Number.isFinite(saved.smaPeriod)) CONFIG.smaPeriod = saved.smaPeriod;
+            if (Number.isFinite(saved.lossAlertPct)) CONFIG.lossAlertPct = saved.lossAlertPct;
             if (Number.isFinite(saved.chartRefreshSeconds)) CONFIG.chartRefreshSeconds = saved.chartRefreshSeconds;
             if (Number.isFinite(saved.accountRefreshSeconds)) CONFIG.accountRefreshSeconds = saved.accountRefreshSeconds;
             if (Array.isArray(saved.tickers) && saved.tickers.length) {
@@ -2661,7 +2677,7 @@
                     }
                 ];
                 row.innerHTML = `<div class="stat-row" data-count="3">` + cards.map(c => `
-        <div class="stat-col"><div class="stat-card" ${c.key === "today" ? `id="todayStatCard"` : ""}>
+        <div class="stat-col"><div class="stat-card" ${c.key === "today" ? `id="todayStatCard"` : ""}${c.key === "positions" ? `id="positionsStatCard"` : ""}>
           <p class="stat-label">${c.label}</p>
           <p class="stat-value" style="${c.up === true ? "color:#83B573" : c.up === false ? "color:#C96A6A" : ""}">${c.value}</p>
           ${c.sub ? `<p class="stat-delta ${c.up === true ? "up" : c.up === false ? "down" : ""}">${c.sub}</p>` : ""}
@@ -2669,6 +2685,12 @@
           ${c.key === "positions" ? `<button type="button" id="liquidateAllBtn" class="liquidate-btn" title="Liquidate account (close all positions)"><i class="fa fa-ban"></i></button>` : ""}
         </div></div>`).join("") + `</div>`;
                 document.getElementById("liquidateAllBtn").addEventListener("click", handleLiquidateAllClick);
+
+                // Same steady-cue pattern as the Today card's five-minute highlight, but this one runs on
+                // the account refresh cadence instead — positions data only changes as often as that
+                // fetch happens, so there's no need for the 200ms clock-precision the timing cue needed.
+                const positionsCard = document.getElementById("positionsStatCard");
+                if (positionsCard) positionsCard.classList.toggle("loss-alert", a.positionsPct < CONFIG.lossAlertPct);
             } catch (e) {
                 console.warn("account info load failed", e);
                 row.innerHTML = `<p class="metric-sub">Couldn't load account info.</p>`;
@@ -3072,6 +3094,11 @@
             // position's swing as equally significant as a large one.
             const totalPct = totalCostBasis !== 0 ? (totalDollar / totalCostBasis) * 100 : 0;
 
+            // Background hue on the % Change cell specifically, per row and on TOTAL — more useful than
+            // a single top banner, since it flags which individual positions are actually underwater,
+            // not just the aggregate. Same -0.5% threshold and same red as the stat card's hue.
+            const alertBg = "background:color-mix(in srgb, #C96A6A 22%, transparent);";
+
             panel.innerHTML = `
       <div style="overflow-x:auto;">
       <table class="data-table positions-table" style="table-layout:fixed; width:100%;">
@@ -3081,14 +3108,14 @@
             <tr>
               <td>${r.symbol}</td>
               <td class="${r.dollar >= 0 ? "dt-up" : "dt-down"}">${r.dollar >= 0 ? "+" : ""}${round2(r.dollar).toFixed(2)}</td>
-              <td class="${r.pct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(r.pct)}</td>
+              <td class="${r.pct >= 0 ? "dt-up" : "dt-down"}" style="${r.pct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(r.pct)}</td>
               <td style="text-align:right;">${fmtMoney(r.costBasis)}</td>
               <td style="text-align:center;"><button type="button" class="trade-btn trade-sell-btn" data-sell-symbol="${r.symbol}" title="Sell ${r.symbol} (full position)"><i class="fa fa-credit-card"></i></button></td>
             </tr>`).join("")}
           <tr class="positions-total-row" style="font-weight:700;">
             <td>TOTAL</td>
             <td class="${totalDollar >= 0 ? "dt-up" : "dt-down"}">${totalDollar >= 0 ? "+" : ""}${round2(totalDollar).toFixed(2)}</td>
-            <td class="${totalPct >= 0 ? "dt-up" : "dt-down"}">${fmtPct(totalPct)}</td>
+            <td class="${totalPct >= 0 ? "dt-up" : "dt-down"}" style="${totalPct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(totalPct)}</td>
             <td style="text-align:right;">${fmtMoney(totalCostBasis)}</td>
             <td></td>
           </tr>
@@ -3391,6 +3418,7 @@
         const settingsAccountKey = document.getElementById("settingsAccountKey");
         const settingsAccountSecret = document.getElementById("settingsAccountSecret");
         const settingsSmaPeriod = document.getElementById("settingsSmaPeriod");
+        const settingsLossAlertPct = document.getElementById("settingsLossAlertPct");
         const settingsChartRefreshSec = document.getElementById("settingsChartRefreshSec");
         const settingsAccountRefreshSec = document.getElementById("settingsAccountRefreshSec");
         let draftTickers = [];
@@ -3440,6 +3468,7 @@
             settingsAccountKey.value = CONFIG.api.accountApiKey;
             settingsAccountSecret.value = CONFIG.api.accountApiSecret;
             settingsSmaPeriod.value = CONFIG.smaPeriod;
+            settingsLossAlertPct.value = CONFIG.lossAlertPct;
             settingsChartRefreshSec.value = CONFIG.chartRefreshSeconds;
             settingsAccountRefreshSec.value = CONFIG.accountRefreshSeconds;
             draftTickers = TICKERS.map(t => ({ ...t }));
@@ -3484,6 +3513,8 @@
             CONFIG.api.accountApiKey = settingsAccountKey.value;
             CONFIG.api.accountApiSecret = settingsAccountSecret.value;
             CONFIG.smaPeriod = Math.max(2, parseInt(settingsSmaPeriod.value, 10) || CONFIG.smaPeriod);
+            const parsedLossAlert = parseFloat(settingsLossAlertPct.value);
+            CONFIG.lossAlertPct = Number.isFinite(parsedLossAlert) ? Math.min(0, parsedLossAlert) : CONFIG.lossAlertPct;
             CONFIG.chartRefreshSeconds = Math.max(0, parseInt(settingsChartRefreshSec.value, 10) || 0);
             CONFIG.accountRefreshSeconds = Math.max(0, parseInt(settingsAccountRefreshSec.value, 10) || 0);
             if (draftTickers.length) {
