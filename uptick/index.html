@@ -1532,6 +1532,12 @@
                     <p class="help-desc">Green when price is running above its SMA, red when below. Scaled small on
                         purpose so it reads as a strip, not a second chart.</p>
                 </div>
+                <div class="help-section">
+                    <p class="help-heading"><span class="help-swatch" style="background:#9FA8B5"></span>Hourly marks</p>
+                    <p class="help-desc">Solid, light grey, unlabeled vertical lines at 10am–3pm on the Today chart — a
+                        quiet reference grid for the regular trading session, distinct from the dashed pink Open/Close
+                        lines at 9:30/4:00.</p>
+                </div>
             </div>
 
             <div class="help-panel" id="helpPanelViews" style="display:none;">
@@ -1627,6 +1633,14 @@
                         <code>{"bars":{"SYMBOL":[{"o":n,"h":n,"l":n,"c":n,"t":"ISO string","e":epochMs,"v":n}, ...]}}</code>
                         — the symbol key sits under a top-level <code>bars</code> object. Only <code>t</code> and
                         <code>c</code> are used today; SMA is computed client-side from <code>c</code>.</p>
+                    <p class="help-desc">This is Alpaca's own API shape throughout (<code>/v2/account</code>,
+                        <code>/v2/positions</code>, <code>/v2/orders</code>). Every request sends your API key/secret as
+                        <code>APCA-API-KEY-ID</code> and <code>APCA-API-SECRET-KEY</code> headers — Alpaca's actual
+                        header names, not a generic placeholder. Stored only in this browser's local storage, never
+                        written into the app's source.</p>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">Today &amp; Positions</p>
                     <p class="help-desc"><b>Today</b> comes from the account resource's <code>equity</code> and
                         <code>last_equity</code> fields (today's change = equity − last_equity) — the account-level
                         number, not derived from individual positions.</p>
@@ -1634,8 +1648,10 @@
                         open position, each with <code>cost_basis</code> and <code>unrealized_pl</code> (numeric
                         strings). Aggregated dollar-weighted across every returned position, not averaged per-position.
                     </p>
-                    <p class="help-desc"><b>Buy/Sell buttons</b> sit at the bottom of every Compare tile, icon-only —
-                        hover for a tooltip.</p>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">Buy/Sell buttons</p>
+                    <p class="help-desc">Sit at the bottom of every Compare tile, icon-only — hover for a tooltip.</p>
                     <ul class="help-desc">
                         <li><span style="color:#8B94A3">Grey</span> — buy $100</li>
                         <li><span style="color:#20A8A8">Teal</span> — buy $1,000</li>
@@ -1645,14 +1661,23 @@
                     <p class="help-desc">The amount is editable via a prompt before confirming; Sell is gated behind a
                         confirm dialog. Neither fires without that explicit step, and neither actually places an order
                         until Live API mode is fully configured — otherwise clicking opens Settings instead.</p>
-                    <p class="help-desc"><b>Liquidate account</b> is the small <i class="fa fa-ban"></i> icon in the
-                        top-right corner of the Positions card — not per-symbol, exists once. It closes every open
-                        position immediately, gated behind a confirm dialog.</p>
-                    <p class="help-desc">This is Alpaca's own API shape throughout (<code>/v2/account</code>,
-                        <code>/v2/positions</code>, <code>/v2/orders</code>). Every request sends your API key/secret as
-                        <code>APCA-API-KEY-ID</code> and <code>APCA-API-SECRET-KEY</code> headers — Alpaca's actual
-                        header names, not a generic placeholder. Stored only in this browser's local storage, never
-                        written into the app's source.</p>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">Liquidate account</p>
+                    <p class="help-desc">The small <i class="fa fa-ban"></i> icon in the top-right corner of the
+                        Positions card — not per-symbol, exists once. It closes every open position immediately, gated
+                        behind a confirm dialog.</p>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">Visual cues</p>
+                    <p class="help-desc"><b>Five-minute highlight</b> — the Today card gets a steady blue border for the
+                        full minute at each :00/:05/:10/... mark, while the market's live. Deliberately not a flash or
+                        pulse — the point is a reliable, easy-to-notice checkpoint cue, not another source of reactive
+                        urgency.</p>
+                    <p class="help-desc"><b>Loss alert</b> — a red hue appears on the POSITIONS card, and independently
+                        on each row and the TOTAL in the Positions table, whenever that figure's % change drops below
+                        your configured threshold (default -0.5%, adjustable in Settings). Runs on the account refresh
+                        cadence, so it stays current around the clock, not just during trading hours.</p>
                 </div>
             </div>
         </div>
@@ -1817,7 +1842,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V060</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V063</p>
         </div>
     </div>
 
@@ -2682,10 +2707,28 @@
         // =========================================================
         let lastPositionsValue = null; // tracked client-side so "Change" can diff against the prior update, not just re-derive Today's P&L
 
+        // Updates the browser tab title with the current Today total — so Chrome's own Print/Save
+        // dialogs, which default to suggesting the page title as the filename, effectively become a
+        // free "auto-name my printed daily record" feature. Whole dollars, not cents — a tab title is
+        // a quick glance, not a precise figure, and the app itself already shows full precision
+        // everywhere that actually matters. Piggybacks on the account refresh cadence, no new timer.
+        function updatePageTitle(todayPL) {
+            const now = new Date();
+            // Local date components, not toISOString() — that's always UTC, which silently mismatched
+            // against getHours()/getMinutes() below (local) whenever local evening hours crossed into
+            // the next UTC calendar day, showing tomorrow's date next to today's actual local time.
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+            const timeStr = `${now.getHours()}${String(now.getMinutes()).padStart(2, "0")}`;
+            const rounded = Math.round(round2(todayPL));
+            const sign = rounded < 0 ? "-" : "";
+            document.title = `Uptick | ${sign}$${Math.abs(rounded)} | ${dateStr}_${timeStr}`;
+        }
+
         async function renderAccountRow() {
             const row = document.getElementById("accountRow");
             try {
                 const a = await DataSource.loadAccountInfo();
+                updatePageTitle(a.todayPL);
 
                 // Change = delta between this update's Positions value and the value from the update
                 // before it — not available until a second update has actually happened.
