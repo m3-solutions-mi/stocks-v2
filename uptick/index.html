@@ -668,6 +668,26 @@
             color: #EF4444;
         }
 
+        /* Three states for the automated-trading toggle, purely visual — no execution logic exists
+     yet. Off matches the same grey as the $100 buy tier (a settled, "not doing anything"
+     color already established). Active/armed both use the same blue as the five-minute
+     checkpoint cue, since it's the same underlying concept (automation timing) — armed is
+     simply dimmed to show "enabled, but outside your configured HMM window right now" without
+     needing a second color to learn. */
+        .auto-trade-off {
+            color: #8B94A3;
+        }
+
+        .auto-trade-active {
+            color: #5C89B9;
+            border-color: #5C89B9;
+        }
+
+        .auto-trade-armed {
+            color: #5C89B9;
+            opacity: .45;
+        }
+
         @media (max-width:700px) {
             .compare-grid {
                 grid-template-columns: 1fr;
@@ -1128,10 +1148,16 @@
      help you not react emotionally to. Held for the whole minute, not an instant, so a glance
      at any point during that minute still catches it. Blue, since it's otherwise unused
      elsewhere in the app's color language (green/red/orange/teal/grey all carry other
-     meanings already) — this isn't a gain/loss signal, just a timing one. */
+     meanings already) — this isn't a gain/loss signal, just a timing one. Intensity bumped
+     after real trading-hours use showed the original 1px/10% version was too subtle to notice
+     at a glance. box-shadow (not border-width) gives the thicker-outline look without changing
+     the card's box size — a border-width change here would shift the card's content by a
+     couple pixels every time this toggles on/off, its own small jarring effect working against
+     the calm/steady goal this cue is built around. */
         .stat-card.five-min-active {
             border-color: #5C89B9;
-            background: color-mix(in srgb, #5C89B9 10%, var(--bg2));
+            box-shadow: inset 0 0 0 2px #5C89B9;
+            background: color-mix(in srgb, #5C89B9 25%, var(--bg2));
         }
 
         /* Same steady, non-pulsing treatment as the five-minute cue above, but this one IS a genuine
@@ -1445,7 +1471,7 @@
 
             <div class="word-block">
                 <p class="wordmark">UPTICK</p>
-                <p class="subtitle">MARKET WATCH</p>
+                <p class="subtitle" id="marketWatchSubtitle">MARKET WATCH</p>
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:auto; align-items:center;">
@@ -1454,6 +1480,10 @@
                 </div>
                 <button class="chip-settings" id="settingsChip" title="Settings" aria-label="Settings">
                     <i class="fa fa-cog"></i>
+                </button>
+                <button class="chip-settings" id="autoTradeChip" title="Automated Trading"
+                    aria-label="Automated Trading">
+                    <i class="fa fa-bolt"></i>
                 </button>
                 <button class="chip-settings" id="helpChip" title="How this works" aria-label="Help">
                     <i class="fa fa-info-circle"></i>
@@ -1464,7 +1494,7 @@
 
     <!-- ===== Account summary ===== -->
     <div class="wrap" style="padding-bottom:0;">
-        <div class="panel" id="accountRow">
+        <div class="panel" id="accountRow" style="position:relative; padding-top:28px;">
             <!-- filled by renderAccountRow() -->
         </div>
     </div>
@@ -1679,6 +1709,32 @@
                         your configured threshold (default -0.5%, adjustable in Settings). Runs on the account refresh
                         cadence, so it stays current around the clock, not just during trading hours.</p>
                 </div>
+                <div class="help-section" id="helpAutoTradingSection" style="display:none;">
+                    <p class="help-heading">Automated trading</p>
+                    <p class="help-desc">Hidden here in Sample mode or an unconfigured setup — this only shows once Live
+                        trading is actually ready, since nothing below applies otherwise.</p>
+                    <p class="help-desc"><b>Master switch</b> — local to this browser/device only, not a network
+                        setting. Off by default. Nothing evaluates or executes while it's off, regardless of any
+                        symbol's bolt state.</p>
+                    <p class="help-desc"><b>The bolt icon on each Compare tile</b> opts that symbol in or out — three
+                        states: grey (off), dim blue (armed — enabled, but outside your configured buy window right
+                        now), full blue (active — enabled and within the window). Always clickable, even while viewing a
+                        historical date; turning a symbol off is never blocked.</p>
+                    <p class="help-desc"><b>Buying</b> requires all of: master switch on, the symbol's bolt on, the
+                        current time within Buy Start/End HMM, the symbol not already held, and a green delta bar
+                        immediately preceded by a non-green one (a fresh crossover, not just "currently green").
+                        Evaluated once per five-minute cue, at your configured second within it — not continuously.</p>
+                    <p class="help-desc"><b>Selling</b> — two independent triggers, either fires a sell on its own: a
+                        red delta bar immediately preceded by a non-red one, or the position's loss crossing your
+                        configured Max Loss (%). Unlike buying, this ignores the HMM window entirely and doesn't depend
+                        on the master switch — a held position needs a way out at any time the market's open, watched
+                        for as long as its bolt stays on.</p>
+                    <p class="help-desc"><b>Turning a symbol's bolt off also stops watching any position you're holding
+                            in it</b> — not just new buying. You'll get a one-time notice when this applies to something
+                        you currently hold; the toggle itself always succeeds regardless.</p>
+                    <p class="help-desc"><b>Invest $ is capped at $100</b> during this testing phase — hardcoded, not
+                        something a larger number in Settings can override.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -1764,6 +1820,69 @@
         </div>
     </div>
 
+    <!-- ===== Automated Trading modal ===== -->
+    <!-- Settings/persistence only, deliberately — no execution logic wired up yet. First step of
+       a much larger feature, built incrementally so every later step has something solid to
+       build on rather than bolting logic onto UI never designed to hold it. -->
+    <div class="modal-overlay" id="autoTradeModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <p class="modal-title">Automated Trading</p>
+                <button class="modal-close" id="autoTradeClose" aria-label="Close"><i class="fa fa-times"></i></button>
+            </div>
+            <p class="metric-sub" style="margin:0 0 16px;">Settings only for now — nothing here executes trades yet.</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <span class="metric-sub" style="margin:0;">Master switch — local to this device only, cannot control any
+                    other device running the app</span>
+                <div class="loc-chip-row" id="autoTradeMasterToggle">
+                    <button type="button" class="loc-chip" data-master="off">Off</button>
+                    <button type="button" class="loc-chip" data-master="on">On</button>
+                </div>
+            </div>
+            <table class="edit-table" style="margin-bottom:16px;">
+                <tr>
+                    <td>Buy Start HMM</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeStartHmm" class="edit-input"
+                            min="930" max="1559" step="1"></td>
+                </tr>
+                <tr>
+                    <td>Buy End HMM</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeEndHmm" class="edit-input" min="930"
+                            max="1559" step="1"></td>
+                </tr>
+                <tr>
+                    <td>Invest $</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeInvestDollars" class="edit-input"
+                            min="0" max="100" step="10"></td>
+                </tr>
+                <tr>
+                    <td>Evaluate at second (within the blue 5-min window)</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeEvalSecond" class="edit-input"
+                            min="0" max="59" step="1"></td>
+                </tr>
+                <tr>
+                    <td>Position max loss (%)</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeMaxLossPct" class="edit-input"
+                            max="0" step="0.1"></td>
+                </tr>
+                <tr>
+                    <td>Deadband (± % counts as neutral)</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeDeadbandPct" class="edit-input"
+                            min="0" max="10" step="0.05"></td>
+                </tr>
+                <tr>
+                    <td>Trailing (%) — not active yet</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeTrailingPct" class="edit-input"
+                            step="0.1" disabled></td>
+                </tr>
+            </table>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="autoTradeCancel">Cancel</button>
+                <button class="btn-save" id="autoTradeSave">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== Main ===== -->
     <div class="wrap">
         <div class="panel">
@@ -1842,7 +1961,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V063</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V069</p>
         </div>
     </div>
 
@@ -1863,7 +1982,22 @@
             smaPeriod: 5,
             lossAlertPct: -0.5, // threshold for the red hue on the Today/Positions cards and the Positions table's % Change cells — one setting drives all three
             chartRefreshSeconds: 15,   // macro chips + ticker symbol data
-            accountRefreshSeconds: 15  // account equity + positions — independent rate, matching the reference app's pattern of updating charts and account on their own cadences
+            accountRefreshSeconds: 15, // account equity + positions — independent rate, matching the reference app's pattern of updating charts and account on their own cadences
+            // Settings-only for now, deliberately not wired to any execution logic yet — first step of
+            // a larger automated-trading feature, built incrementally. May end up overlapping with
+            // lossAlertPct in meaning (both are "loss thresholds") — kept separate for now since one is
+            // a UI cue and the other will eventually gate a real action; reconciling them, if it even
+            // makes sense to, is a later decision once the full feature has real shape.
+            autoTrading: {
+                masterEnabled: false, // local to this device only — no backend exists, so this cannot control any other device running the app. Defaults off, deliberately.
+                startHmm: 930,
+                endHmm: 1559, // regular session upper bound, matching the same 930-1559 boundary from the user's own reference app — can't automate outside actual trading hours anyway
+                investDollars: 100,
+                maxLossPct: -1,
+                deadbandPct: 0.25, // percentage points either side of zero that count as "neutral" delta — neither green nor red — for crossover detection
+                evalSecond: 59, // which second (0-59) within the blue five-minute cue's already-fixed active minute to evaluate at — not a setting for the cue itself, which stays tied to the chart's own bar windows
+                trailingPct: NaN // NaN means "not using it yet" — deliberately, not merely unset
+            }
         };
 
         const SETTINGS_KEY = "uptick-settings-v1";
@@ -1896,8 +2030,14 @@
         // State
         // =========================================================
         let selectedTickerIds = new Set(TICKERS.map(t => t.id));
+        // Per-symbol opt-in for the (not-yet-executing) automated trading feature — a bolt icon on
+        // each Compare tile toggles membership here. Deliberately its own top-level Set, matching
+        // selectedTickerIds' own pattern, rather than nested inside CONFIG.autoTrading — this is
+        // "which tickers" state, not a general setting.
+        let autoTradeEnabledIds = new Set();
         let tickerPresets = []; // [{ id, name, tickerIds: [...] }] — named snapshots of selectedTickerIds, not separate ticker lists. The master roster (TICKERS) is untouched by any of this; switching a preset only changes which of your existing tickers are checked.
         let heldPositions = new Map(); // symbol -> { dollar, pct } unrealized gain, from the live positions array — empty in Sample mode, no fabricated demo data
+        let lastPositionDollars = new Map(); // symbol -> previous refresh's dollar gain, captured right before heldPositions gets overwritten — feeds the Positions table's per-row Delta column
         let selectedDate = null; // "pretend this day is today" — a picked historical date, or null for live Today. Session-only, never persisted.
         let lastActivityTime = Date.now(); // updated on any click; drives the 60-minute inactivity reset while selectedDate is active
         let currentTf = "today";      // today | 5d | 1m
@@ -1905,6 +2045,15 @@
         let displayWindow = "full";   // full | regular | last6h — only meaningful when currentTf === "today"; a pure display-layer slice, doesn't touch fetching/SMA/session logic at all
         let controlsExpanded = true;  // watchlist/timeframe accordion — moved up here (was declared much later) so applySavedSettings() below can restore it without hitting the temporal dead zone
         let statsRowExpanded = true;  // stats-row accordion — same reason
+        // Hardcoded, deliberately not settings-editable during this test phase — a cap that can be
+        // changed by typing a new number into a field isn't a lock, it's a suggestion. One source of
+        // truth referenced by both enforcement layers: the Invest $ field's own save-time clamp, and
+        // the buy execution's independent clamp at the moment it actually fires. Raising this later
+        // means asking directly for this constant to be changed — never a settings toggle. Declared
+        // here (not near getHMM(), where it originally lived) for the same reason controlsExpanded
+        // was moved up — applySavedSettings() below needs it and would otherwise hit the temporal
+        // dead zone trying to read a const declared later in the file.
+        const AUTO_TRADE_MAX_INVEST_DOLLARS = 100;
         let seriesCache = {};         // symbol -> { times, close }
         let trendChart = null;
         let compareCharts = {};
@@ -1932,8 +2081,10 @@
                     lossAlertPct: CONFIG.lossAlertPct,
                     chartRefreshSeconds: CONFIG.chartRefreshSeconds,
                     accountRefreshSeconds: CONFIG.accountRefreshSeconds,
+                    autoTrading: CONFIG.autoTrading,
                     tickers: TICKERS.map(t => ({ id: t.id, symbol: t.symbol, name: t.name })),
                     selectedTickerIds: [...selectedTickerIds],
+                    autoTradeEnabledIds: [...autoTradeEnabledIds],
                     tickerPresets,
                     currentTf,
                     currentView,
@@ -1957,6 +2108,21 @@
             if (Number.isFinite(saved.lossAlertPct)) CONFIG.lossAlertPct = saved.lossAlertPct;
             if (Number.isFinite(saved.chartRefreshSeconds)) CONFIG.chartRefreshSeconds = saved.chartRefreshSeconds;
             if (Number.isFinite(saved.accountRefreshSeconds)) CONFIG.accountRefreshSeconds = saved.accountRefreshSeconds;
+            if (saved.autoTrading && typeof saved.autoTrading === "object") {
+                const at = saved.autoTrading;
+                if (typeof at.masterEnabled === "boolean") CONFIG.autoTrading.masterEnabled = at.masterEnabled;
+                if (Number.isFinite(at.startHmm)) CONFIG.autoTrading.startHmm = Math.min(1559, Math.max(930, at.startHmm));
+                if (Number.isFinite(at.endHmm)) CONFIG.autoTrading.endHmm = Math.min(1559, Math.max(930, at.endHmm));
+                if (Number.isFinite(at.investDollars)) CONFIG.autoTrading.investDollars = Math.min(AUTO_TRADE_MAX_INVEST_DOLLARS, Math.max(0, at.investDollars));
+                if (Number.isFinite(at.maxLossPct)) CONFIG.autoTrading.maxLossPct = at.maxLossPct;
+                if (Number.isFinite(at.deadbandPct)) CONFIG.autoTrading.deadbandPct = Math.min(10, Math.max(0, at.deadbandPct));
+                if (Number.isFinite(at.evalSecond)) CONFIG.autoTrading.evalSecond = at.evalSecond;
+                // JSON.stringify(NaN) silently becomes "null", not "NaN" — JSON simply can't represent
+                // NaN, so a genuine NaN never survives the round-trip as-is. Restoring null (or anything
+                // else that isn't a real finite number) back to NaN here is what makes "not using it yet"
+                // actually persist correctly across reloads, rather than silently corrupting to null.
+                CONFIG.autoTrading.trailingPct = Number.isFinite(at.trailingPct) ? at.trailingPct : NaN;
+            }
             if (Array.isArray(saved.tickers) && saved.tickers.length) {
                 TICKERS = saved.tickers.map(t => ({ id: t.id, symbol: t.symbol, name: t.name }));
                 selectedTickerIds = new Set(TICKERS.map(t => t.id));
@@ -1965,6 +2131,13 @@
                 const validIds = new Set(TICKERS.map(t => t.id));
                 const restored = saved.selectedTickerIds.filter(id => validIds.has(id));
                 if (restored.length) selectedTickerIds = new Set(restored); // ignore ids that no longer exist in the watchlist
+            }
+            if (Array.isArray(saved.autoTradeEnabledIds)) {
+                const validIds = new Set(TICKERS.map(t => t.id));
+                // No length guard here, unlike selectedTickerIds above — a genuinely empty set (nothing
+                // enabled) is the correct, safe default for this feature, not something to fall back
+                // away from the way an empty watchlist selection would be.
+                autoTradeEnabledIds = new Set(saved.autoTradeEnabledIds.filter(id => validIds.has(id)));
             }
             if (Array.isArray(saved.tickerPresets)) {
                 tickerPresets = saved.tickerPresets.filter(p => p && typeof p.id === "string" && typeof p.name === "string" && Array.isArray(p.tickerIds));
@@ -1995,6 +2168,186 @@
         // sample generation) without needing separate historical-mode logic scattered around.
         function effectiveToday() {
             return selectedDate ? new Date(selectedDate) : new Date();
+        }
+
+        // Hour+minute as a single number (930 for 9:30, 1600 for 4:00 PM) — turns a time-of-day range
+        // check into a plain integer comparison (hmm >= 930 && hmm <= 1600) instead of constructing
+        // and comparing Date objects. No caller yet — foundational infrastructure for upcoming
+        // trade-logic/visual-cue work, matching a pattern from the user's other app.
+        function getHMM(date) {
+            const d = new Date(date);
+            return d.getHours() * 100 + d.getMinutes();
+        }
+
+        // Purely visual — no execution logic. Re-applies the bolt icon's 3-state class to every
+        // auto-trade toggle currently in the DOM: off (not enabled for this symbol), active (enabled
+        // and within the configured Start/End HMM window), or armed (enabled but outside it right
+        // now). Called after Compare rebuilds its tiles, on toggle click, and on the existing 200ms
+        // tick so "armed vs active" stays current as time passes — same pattern as the five-minute
+        // highlight, which also re-derives its state on that same tick rather than its own timer.
+        // Doesn't yet handle a Start HMM greater than End HMM (an overnight window) — out of scope
+        // for a single straightforward comparison until that's actually asked for.
+        function updateAutoTradeButtonStates() {
+            const now = getHMM(new Date());
+            const { startHmm, endHmm } = CONFIG.autoTrading;
+            document.querySelectorAll("[data-autotrade]").forEach(btn => {
+                const enabled = autoTradeEnabledIds.has(btn.dataset.autotrade);
+                btn.classList.remove("auto-trade-off", "auto-trade-active", "auto-trade-armed");
+                if (!enabled) {
+                    btn.classList.add("auto-trade-off");
+                } else {
+                    btn.classList.add(now >= startHmm && now <= endHmm ? "auto-trade-active" : "auto-trade-armed");
+                }
+            });
+        }
+
+        // =========================================================
+        // Automated Trading — execution logic
+        // =========================================================
+        // Fail-closed throughout, per the design doc's safety section: any error, anywhere in this
+        // chain, results in no buy/sell action for that pass — never a fallback assumption that lets
+        // execution continue on missing or stale data. Uses TradingAPI.buy()/sell() directly, never
+        // executeSell() — that function calls a blocking confirm() dialog that would freeze an
+        // unattended page indefinitely waiting for a click that will never come.
+
+        // The exact same percentage-point delta formula Compare's own chart uses (close vs SMA,
+        // normalized against the session's starting price) — verified numerically to match building
+        // the full normalized series before this was written, just derived directly here instead of
+        // constructing and discarding most of it.
+        function computePctDeltaSeries(close, smaVals) {
+            const base = close[0];
+            return close.map((c, i) => ((c - smaVals[i]) / base) * 100);
+        }
+
+        // green/red/neutral with the deadband applied — the general-purpose version of the UI's own
+        // `>= 0` color check, extended with a neutral zone that check has no concept of at all.
+        function classifyDelta(deltaPct) {
+            const n = CONFIG.autoTrading.deadbandPct;
+            if (deltaPct > n) return "green";
+            if (deltaPct < -n) return "red";
+            return "neutral";
+        }
+
+        // Forces a fresh fetch, bypassing whatever's currently cached — a real-money decision should
+        // never evaluate against data that might be stale from the UI's own independent refresh
+        // timing. Mirrors DataSource.loadSeries()'s own cache-key format; if that format ever
+        // changes, this needs to change with it.
+        async function loadFreshTodaySeriesForAutoTrade(symbol) {
+            const key = symbol + "|today|" + (selectedDate ? selectedDate.getTime() : "live");
+            delete seriesCache[key];
+            return DataSource.loadSeries(symbol, "today");
+        }
+
+        // The core evaluation cycle — fires once per matching (five-minute-mark, eval-second) tick,
+        // hooked in from the existing 1-second timer below. One symbol's failure is isolated and
+        // doesn't block evaluating the others; a failure in the shared positions fetch aborts the
+        // entire cycle, since nothing downstream can be trusted without it.
+        async function evaluateAutomatedTrading() {
+            try {
+                if (!CONFIG.autoTrading.masterEnabled) { console.log("[AutoTrade] skipped — master switch is off"); return; }
+                if (!isLiveTradingReady()) { console.log("[AutoTrade] skipped — live trading not ready (Sample mode or missing credentials)"); return; }
+                if (autoTradeEnabledIds.size === 0) { console.log("[AutoTrade] skipped — no symbols currently enabled"); return; }
+
+                const enabledSymbols = [...autoTradeEnabledIds].map(id => (TICKERS.find(t => t.id === id) || {}).symbol || id);
+                console.log(`[AutoTrade] evaluating cycle — enabled: ${enabledSymbols.join(", ")}`);
+
+                let freshPositions;
+                try {
+                    // Direct call, not via renderAccountRow() — a failure here must propagate as a real
+                    // exception we can catch, not get silently absorbed by that function's own internal
+                    // try/catch, which only updates the UI's error state and wouldn't tell this logic
+                    // anything went wrong at all.
+                    await DataSource.loadAccountInfo();
+                    freshPositions = heldPositions; // loadAccountInfo() just mutated this in place
+                } catch (err) {
+                    console.error("[AutoTrade] positions fetch failed — no action taken this cycle.", err);
+                    return;
+                }
+
+                const nowHmm = getHMM(new Date());
+                let tradedThisCycle = false;
+
+                for (const id of autoTradeEnabledIds) {
+                    const ticker = TICKERS.find(t => t.id === id);
+                    if (!ticker) { console.log(`[AutoTrade] ${id}: skipped — no matching ticker in the watchlist anymore`); continue; }
+                    const symbol = ticker.symbol;
+                    const isHeld = freshPositions.has(symbol);
+
+                    if (isHeld) {
+                        // --- Sell / max-loss: independent of the buy window and the master switch, but
+                        // still requires the bolt on and a position actually held. Either trigger alone is
+                        // enough to sell; whichever fires first wins for this pass. ---
+                        try {
+                            const pos = freshPositions.get(symbol);
+                            let shouldSell = false;
+                            let reason = "";
+                            console.log(`[AutoTrade] ${symbol}: held, pct=${Number.isFinite(pos.pct) ? pos.pct.toFixed(2) + "%" : "n/a"}, maxLossPct=${CONFIG.autoTrading.maxLossPct}%`);
+                            if (Number.isFinite(pos.pct) && pos.pct < CONFIG.autoTrading.maxLossPct) {
+                                shouldSell = true;
+                                reason = "max loss";
+                            } else {
+                                const series = await loadFreshTodaySeriesForAutoTrade(symbol);
+                                if (series.close.length >= 2) {
+                                    const deltaPct = computePctDeltaSeries(series.close, series.sma);
+                                    const last = classifyDelta(deltaPct[deltaPct.length - 1]);
+                                    const prev = classifyDelta(deltaPct[deltaPct.length - 2]);
+                                    console.log(`[AutoTrade] ${symbol}: last bar=${last} (${deltaPct[deltaPct.length - 1].toFixed(3)}%), prev bar=${prev}`);
+                                    if (last === "red" && prev !== "red") {
+                                        shouldSell = true;
+                                        reason = "crossover";
+                                    }
+                                } else {
+                                    console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`);
+                                }
+                            }
+                            if (shouldSell) {
+                                await TradingAPI.sell(symbol);
+                                tradedThisCycle = true;
+                                console.log(`[AutoTrade] ${symbol}: SOLD (${reason})`);
+                            } else {
+                                console.log(`[AutoTrade] ${symbol}: no sell — neither max-loss nor crossover triggered`);
+                            }
+                        } catch (err) {
+                            console.error(`[AutoTrade] ${symbol}: sell evaluation/execution failed — no action taken.`, err);
+                        }
+                        continue; // a held position is never also evaluated for buying
+                    }
+
+                    // --- Buy: gated by the window (buy-only, per the design doc — sell above is
+                    // deliberately unbounded by it) ---
+                    if (nowHmm < CONFIG.autoTrading.startHmm || nowHmm > CONFIG.autoTrading.endHmm) {
+                        console.log(`[AutoTrade] ${symbol}: not held, but outside buy window (now=${nowHmm}, window=${CONFIG.autoTrading.startHmm}-${CONFIG.autoTrading.endHmm})`);
+                        continue;
+                    }
+                    try {
+                        const series = await loadFreshTodaySeriesForAutoTrade(symbol);
+                        if (series.close.length < 2) { console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`); continue; }
+                        const deltaPct = computePctDeltaSeries(series.close, series.sma);
+                        const last = classifyDelta(deltaPct[deltaPct.length - 1]);
+                        const prev = classifyDelta(deltaPct[deltaPct.length - 2]);
+                        console.log(`[AutoTrade] ${symbol}: not held, within window, last bar=${last} (${deltaPct[deltaPct.length - 1].toFixed(3)}%), prev bar=${prev}`);
+                        if (last === "green" && prev !== "green") {
+                            // Independent second enforcement layer for the $100 cap — even a stale config
+                            // value that somehow bypassed the Settings-side clamp can't slip through here.
+                            const investAmount = Math.min(AUTO_TRADE_MAX_INVEST_DOLLARS, CONFIG.autoTrading.investDollars);
+                            await TradingAPI.buy(symbol, investAmount);
+                            tradedThisCycle = true;
+                            console.log(`[AutoTrade] ${symbol}: BOUGHT ($${investAmount})`);
+                        } else {
+                            console.log(`[AutoTrade] ${symbol}: no buy — not a fresh green crossover`);
+                        }
+                    } catch (err) {
+                        console.error(`[AutoTrade] ${symbol}: buy evaluation/execution failed — no action taken.`, err);
+                    }
+                }
+
+                if (tradedThisCycle) renderAccountRow();
+            } catch (err) {
+                // Outermost guard — should be unreachable given the inner try/catches above, but a
+                // real-money evaluation loop should never be able to throw all the way out to an
+                // unhandled rejection silently.
+                console.error("Automated trading: unexpected error in evaluation cycle — no action taken.", err);
+            }
         }
 
         function mostRecentTradingDay(d) {
@@ -2315,6 +2668,10 @@
                     if (!accountRes.ok) throw new Error("Account request failed: " + accountRes.status);
                     if (!positionsRes.ok) throw new Error("Positions request failed: " + positionsRes.status);
                     const [account, positions] = await Promise.all([accountRes.json(), positionsRes.json()]);
+                    // Captured before the reassignment below overwrites it — this is what makes "delta
+                    // since last refresh" possible per symbol, the same way lastPositionsValue already
+                    // does for the aggregate CHANGE stat card.
+                    lastPositionDollars = new Map([...heldPositions].map(([symbol, p]) => [symbol, p.dollar]));
                     heldPositions = new Map((positions || []).map(p => [p.symbol, {
                         dollar: parseFloat(p.unrealized_pl) || 0,
                         pct: (parseFloat(p.unrealized_plpc) || 0) * 100, // Alpaca sends this as a fraction (0.0325), not already a percentage
@@ -2391,6 +2748,24 @@
                 && !!CONFIG.api.accountApiSecret;
         }
 
+        // Purely derived, no new setting — a label, not a mode. Checks the account URL specifically
+        // (not symbol data, which always points at the same proxy regardless of mode in this setup).
+        // No suffix at all for real live trading, deliberately — only the exceptional states get
+        // called out. Set once at page load only, deliberately not recomputed after a Settings save —
+        // changing mode mid-session just means the label catches up on the next reload, which is an
+        // accepted simplification rather than something worth wiring up a second call site for.
+        function updateMarketWatchSubtitle() {
+            const el = document.getElementById("marketWatchSubtitle");
+            if (!el) return;
+            let suffix = "";
+            if (CONFIG.dataMode === "sample") {
+                suffix = " - SAMPLE";
+            } else if (CONFIG.dataMode === "api" && (CONFIG.api.accountBaseUrl || "").toLowerCase().includes("paper")) {
+                suffix = " - PAPER";
+            }
+            el.textContent = "MARKET WATCH" + suffix;
+        }
+
         function promptLiveTradingSetup() {
             alert("Live trading isn't set up yet. Opening Settings — switch to Live API and add your broker URL and API key/secret, then try again.");
             openSettingsModal();
@@ -2424,6 +2799,10 @@
         // rejects the click is an easy mistake to make; one that's visibly greyed out isn't.
         function updateTradeButtonsDisabledState() {
             const disabled = !!selectedDate;
+            // [data-autotrade] deliberately excluded — the automation toggle must always be clickable,
+            // including while viewing a historical date. Don't add it here "for consistency" with
+            // Buy/Sell; disabling automation is not the same kind of action as placing a trade and must
+            // never be blocked.
             document.querySelectorAll("[data-buy], [data-sell], [data-sell-symbol]").forEach(btn => {
                 btn.disabled = disabled;
                 btn.style.opacity = disabled ? "0.35" : "";
@@ -2467,6 +2846,33 @@
         }
 
         function wireTradeButtons(container) {
+            container.querySelectorAll("[data-autotrade]").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    // Deliberately unconditional — this toggle must always work regardless of the button's
+                    // current state (off/active/armed) or anything else in the app (a historical date being
+                    // viewed, live trading not being configured, etc.). The off switch has to be reliable
+                    // no matter what — this is not a gate to add "for consistency" once execution logic
+                    // exists later; disabling must always succeed.
+                    e.stopPropagation();
+                    const id = btn.dataset.autotrade;
+                    const wasEnabled = autoTradeEnabledIds.has(id);
+                    if (wasEnabled) autoTradeEnabledIds.delete(id);
+                    else autoTradeEnabledIds.add(id);
+                    saveSettings();
+                    updateAutoTradeButtonStates();
+                    // Abandonment warning — only when turning OFF a symbol currently held, and only after
+                    // the toggle has already completed. An alert, not a confirm beforehand — the toggle
+                    // itself must always succeed unconditionally regardless of this; it's awareness, not a
+                    // gate. Per the design doc: the bolt now controls sell/max-loss protection too, not
+                    // just new buying, so turning it off on a held position leaves nothing watching it.
+                    if (wasEnabled) {
+                        const ticker = TICKERS.find(t => t.id === id);
+                        if (ticker && heldPositions.has(ticker.symbol)) {
+                            alert(`Automated trading is now off for ${ticker.symbol}. You still hold a position in it — automated monitoring (crossover-sell and max-loss) has stopped too, not just new buying. Nothing is watching this position anymore unless you manage it manually.`);
+                        }
+                    }
+                });
+            });
             container.querySelectorAll("[data-buy]").forEach(btn => {
                 btn.addEventListener("click", async (e) => {
                     e.stopPropagation();
@@ -2624,7 +3030,24 @@
                 ],
                 colors: ["#22C55E", "#F5F3EF", accent],
                 plotOptions: {
-                    bar: { colors: { ranges: [{ from: -1e9, to: 0, color: "#EF4444" }, { from: 0, to: 1e9, color: "#22C55E" }] } }
+                    // Three ranges, not two — matches classifyDelta()'s own green/neutral/red split exactly,
+                    // using the same CONFIG.autoTrading.deadbandPct boundary the actual automated-trading
+                    // logic evaluates against. Previously this was a hard >=0 boundary with no neutral zone
+                    // at all, so a bar could show solid green while the bot itself read it as neutral (well
+                    // inside the deadband) — a real, confirmed gap between what was visible and what was
+                    // actually being evaluated, not just a cosmetic mismatch. Applies to every chart using
+                    // this shared function (Trend, Compare, Research), not just Compare — all three already
+                    // pass percentage-point-normalized data here, verified directly, so the same flat
+                    // threshold is meaningful across all of them, not just where automated trading lives.
+                    bar: {
+                        colors: {
+                            ranges: [
+                                { from: -1e9, to: -CONFIG.autoTrading.deadbandPct, color: "#EF4444" },
+                                { from: -CONFIG.autoTrading.deadbandPct, to: CONFIG.autoTrading.deadbandPct, color: "#9FA8B5" },
+                                { from: CONFIG.autoTrading.deadbandPct, to: 1e9, color: "#22C55E" }
+                            ]
+                        }
+                    }
                 },
                 stroke: { width: [0, 2, smaWidth], curve: "straight" },
                 grid: { show: !sparkline, borderColor: "#3C4552", strokeDashArray: 3 },
@@ -2753,13 +3176,14 @@
                         up: upDownNeutral(a.positionsValue)
                     },
                     {
+                        key: "change",
                         label: "CHANGE",
                         value: change === null ? "—" : signPrefix(change) + round2(change).toFixed(2),
                         sub: changePct === null ? "since last update" : fmtPct(changePct),
                         up: upDownNeutral(change)
                     }
                 ];
-                row.innerHTML = `<div class="stat-row" data-count="3">` + cards.map(c => `
+                row.innerHTML = `<span id="wallClock" style="position:absolute; top:6px; right:30px; color:var(--ink); font-size:24px; font-variant-numeric:tabular-nums; white-space:nowrap;"></span><div class="stat-row" data-count="3">` + cards.map(c => `
         <div class="stat-col"><div class="stat-card" ${c.key === "today" ? `id="todayStatCard"` : ""}${c.key === "positions" ? `id="positionsStatCard"` : ""}>
           <p class="stat-label">${c.label}</p>
           <p class="stat-value" style="${c.up === "up" ? "color:#83B573" : c.up === "down" ? "color:#C96A6A" : c.up === "neutral" ? "color:#9FA8B5" : ""}">${c.value}</p>
@@ -3027,6 +3451,7 @@
             <button type="button" class="trade-btn trade-amt-1000" data-buy="${id}" data-amount="1000" title="Buy $1,000"><i class="fa fa-credit-card"></i></button>
             <button type="button" class="trade-btn trade-amt-10000" data-buy="${id}" data-amount="10000" title="Buy $10,000"><i class="fa fa-credit-card"></i></button>
             <button type="button" class="trade-btn trade-sell-btn" data-sell="${id}" title="Sell (full position)"><i class="fa fa-credit-card"></i></button>
+            <button type="button" class="trade-btn auto-trade-toggle" data-autotrade="${id}" title="Toggle automated trading for ${t.symbol} — settings only, not yet executing"><i class="fa fa-bolt"></i></button>
           </div>`;
                     return `<div class="compare-tile">
           <p class="compare-tile-title" style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;"><span><span class="held-dot" id="compareHeldDot-${id}" style="display:none;"></span><span id="compareTitleSym-${id}">${t.symbol}</span> <span style="color:var(--muted); font-weight:400;">${t.name || ""}</span></span><span id="compareHeldGain-${id}" style="display:none; font-weight:700; font-size:13px; white-space:nowrap;"></span></p>
@@ -3037,6 +3462,7 @@
                 compareWatchlistSignature = structureSig;
                 wireTradeButtons(panel);
                 updateTradeButtonsDisabledState();
+                updateAutoTradeButtonStates();
             }
 
             let advancers = 0, decliners = 0, best = null, worst = null;
@@ -3169,13 +3595,30 @@
                 return;
             }
 
-            const rows = [...heldPositions.entries()].map(([symbol, p]) => ({ symbol, ...p }));
+            const rows = [...heldPositions.entries()].map(([symbol, p]) => {
+                const prevDollar = lastPositionDollars.get(symbol);
+                // null (not 0) when there's no prior refresh to compare against yet — same "no data yet"
+                // pattern the account-level CHANGE stat card already uses, not collapsed into a false
+                // "zero movement" reading for a symbol we simply haven't seen a second update for.
+                const delta = prevDollar !== undefined ? p.dollar - prevDollar : null;
+                // A held symbol isn't guaranteed to be in the watchlist at all (same as the Sell button
+                // logic above it) — no matching ticker means it can't possibly be auto-enabled, since
+                // that toggle only exists on Compare tiles for watchlist tickers.
+                const matchingTicker = TICKERS.find(t => t.symbol === symbol);
+                const autoEnabled = matchingTicker ? autoTradeEnabledIds.has(matchingTicker.id) : false;
+                return { symbol, ...p, delta, autoEnabled };
+            });
             const totalDollar = rows.reduce((sum, r) => sum + r.dollar, 0);
             const totalCostBasis = rows.reduce((sum, r) => sum + r.costBasis, 0);
             // Dollar-weighted, same formula combineAccountAndPositions() already uses for the
             // POSITIONS stat card — not a plain average of each row's own %, which would treat a small
             // position's swing as equally significant as a large one.
             const totalPct = totalCostBasis !== 0 ? (totalDollar / totalCostBasis) * 100 : 0;
+            // Sum of the individual deltas — mathematically the same as comparing current vs previous
+            // total, as long as the same symbols were held both times. Rows with no prior data (brand
+            // new positions) contribute 0 to this sum rather than making the whole total unavailable.
+            const anyDeltaAvailable = rows.some(r => r.delta !== null);
+            const totalDelta = anyDeltaAvailable ? rows.reduce((sum, r) => sum + (r.delta ?? 0), 0) : null;
 
             // Background hue on the % Change cell specifically, per row and on TOTAL — more useful than
             // a single top banner, since it flags which individual positions are actually underwater,
@@ -3185,13 +3628,14 @@
             panel.innerHTML = `
       <div style="overflow-x:auto;">
       <table class="data-table positions-table" style="table-layout:fixed; width:100%;">
-        <thead><tr><th>Symbol</th><th>$ Change</th><th>% Change</th><th style="text-align:right;">Cost Basis</th><th style="text-align:center;">Sell</th></tr></thead>
+        <thead><tr><th>Symbol</th><th>$ Change</th><th>% Change</th><th style="text-align:right;">$ Delta</th><th style="text-align:right;">Cost Basis</th><th style="text-align:center;">Sell</th></tr></thead>
         <tbody>
           ${rows.map(r => `
             <tr>
-              <td>${r.symbol}</td>
+              <td>${r.autoEnabled ? `<i class="fa fa-bolt" style="color:#5C89B9; margin-right:5px;" title="Automated trading is enabled for ${r.symbol} — indicator only, toggle it from the Compare tile"></i>` : ""}${r.symbol}</td>
               <td class="${signClass(r.dollar)}">${signPrefix(r.dollar)}${round2(r.dollar).toFixed(2)}</td>
               <td class="${signClass(r.pct)}" style="${r.pct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(r.pct)}</td>
+              <td class="${r.delta === null ? "dt-neutral" : signClass(r.delta)}" style="text-align:right;">${r.delta === null ? "—" : signPrefix(r.delta) + round2(r.delta).toFixed(2)}</td>
               <td style="text-align:right;">${fmtMoney(r.costBasis)}</td>
               <td style="text-align:center;"><button type="button" class="trade-btn trade-sell-btn" data-sell-symbol="${r.symbol}" title="Sell ${r.symbol} (full position)"><i class="fa fa-credit-card"></i></button></td>
             </tr>`).join("")}
@@ -3199,6 +3643,7 @@
             <td>TOTAL</td>
             <td class="${signClass(totalDollar)}">${signPrefix(totalDollar)}${round2(totalDollar).toFixed(2)}</td>
             <td class="${signClass(totalPct)}" style="${totalPct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(totalPct)}</td>
+            <td class="${totalDelta === null ? "dt-neutral" : signClass(totalDelta)}" style="text-align:right;">${totalDelta === null ? "—" : signPrefix(totalDelta) + round2(totalDelta).toFixed(2)}</td>
             <td style="text-align:right;">${fmtMoney(totalCostBasis)}</td>
             <td></td>
           </tr>
@@ -3478,7 +3923,15 @@
         // Help modal
         // =========================================================
         const helpModal = document.getElementById("helpModal");
-        document.getElementById("helpChip").addEventListener("click", () => { helpModal.classList.add("open"); lockPageScroll(); });
+        document.getElementById("helpChip").addEventListener("click", () => {
+            // Re-checked every open, not cached — isLiveTradingReady() can change between opens
+            // (Settings edited, credentials added/removed), and this section should only ever be
+            // visible when it actually applies.
+            const autoSection = document.getElementById("helpAutoTradingSection");
+            if (autoSection) autoSection.style.display = isLiveTradingReady() ? "" : "none";
+            helpModal.classList.add("open");
+            lockPageScroll();
+        });
         document.getElementById("helpClose").addEventListener("click", () => { helpModal.classList.remove("open"); unlockPageScroll(); });
         helpModal.addEventListener("click", (e) => { if (e.target === helpModal) { helpModal.classList.remove("open"); unlockPageScroll(); } });
         document.getElementById("helpTabs").addEventListener("click", (e) => {
@@ -3618,6 +4071,69 @@
         });
 
         // =========================================================
+        // Automated Trading modal — settings/persistence only, no execution logic. Same open/close/
+        // save pattern as the Settings modal above.
+        // =========================================================
+        const autoTradeModal = document.getElementById("autoTradeModal");
+        const autoTradeMasterToggle = document.getElementById("autoTradeMasterToggle");
+        const autoTradeStartHmm = document.getElementById("autoTradeStartHmm");
+        const autoTradeEndHmm = document.getElementById("autoTradeEndHmm");
+        const autoTradeInvestDollars = document.getElementById("autoTradeInvestDollars");
+        const autoTradeMaxLossPct = document.getElementById("autoTradeMaxLossPct");
+        const autoTradeDeadbandPct = document.getElementById("autoTradeDeadbandPct");
+        const autoTradeEvalSecond = document.getElementById("autoTradeEvalSecond");
+        const autoTradeTrailingPct = document.getElementById("autoTradeTrailingPct");
+
+        function openAutoTradeModal() {
+            autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", (b.dataset.master === "on") === CONFIG.autoTrading.masterEnabled));
+            autoTradeStartHmm.value = CONFIG.autoTrading.startHmm;
+            autoTradeEndHmm.value = CONFIG.autoTrading.endHmm;
+            autoTradeInvestDollars.value = CONFIG.autoTrading.investDollars;
+            autoTradeMaxLossPct.value = CONFIG.autoTrading.maxLossPct;
+            autoTradeDeadbandPct.value = CONFIG.autoTrading.deadbandPct;
+            autoTradeEvalSecond.value = CONFIG.autoTrading.evalSecond;
+            // NaN assigned to a number input's .value just renders as empty — correct behavior here,
+            // an empty disabled field reads as "not set" without any special-casing needed.
+            autoTradeTrailingPct.value = CONFIG.autoTrading.trailingPct;
+            autoTradeModal.classList.add("open");
+            lockPageScroll();
+        }
+        document.getElementById("autoTradeChip").addEventListener("click", openAutoTradeModal);
+        document.getElementById("autoTradeClose").addEventListener("click", () => { autoTradeModal.classList.remove("open"); unlockPageScroll(); });
+        document.getElementById("autoTradeCancel").addEventListener("click", () => { autoTradeModal.classList.remove("open"); unlockPageScroll(); });
+        autoTradeModal.addEventListener("click", (e) => { if (e.target === autoTradeModal) { autoTradeModal.classList.remove("open"); unlockPageScroll(); } });
+        autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(btn => {
+            btn.addEventListener("click", () => autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
+        });
+
+        document.getElementById("autoTradeSave").addEventListener("click", () => {
+            const activeMaster = autoTradeMasterToggle.querySelector(".loc-chip.active");
+            CONFIG.autoTrading.masterEnabled = activeMaster ? activeMaster.dataset.master === "on" : CONFIG.autoTrading.masterEnabled;
+            const parsedStart = parseInt(autoTradeStartHmm.value, 10);
+            CONFIG.autoTrading.startHmm = Number.isFinite(parsedStart) ? Math.min(1559, Math.max(930, parsedStart)) : CONFIG.autoTrading.startHmm;
+            const parsedEnd = parseInt(autoTradeEndHmm.value, 10);
+            CONFIG.autoTrading.endHmm = Number.isFinite(parsedEnd) ? Math.min(1559, Math.max(930, parsedEnd)) : CONFIG.autoTrading.endHmm;
+            const parsedInvest = parseFloat(autoTradeInvestDollars.value);
+            CONFIG.autoTrading.investDollars = Number.isFinite(parsedInvest) ? Math.min(AUTO_TRADE_MAX_INVEST_DOLLARS, Math.max(0, parsedInvest)) : CONFIG.autoTrading.investDollars;
+            const parsedMaxLoss = parseFloat(autoTradeMaxLossPct.value);
+            CONFIG.autoTrading.maxLossPct = Number.isFinite(parsedMaxLoss) ? Math.min(0, parsedMaxLoss) : CONFIG.autoTrading.maxLossPct;
+            const parsedDeadband = parseFloat(autoTradeDeadbandPct.value);
+            CONFIG.autoTrading.deadbandPct = Number.isFinite(parsedDeadband) ? Math.min(10, Math.max(0, parsedDeadband)) : CONFIG.autoTrading.deadbandPct;
+            const parsedEvalSecond = parseInt(autoTradeEvalSecond.value, 10);
+            CONFIG.autoTrading.evalSecond = Number.isFinite(parsedEvalSecond) ? Math.min(59, Math.max(0, parsedEvalSecond)) : CONFIG.autoTrading.evalSecond;
+            // Disabled field — deliberately not read from .value at all here. Stays NaN until the field
+            // itself is enabled in a later step.
+            saveSettings();
+            autoTradeModal.classList.remove("open");
+            unlockPageScroll();
+            // Rebuilds the refresh timer's existence check, which now includes masterEnabled — without
+            // this, flipping the master switch on while both refresh rates happen to be 0 would leave
+            // automated trading silently unable to ever fire, since the timer it piggybacks on
+            // wouldn't exist until something else triggered a rebuild.
+            setupAutoRefresh();
+        });
+
+        // =========================================================
         // Auto-refresh — wall-clock aligned, matching the reference app's exact proven pattern:
         // [0,15,30,45].indexOf(second) checked on a plain 1-second tick, generalized here to
         // second % rate === 0. Tick rate and check granularity are the same (once per second), so —
@@ -3644,6 +4160,20 @@
         }
 
         function updateRefreshBar() {
+            // Wall clock — always updates regardless of trading hours (unlike the five-minute
+            // checkpoint below, which is specifically about live trading and correctly stays gated).
+            // Piggybacks on this same 200ms tick rather than a separate interval.
+            const clockEl = document.getElementById("wallClock");
+            if (clockEl) {
+                const now = new Date();
+                let h = now.getHours() % 12;
+                if (h === 0) h = 12;
+                const mm = String(now.getMinutes()).padStart(2, "0");
+                const ss = String(now.getSeconds()).padStart(2, "0");
+                const tt = now.getHours() >= 12 ? "PM" : "AM";
+                clockEl.textContent = `${h}:${mm}:${ss} ${tt}`;
+            }
+
             // Five-minute checkpoint highlight — independent of the countdown bar's own logic below
             // (and its early-return), so it keeps working even if the bar's specific elements are ever
             // missing. Gated on isLive — outside trading hours no new bar is actually closing, so
@@ -3653,6 +4183,10 @@
                 const isFiveMinMark = getSessionWindow().isLive && (new Date().getMinutes() % 5 === 0);
                 todayCard.classList.toggle("five-min-active", isFiveMinMark);
             }
+
+            // Same reasoning — auto-trade toggle buttons only exist while Compare is the active view,
+            // so this is a harmless no-op the rest of the time (querySelectorAll on nothing).
+            updateAutoTradeButtonStates();
 
             const wrap = document.getElementById("refreshBar");
             const fill = document.getElementById("refreshBarFill");
@@ -3675,7 +4209,10 @@
             if (refreshFireTimer) clearInterval(refreshFireTimer);
             if (refreshBarTimer) clearInterval(refreshBarTimer);
             updateRefreshBar();
-            if (CONFIG.chartRefreshSeconds > 0 || CONFIG.accountRefreshSeconds > 0) {
+            // autoTrading.masterEnabled included here too — otherwise this whole timer wouldn't exist
+            // at all if both refresh rates happened to be 0, and automated trading would silently never
+            // fire despite being switched on, since its evaluation piggybacks on this same tick below.
+            if (CONFIG.chartRefreshSeconds > 0 || CONFIG.accountRefreshSeconds > 0 || CONFIG.autoTrading.masterEnabled) {
                 refreshFireTimer = setInterval(() => {
                     const second = new Date().getSeconds();
                     // Chart data stays gated to trading hours — outside that window our own session logic
@@ -3689,7 +4226,12 @@
                     // case, so history correctly stops polling with no separate check needed here.
                     if (CONFIG.chartRefreshSeconds > 0 && second % CONFIG.chartRefreshSeconds === 0 && getSessionWindow().isLive) {
                         seriesCache = {};
-                        viewSignatures.trend = viewSignatures.compare = viewSignatures.table = null;
+                        // research was missing from this list — seriesCache did get cleared globally, so
+                        // fresh data was always available, but render()'s own cache check still saw
+                        // Research's unchanged signature (researchSymbol itself doesn't change on a normal
+                        // refresh tick) and skipped re-rendering, so the chart only ever updated when the
+                        // symbol itself changed. Same bug class as the two viewSignatures gaps found earlier.
+                        viewSignatures.trend = viewSignatures.compare = viewSignatures.table = viewSignatures.research = null;
                         renderMacroChips();
                         render();
                     }
@@ -3700,6 +4242,15 @@
                         renderAccountRow().then(() => {
                             if (currentView === "positions") renderPositions();
                         });
+                    }
+                    // Automated trading — fires exactly once per matching (five-minute-mark, eval-second)
+                    // tick, same "tick rate equals check granularity, no duplicate-fire guard needed"
+                    // reasoning as everything else on this timer. getSessionWindow().isLive here is the
+                    // same gate the blue five-minute cue itself uses, so this only ever evaluates while
+                    // that cue would actually be showing — including implicitly never firing while a
+                    // historical date is being viewed.
+                    if (getSessionWindow().isLive && (new Date().getMinutes() % 5 === 0) && second === CONFIG.autoTrading.evalSecond) {
+                        evaluateAutomatedTrading();
                     }
                 }, 1000);
                 refreshBarTimer = setInterval(updateRefreshBar, 200); // visual only — no data-fetching side effects
@@ -3800,6 +4351,7 @@
         document.querySelector(`#viewToggle .w3-button[data-view="${currentView}"]`).classList.add("active");
         updateControlsToggleUI();
         updateStatsToggleUI();
+        updateMarketWatchSubtitle();
         renderTickerBar();
         renderTickerPresetRow();
         renderMacroChips();
