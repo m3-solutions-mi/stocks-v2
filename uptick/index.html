@@ -1993,7 +1993,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V073</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V074</p>
         </div>
     </div>
 
@@ -2107,6 +2107,26 @@
         // per-symbol loop already checks that flag first, ahead of max-loss or crossover.
         const AUTO_TRADE_EOD_HMM = 1555;
         const AUTO_TRADE_EOD_SECOND = 59;
+        // Console log badge styles for the four decision-outcome lines (BOUGHT/SOLD/no buy/no sell),
+        // so the outcome that actually matters stands out from the surrounding diagnostic detail
+        // lines rather than reading as one undifferentiated wall of text. White text throughout —
+        // verified via contrast ratio, not guessed — which is why these reuse the app's own existing
+        // --brand-dim green rather than the brighter chart-bar green (too light for white text to
+        // read against, checked directly: 2.28:1, below the 3.0 minimum). Red and grey both
+        // independently verified well above that minimum too.
+        const AUTOTRADE_LOG_GREEN = "background:#2C7E4C; color:#FFF; padding:1px 5px; border-radius:3px; font-weight:600;";
+        const AUTOTRADE_LOG_RED = "background:#AA3030; color:#FFF; padding:1px 5px; border-radius:3px; font-weight:600;";
+        const AUTOTRADE_LOG_GREY = "background:#6B7280; color:#FFF; padding:1px 5px; border-radius:3px; font-weight:600;";
+        // Regular trading hours (930-1559), matching the existing "regular session upper bound"
+        // convention already used elsewhere (Buy Start/End HMM's own validation range) rather than
+        // introducing a different boundary like 1600. isLive itself spans a much broader 4am-8pm
+        // window — genuinely useful for chart refresh, historical-date detection, and other things
+        // unrelated to this — so this stays a separate, additional constant rather than narrowing
+        // isLive itself. Used both to gate the bot's own execution and, separately, to narrow the
+        // blue five-minute cue's display condition — two different call sites, same single source
+        // of truth for what "regular hours" means, so they can't drift out of sync with each other.
+        const AUTO_TRADE_REGULAR_HOURS_START = 930;
+        const AUTO_TRADE_REGULAR_HOURS_END = 1559;
         let seriesCache = {};         // symbol -> { times, close }
         let trendChart = null;
         let compareCharts = {};
@@ -2303,6 +2323,11 @@
             try {
                 if (!CONFIG.autoTrading.masterEnabled) { console.log("[AutoTrade] skipped — master switch is off"); return; }
                 if (!isLiveTradingReady()) { console.log("[AutoTrade] skipped — live trading not ready (Sample mode or missing credentials)"); return; }
+                const nowHmm = getHMM(new Date());
+                if (nowHmm < AUTO_TRADE_REGULAR_HOURS_START || nowHmm > AUTO_TRADE_REGULAR_HOURS_END) {
+                    console.log(`[AutoTrade] skipped — outside regular trading hours (${AUTO_TRADE_REGULAR_HOURS_START}-${AUTO_TRADE_REGULAR_HOURS_END}), no execution outside this window`);
+                    return;
+                }
                 if (autoTradeEnabledIds.size === 0) { console.log("[AutoTrade] skipped — no symbols currently enabled"); return; }
 
                 const enabledSymbols = [...autoTradeEnabledIds].map(id => (TICKERS.find(t => t.id === id) || {}).symbol || id);
@@ -2355,7 +2380,6 @@
                     }
                 }
 
-                const nowHmm = getHMM(new Date());
                 let tradedThisCycle = false;
 
                 for (const id of autoTradeEnabledIds) {
@@ -2401,9 +2425,9 @@
                             if (shouldSell) {
                                 await TradingAPI.sell(symbol);
                                 tradedThisCycle = true;
-                                console.log(`[AutoTrade] ${symbol}: SOLD (${reason})`);
+                                console.log(`[AutoTrade] ${symbol}: %cSOLD%c (${reason})`, AUTOTRADE_LOG_RED, "");
                             } else {
-                                console.log(`[AutoTrade] ${symbol}: no sell — neither max-loss nor crossover triggered`);
+                                console.log(`[AutoTrade] ${symbol}: %cno sell%c — neither max-loss nor crossover triggered`, AUTOTRADE_LOG_GREY, "");
                             }
                         } catch (err) {
                             console.error(`[AutoTrade] ${symbol}: sell evaluation/execution failed — no action taken.`, err);
@@ -2434,9 +2458,9 @@
                             const investAmount = Math.min(AUTO_TRADE_MAX_INVEST_DOLLARS, CONFIG.autoTrading.investDollars);
                             await TradingAPI.buy(symbol, investAmount);
                             tradedThisCycle = true;
-                            console.log(`[AutoTrade] ${symbol}: BOUGHT ($${investAmount})`);
+                            console.log(`[AutoTrade] ${symbol}: %cBOUGHT%c ($${investAmount})`, AUTOTRADE_LOG_GREEN, "");
                         } else {
-                            console.log(`[AutoTrade] ${symbol}: no buy — not a fresh green crossover`);
+                            console.log(`[AutoTrade] ${symbol}: %cno buy%c — not a fresh green crossover`, AUTOTRADE_LOG_GREY, "");
                         }
                     } catch (err) {
                         console.error(`[AutoTrade] ${symbol}: buy evaluation/execution failed — no action taken.`, err);
@@ -4304,11 +4328,19 @@
 
             // Five-minute checkpoint highlight — independent of the countdown bar's own logic below
             // (and its early-return), so it keeps working even if the bar's specific elements are ever
-            // missing. Gated on isLive — outside trading hours no new bar is actually closing, so
-            // there's nothing to mark.
+            // missing. Gated on isLive AND regular trading hours specifically (930-1559, same constants
+            // the bot's own execution gate uses) — not just isLive alone. isLive spans a much broader
+            // 4am-8pm window; narrowed here on purpose, since the cue was being read as "the bot could
+            // be active right now," which wasn't accurate outside actual trading hours once the bot's
+            // own execution got its own separate hours gate. isLive itself is untouched — this narrows
+            // only the cue's own display condition, not the broader definition other things still rely on.
             const todayCard = document.getElementById("todayStatCard");
             if (todayCard) {
-                const isFiveMinMark = getSessionWindow().isLive && (new Date().getMinutes() % 5 === 0);
+                const nowHmmForCue = getHMM(new Date());
+                const isFiveMinMark = getSessionWindow().isLive
+                    && nowHmmForCue >= AUTO_TRADE_REGULAR_HOURS_START
+                    && nowHmmForCue <= AUTO_TRADE_REGULAR_HOURS_END
+                    && (new Date().getMinutes() % 5 === 0);
                 todayCard.classList.toggle("five-min-active", isFiveMinMark);
             }
 
