@@ -668,24 +668,38 @@
             color: #EF4444;
         }
 
-        /* Three states for the automated-trading toggle, purely visual — no execution logic exists
-     yet. Off matches the same grey as the $100 buy tier (a settled, "not doing anything"
-     color already established). Active/armed both use the same blue as the five-minute
-     checkpoint cue, since it's the same underlying concept (automation timing) — armed is
-     simply dimmed to show "enabled, but outside your configured HMM window right now" without
-     needing a second color to learn. */
+        /* Three states for the automated-trading toggle. Off matches the same grey as the $100 buy
+     tier (a settled, "not doing anything" color already established) — stays outlined/
+     transparent, blending in like the neighboring chart-type toggle buttons. Active/armed use
+     a SOLID FILLED background, not just an icon/border color change — a filled pill reads as
+     unmistakably different from every outlined button around it, where a color-only shift on
+     a small icon was too subtle to notice at a glance (confirmed directly from a real
+     screenshot — active and off were genuinely hard to tell apart at this size). Icon itself
+     is pure white on both — WCAG contrast math actually favors a dark icon against this
+     specific blue, but real screenshots showed dark, then --ink, both looking soft; pure
+     white was the one that actually rendered crisp.
+     Armed is its own solid color, #426284, NOT opacity:.45 on the active blue — opacity alpha-
+     blends the whole button with whatever's behind it, which reads as a soft, blurry fade
+     rather than a clean, deliberate color (confirmed directly from a screenshot — genuinely
+     looked broken, not just "less emphasized"). #426284 is derived, not guessed: the exact
+     same proportional dimming ratio (71.3%) the app already established for
+     --brand -> --brand-dim, applied to this active blue instead. Three fully-opaque, crisp
+     states in a clear progression: no fill at all (off) -> solid dim blue (armed) -> solid
+     full blue (active) — nothing translucent anywhere. */
         .auto-trade-off {
             color: #8B94A3;
         }
 
         .auto-trade-active {
-            color: #5C89B9;
+            background: #5C89B9;
             border-color: #5C89B9;
+            color: #FFFFFF;
         }
 
         .auto-trade-armed {
-            color: #5C89B9;
-            opacity: .45;
+            background: #426284;
+            border-color: #426284;
+            color: #FFFFFF;
         }
 
         @media (max-width:700px) {
@@ -1724,16 +1738,24 @@
                         current time within Buy Start/End HMM, the symbol not already held, and a green delta bar
                         immediately preceded by a non-green one (a fresh crossover, not just "currently green").
                         Evaluated once per five-minute cue, at your configured second within it — not continuously.</p>
-                    <p class="help-desc"><b>Selling</b> — two independent triggers, either fires a sell on its own: a
-                        red delta bar immediately preceded by a non-red one, or the position's loss crossing your
-                        configured Max Loss (%). Unlike buying, this ignores the HMM window entirely and doesn't depend
-                        on the master switch — a held position needs a way out at any time the market's open, watched
-                        for as long as its bolt stays on.</p>
+                    <p class="help-desc"><b>Selling</b> — three independent triggers, any one fires a sell on its own: a
+                        red delta bar immediately preceded by a non-red one, the position's loss crossing your
+                        configured Max Loss (%), or a day cap being hit (below). Unlike buying, all of this ignores the
+                        HMM window entirely and doesn't depend on the master switch — a held position needs a way out at
+                        any time the market's open, watched for as long as its bolt stays on.</p>
                     <p class="help-desc"><b>Turning a symbol's bolt off also stops watching any position you're holding
                             in it</b> — not just new buying. You'll get a one-time notice when this applies to something
                         you currently hold; the toggle itself always succeeds regardless.</p>
                     <p class="help-desc"><b>Invest $ is capped at $100</b> during this testing phase — hardcoded, not
                         something a larger number in Settings can override.</p>
+                    <p class="help-desc"><b>Max gain cap / Max loss cap ($)</b> — account-level, not per-symbol. The
+                        moment today's total gain or loss crosses either one, every bolt-enabled held position gets sold
+                        individually and new buying locks out for the rest of the trading day — a mechanical version of
+                        "quit while you're ahead," and its mirror for a bad day. This stays locked even if the sell
+                        itself nudges today back across the line afterward (selling realizes the spread, so the exact
+                        number right after can land on either side of where it triggered) — once hit, it stays hit until
+                        the next trading day, reset at 4:00 AM. Manual trading is completely unaffected either way,
+                        always.</p>
                 </div>
             </div>
         </div>
@@ -1871,6 +1893,16 @@
                             min="0" max="10" step="0.05"></td>
                 </tr>
                 <tr>
+                    <td>Max gain cap ($) — sells everything, stops buying for the day</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeMaxGainCap" class="edit-input"
+                            min="0" max="1000" step="10"></td>
+                </tr>
+                <tr>
+                    <td>Max loss cap ($) — same, mirrored</td>
+                    <td style="text-align:right;"><input type="number" id="autoTradeMaxLossCap" class="edit-input"
+                            min="0" max="1000" step="10"></td>
+                </tr>
+                <tr>
                     <td>Trailing (%) — not active yet</td>
                     <td style="text-align:right;"><input type="number" id="autoTradeTrailingPct" class="edit-input"
                             step="0.1" disabled></td>
@@ -1961,7 +1993,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V069</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V073</p>
         </div>
     </div>
 
@@ -1996,6 +2028,17 @@
                 maxLossPct: -1,
                 deadbandPct: 0.25, // percentage points either side of zero that count as "neutral" delta — neither green nor red — for crossover detection
                 evalSecond: 59, // which second (0-59) within the blue five-minute cue's already-fixed active minute to evaluate at — not a setting for the cue itself, which stays tied to the chart's own bar windows
+                maxGainCapDollars: 100, // account-level, dollars — once today's gain reaches this, sell every bolt-enabled held position and lock out new buying for the rest of the trading day
+                maxLossCapDollars: 100, // same, mirrored for a loss — stored as a positive magnitude, compared against -maxLossCapDollars
+                // Internal state, not a user-editable field — no dialog input for either of these. Sticky
+                // and one-way: once true, stays true regardless of what today reads afterward (selling a
+                // position realizes P&L via the bid-ask spread, so today can tick back across the
+                // threshold right after the very sell that was supposed to lock things down — this flag
+                // is what keeps that from silently re-opening the day). sessionKey records which trading
+                // day's 4am session boundary the lockout applies to, so a stale lockout from a prior day
+                // can be detected and cleared rather than accidentally carrying forward.
+                dayCapLockoutActive: false,
+                dayCapLockoutSessionKey: null,
                 trailingPct: NaN // NaN means "not using it yet" — deliberately, not merely unset
             }
         };
@@ -2054,6 +2097,16 @@
         // was moved up — applySavedSettings() below needs it and would otherwise hit the temporal
         // dead zone trying to read a const declared later in the file.
         const AUTO_TRADE_MAX_INVEST_DOLLARS = 100;
+        // Hardcoded, not a settings field, per explicit instruction — this doesn't need to be
+        // user-tunable. 15:55:59 leaves roughly 4 minutes of buffer before the 4:00 close for a sell
+        // order to actually execute — verified numerically, not assumed; genuinely plenty of time.
+        // Deliberately matches the default evalSecond (59) rather than using a distinct second —
+        // this is safe specifically because the trigger below uses two independent ifs, not
+        // else-if, so both correctly fire even when they land in the same tick. Reuses the exact
+        // same lockout flag day caps already use — no new sell mechanism needed, since the existing
+        // per-symbol loop already checks that flag first, ahead of max-loss or crossover.
+        const AUTO_TRADE_EOD_HMM = 1555;
+        const AUTO_TRADE_EOD_SECOND = 59;
         let seriesCache = {};         // symbol -> { times, close }
         let trendChart = null;
         let compareCharts = {};
@@ -2117,6 +2170,10 @@
                 if (Number.isFinite(at.maxLossPct)) CONFIG.autoTrading.maxLossPct = at.maxLossPct;
                 if (Number.isFinite(at.deadbandPct)) CONFIG.autoTrading.deadbandPct = Math.min(10, Math.max(0, at.deadbandPct));
                 if (Number.isFinite(at.evalSecond)) CONFIG.autoTrading.evalSecond = at.evalSecond;
+                if (Number.isFinite(at.maxGainCapDollars)) CONFIG.autoTrading.maxGainCapDollars = Math.min(1000, Math.max(0, at.maxGainCapDollars));
+                if (Number.isFinite(at.maxLossCapDollars)) CONFIG.autoTrading.maxLossCapDollars = Math.min(1000, Math.max(0, at.maxLossCapDollars));
+                if (typeof at.dayCapLockoutActive === "boolean") CONFIG.autoTrading.dayCapLockoutActive = at.dayCapLockoutActive;
+                if (Number.isFinite(at.dayCapLockoutSessionKey)) CONFIG.autoTrading.dayCapLockoutSessionKey = at.dayCapLockoutSessionKey;
                 // JSON.stringify(NaN) silently becomes "null", not "NaN" — JSON simply can't represent
                 // NaN, so a genuine NaN never survives the round-trip as-is. Restoring null (or anything
                 // else that isn't a real finite number) back to NaN here is what makes "not using it yet"
@@ -2252,16 +2309,50 @@
                 console.log(`[AutoTrade] evaluating cycle — enabled: ${enabledSymbols.join(", ")}`);
 
                 let freshPositions;
+                let accountInfo;
                 try {
                     // Direct call, not via renderAccountRow() — a failure here must propagate as a real
                     // exception we can catch, not get silently absorbed by that function's own internal
                     // try/catch, which only updates the UI's error state and wouldn't tell this logic
                     // anything went wrong at all.
-                    await DataSource.loadAccountInfo();
+                    accountInfo = await DataSource.loadAccountInfo();
                     freshPositions = heldPositions; // loadAccountInfo() just mutated this in place
                 } catch (err) {
                     console.error("[AutoTrade] positions fetch failed — no action taken this cycle.", err);
                     return;
+                }
+
+                // Day caps — account-level, evaluated once per cycle, before the per-symbol loop. Reuses
+                // the same TODAY figure already shown on the account card (equity - last_equity), not a
+                // separately-computed number. sessionStart identifies which trading day this lockout
+                // belongs to — if a previously-set lockout belongs to an earlier session, it's stale and
+                // gets cleared here rather than incorrectly carrying forward into a new day.
+                const currentSessionKey = getSessionWindow().sessionStart.getTime();
+                // Always-on status log, every cycle, regardless of whether anything actually triggers —
+                // matching the same "show current state every time" pattern the per-symbol crossover
+                // checks already use. Without this, the only day-cap logging that existed was tied to a
+                // reset/trigger actually happening, giving no visibility into "how close am I to either
+                // cap right now" on an otherwise ordinary cycle.
+                console.log(`[AutoTrade] day cap status — today=$${Number.isFinite(accountInfo.todayPL) ? accountInfo.todayPL.toFixed(2) : "n/a"}, gain cap=$${CONFIG.autoTrading.maxGainCapDollars}, loss cap=-$${CONFIG.autoTrading.maxLossCapDollars}, lockout=${CONFIG.autoTrading.dayCapLockoutActive ? "ACTIVE" : "off"}`);
+                if (CONFIG.autoTrading.dayCapLockoutActive && CONFIG.autoTrading.dayCapLockoutSessionKey !== currentSessionKey) {
+                    console.log("[AutoTrade] day cap lockout from a prior session — resetting for the new trading day");
+                    CONFIG.autoTrading.dayCapLockoutActive = false;
+                    CONFIG.autoTrading.dayCapLockoutSessionKey = null;
+                    saveSettings();
+                }
+                if (!CONFIG.autoTrading.dayCapLockoutActive) {
+                    const todayPL = accountInfo.todayPL;
+                    if (Number.isFinite(todayPL) && todayPL >= CONFIG.autoTrading.maxGainCapDollars) {
+                        console.log(`[AutoTrade] MAX GAIN CAP HIT — today=$${todayPL.toFixed(2)}, cap=$${CONFIG.autoTrading.maxGainCapDollars}. Locking out new buys for the rest of the trading day.`);
+                        CONFIG.autoTrading.dayCapLockoutActive = true;
+                        CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
+                        saveSettings();
+                    } else if (Number.isFinite(todayPL) && todayPL <= -CONFIG.autoTrading.maxLossCapDollars) {
+                        console.log(`[AutoTrade] MAX LOSS CAP HIT — today=$${todayPL.toFixed(2)}, cap=-$${CONFIG.autoTrading.maxLossCapDollars}. Locking out new buys for the rest of the trading day.`);
+                        CONFIG.autoTrading.dayCapLockoutActive = true;
+                        CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
+                        saveSettings();
+                    }
                 }
 
                 const nowHmm = getHMM(new Date());
@@ -2274,30 +2365,37 @@
                     const isHeld = freshPositions.has(symbol);
 
                     if (isHeld) {
-                        // --- Sell / max-loss: independent of the buy window and the master switch, but
-                        // still requires the bolt on and a position actually held. Either trigger alone is
-                        // enough to sell; whichever fires first wins for this pass. ---
+                        // --- Sell / max-loss / day-cap: independent of the buy window and the master switch,
+                        // but still requires the bolt on and a position actually held. Any one trigger alone
+                        // is enough to sell; whichever applies first wins for this pass. Day-cap checked
+                        // first and short-circuits the rest — no need to fetch fresh series data for a
+                        // crossover check when the position is being sold regardless of what it shows.
                         try {
                             const pos = freshPositions.get(symbol);
                             let shouldSell = false;
                             let reason = "";
-                            console.log(`[AutoTrade] ${symbol}: held, pct=${Number.isFinite(pos.pct) ? pos.pct.toFixed(2) + "%" : "n/a"}, maxLossPct=${CONFIG.autoTrading.maxLossPct}%`);
-                            if (Number.isFinite(pos.pct) && pos.pct < CONFIG.autoTrading.maxLossPct) {
+                            if (CONFIG.autoTrading.dayCapLockoutActive) {
                                 shouldSell = true;
-                                reason = "max loss";
+                                reason = "day cap";
                             } else {
-                                const series = await loadFreshTodaySeriesForAutoTrade(symbol);
-                                if (series.close.length >= 2) {
-                                    const deltaPct = computePctDeltaSeries(series.close, series.sma);
-                                    const last = classifyDelta(deltaPct[deltaPct.length - 1]);
-                                    const prev = classifyDelta(deltaPct[deltaPct.length - 2]);
-                                    console.log(`[AutoTrade] ${symbol}: last bar=${last} (${deltaPct[deltaPct.length - 1].toFixed(3)}%), prev bar=${prev}`);
-                                    if (last === "red" && prev !== "red") {
-                                        shouldSell = true;
-                                        reason = "crossover";
-                                    }
+                                console.log(`[AutoTrade] ${symbol}: held, pct=${Number.isFinite(pos.pct) ? pos.pct.toFixed(2) + "%" : "n/a"}, maxLossPct=${CONFIG.autoTrading.maxLossPct}%`);
+                                if (Number.isFinite(pos.pct) && pos.pct < CONFIG.autoTrading.maxLossPct) {
+                                    shouldSell = true;
+                                    reason = "max loss";
                                 } else {
-                                    console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`);
+                                    const series = await loadFreshTodaySeriesForAutoTrade(symbol);
+                                    if (series.close.length >= 2) {
+                                        const deltaPct = computePctDeltaSeries(series.close, series.sma);
+                                        const last = classifyDelta(deltaPct[deltaPct.length - 1]);
+                                        const prev = classifyDelta(deltaPct[deltaPct.length - 2]);
+                                        console.log(`[AutoTrade] ${symbol}: last bar=${last} (${deltaPct[deltaPct.length - 1].toFixed(3)}%), prev bar=${prev}`);
+                                        if (last === "red" && prev !== "red") {
+                                            shouldSell = true;
+                                            reason = "crossover";
+                                        }
+                                    } else {
+                                        console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`);
+                                    }
                                 }
                             }
                             if (shouldSell) {
@@ -2314,7 +2412,11 @@
                     }
 
                     // --- Buy: gated by the window (buy-only, per the design doc — sell above is
-                    // deliberately unbounded by it) ---
+                    // deliberately unbounded by it), and now also by the day-cap lockout. ---
+                    if (CONFIG.autoTrading.dayCapLockoutActive) {
+                        console.log(`[AutoTrade] ${symbol}: not held, but day cap lockout is active — no new buys for the rest of today`);
+                        continue;
+                    }
                     if (nowHmm < CONFIG.autoTrading.startHmm || nowHmm > CONFIG.autoTrading.endHmm) {
                         console.log(`[AutoTrade] ${symbol}: not held, but outside buy window (now=${nowHmm}, window=${CONFIG.autoTrading.startHmm}-${CONFIG.autoTrading.endHmm})`);
                         continue;
@@ -4081,6 +4183,8 @@
         const autoTradeInvestDollars = document.getElementById("autoTradeInvestDollars");
         const autoTradeMaxLossPct = document.getElementById("autoTradeMaxLossPct");
         const autoTradeDeadbandPct = document.getElementById("autoTradeDeadbandPct");
+        const autoTradeMaxGainCap = document.getElementById("autoTradeMaxGainCap");
+        const autoTradeMaxLossCap = document.getElementById("autoTradeMaxLossCap");
         const autoTradeEvalSecond = document.getElementById("autoTradeEvalSecond");
         const autoTradeTrailingPct = document.getElementById("autoTradeTrailingPct");
 
@@ -4091,6 +4195,8 @@
             autoTradeInvestDollars.value = CONFIG.autoTrading.investDollars;
             autoTradeMaxLossPct.value = CONFIG.autoTrading.maxLossPct;
             autoTradeDeadbandPct.value = CONFIG.autoTrading.deadbandPct;
+            autoTradeMaxGainCap.value = CONFIG.autoTrading.maxGainCapDollars;
+            autoTradeMaxLossCap.value = CONFIG.autoTrading.maxLossCapDollars;
             autoTradeEvalSecond.value = CONFIG.autoTrading.evalSecond;
             // NaN assigned to a number input's .value just renders as empty — correct behavior here,
             // an empty disabled field reads as "not set" without any special-casing needed.
@@ -4107,6 +4213,24 @@
         });
 
         document.getElementById("autoTradeSave").addEventListener("click", () => {
+            // Blocks Save entirely if any field is out of its declared min/max range, using the
+            // browser's own native validation and tooltip — reads each input's existing min/max/step
+            // attributes directly, nothing new to define here. Standard browser behavior that would
+            // normally trigger automatically on a <form> submit; triggered manually here since this
+            // dialog reads values on a plain button click instead. The clamps below still remain —
+            // they're the only thing protecting the separate path a value can arrive through
+            // (restoring a stale value from localStorage that never touched this dialog at all).
+            const fieldsToValidate = [
+                autoTradeStartHmm, autoTradeEndHmm, autoTradeInvestDollars, autoTradeMaxLossPct,
+                autoTradeDeadbandPct, autoTradeEvalSecond, autoTradeMaxGainCap, autoTradeMaxLossCap
+            ];
+            for (const field of fieldsToValidate) {
+                if (!field.checkValidity()) {
+                    field.reportValidity();
+                    return; // stop — do not save, do not close the modal
+                }
+            }
+
             const activeMaster = autoTradeMasterToggle.querySelector(".loc-chip.active");
             CONFIG.autoTrading.masterEnabled = activeMaster ? activeMaster.dataset.master === "on" : CONFIG.autoTrading.masterEnabled;
             const parsedStart = parseInt(autoTradeStartHmm.value, 10);
@@ -4119,6 +4243,10 @@
             CONFIG.autoTrading.maxLossPct = Number.isFinite(parsedMaxLoss) ? Math.min(0, parsedMaxLoss) : CONFIG.autoTrading.maxLossPct;
             const parsedDeadband = parseFloat(autoTradeDeadbandPct.value);
             CONFIG.autoTrading.deadbandPct = Number.isFinite(parsedDeadband) ? Math.min(10, Math.max(0, parsedDeadband)) : CONFIG.autoTrading.deadbandPct;
+            const parsedMaxGainCap = parseFloat(autoTradeMaxGainCap.value);
+            CONFIG.autoTrading.maxGainCapDollars = Number.isFinite(parsedMaxGainCap) ? Math.min(1000, Math.max(0, parsedMaxGainCap)) : CONFIG.autoTrading.maxGainCapDollars;
+            const parsedMaxLossCap = parseFloat(autoTradeMaxLossCap.value);
+            CONFIG.autoTrading.maxLossCapDollars = Number.isFinite(parsedMaxLossCap) ? Math.min(1000, Math.max(0, parsedMaxLossCap)) : CONFIG.autoTrading.maxLossCapDollars;
             const parsedEvalSecond = parseInt(autoTradeEvalSecond.value, 10);
             CONFIG.autoTrading.evalSecond = Number.isFinite(parsedEvalSecond) ? Math.min(59, Math.max(0, parsedEvalSecond)) : CONFIG.autoTrading.evalSecond;
             // Disabled field — deliberately not read from .value at all here. Stays NaN until the field
@@ -4252,6 +4380,25 @@
                     if (getSessionWindow().isLive && (new Date().getMinutes() % 5 === 0) && second === CONFIG.autoTrading.evalSecond) {
                         evaluateAutomatedTrading();
                     }
+                    // End-of-day sell — deliberately a SEPARATE if, not else-if. If AUTO_TRADE_EOD_SECOND
+                    // ever matches the configured evalSecond (true by default now, both 59), an else-if
+                    // would let the normal branch win and silently skip this block entirely — the position
+                    // would then only sell if crossover/max-loss/day-cap also happened to be true at that
+                    // exact moment, not guaranteed, which would quietly defeat the entire point of having
+                    // an unconditional end-of-day safety net. Two independent ifs mean both always run
+                    // correctly even when they coincide — worst case is one harmless redundant re-evaluation
+                    // right after everything's already been sold. Pre-sets the lockout flag, then calls the
+                    // exact same evaluation function unmodified — the per-symbol loop already checks that
+                    // flag first, so it sells any bolt-enabled held position without any new sell logic
+                    // anywhere. Stale-session reset inside evaluateAutomatedTrading() won't undo this —
+                    // still the same trading day's session, so the key matches.
+                    if (getSessionWindow().isLive && getHMM(new Date()) === AUTO_TRADE_EOD_HMM && second === AUTO_TRADE_EOD_SECOND) {
+                        console.log("[AutoTrade] end-of-day trigger (15:55) — selling any bolt-enabled held positions, locking out for the rest of today");
+                        CONFIG.autoTrading.dayCapLockoutActive = true;
+                        CONFIG.autoTrading.dayCapLockoutSessionKey = getSessionWindow().sessionStart.getTime();
+                        saveSettings();
+                        evaluateAutomatedTrading();
+                    }
                 }, 1000);
                 refreshBarTimer = setInterval(updateRefreshBar, 200); // visual only — no data-fetching side effects
             }
@@ -4305,8 +4452,23 @@
             if (pasted === null || !pasted.trim()) return;
             try {
                 const parsed = JSON.parse(pasted);
+                // Automated trading's activation state is device-specific by design — the master switch
+                // was already documented as "local to this device only," but nothing previously stopped
+                // an import from silently carrying that activation onto a device that was never meant to
+                // run it. Only resets the activation switches themselves (master switch, which symbols
+                // are enabled, and any in-progress day-cap lockout, which would otherwise show as active
+                // on a device that never actually triggered it). Leaves the numeric configuration — HMM
+                // window, invest $, deadband, both caps, eval second — untouched, since those are inert
+                // on their own without the master switch on, and worth keeping for a backup or a
+                // replacement workhorse device.
+                if (parsed.autoTrading && typeof parsed.autoTrading === "object") {
+                    parsed.autoTrading.masterEnabled = false;
+                    parsed.autoTrading.dayCapLockoutActive = false;
+                    parsed.autoTrading.dayCapLockoutSessionKey = null;
+                }
+                parsed.autoTradeEnabledIds = [];
                 localStorage.setItem(SETTINGS_KEY, JSON.stringify(parsed));
-                alert("Settings imported. Reloading…");
+                alert("Settings imported. Automated trading's master switch and enabled symbols were reset for safety on this device — re-enable them explicitly if this is meant to run it. Reloading…");
                 location.reload();
             } catch (err) {
                 alert("That didn't look like valid settings JSON — nothing was changed.");
