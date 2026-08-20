@@ -600,10 +600,24 @@
         }
 
         .compare-tile {
+            position: relative;
             background: var(--bg2);
             border: 1px solid var(--line);
             border-radius: 8px;
             padding: 12px 14px 6px;
+        }
+
+        .deadband-override-badge {
+            position: absolute;
+            bottom: 6px;
+            right: 10px;
+            font-size: 10px;
+            color: var(--muted);
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            padding: 1px 6px;
+            pointer-events: none;
         }
 
         .compare-tile-title {
@@ -1893,6 +1907,21 @@
                             min="0" max="10" step="0.05"></td>
                 </tr>
                 <tr>
+                    <td>Deadband override for watch-only symbols<br><span
+                            style="color:var(--muted); font-size:11px;">chart display only — never auto-traded</span>
+                    </td>
+                    <td style="text-align:right;">
+                        <div style="display:flex; gap:6px; justify-content:flex-end;">
+                            <input type="text" id="autoTradeDeadbandOverrideSymbols" class="edit-input"
+                                placeholder="QQQ, DIA"
+                                title="Comma-separated symbols — never auto-traded, chart display only"
+                                style="width:110px;">
+                            <input type="number" id="autoTradeDeadbandOverridePct" class="edit-input" min="0" max="10"
+                                step="0.05" style="width:70px;">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
                     <td>Max gain cap ($) — sells everything, stops buying for the day</td>
                     <td style="text-align:right;"><input type="number" id="autoTradeMaxGainCap" class="edit-input"
                             min="0" max="1000" step="10"></td>
@@ -1993,7 +2022,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V074</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V075</p>
         </div>
     </div>
 
@@ -2027,6 +2056,8 @@
                 investDollars: 100,
                 maxLossPct: -1,
                 deadbandPct: 0.25, // percentage points either side of zero that count as "neutral" delta — neither green nor red — for crossover detection
+                deadbandOverrideSymbols: "", // raw typed string, comma-separated (e.g. "QQQ, DIA") — parsed on demand via getDeadbandOverrideSymbols(), not pre-split here. Inherently "symbols I do not plan to auto-trade" — chart display only for now, does not touch crossover decision logic
+                deadbandOverridePct: 0.25, // the override value applied to symbols in the list above
                 evalSecond: 59, // which second (0-59) within the blue five-minute cue's already-fixed active minute to evaluate at — not a setting for the cue itself, which stays tied to the chart's own bar windows
                 maxGainCapDollars: 100, // account-level, dollars — once today's gain reaches this, sell every bolt-enabled held position and lock out new buying for the rest of the trading day
                 maxLossCapDollars: 100, // same, mirrored for a loss — stored as a positive magnitude, compared against -maxLossCapDollars
@@ -2189,6 +2220,8 @@
                 if (Number.isFinite(at.investDollars)) CONFIG.autoTrading.investDollars = Math.min(AUTO_TRADE_MAX_INVEST_DOLLARS, Math.max(0, at.investDollars));
                 if (Number.isFinite(at.maxLossPct)) CONFIG.autoTrading.maxLossPct = at.maxLossPct;
                 if (Number.isFinite(at.deadbandPct)) CONFIG.autoTrading.deadbandPct = Math.min(10, Math.max(0, at.deadbandPct));
+                if (typeof at.deadbandOverrideSymbols === "string") CONFIG.autoTrading.deadbandOverrideSymbols = at.deadbandOverrideSymbols;
+                if (Number.isFinite(at.deadbandOverridePct)) CONFIG.autoTrading.deadbandOverridePct = Math.min(10, Math.max(0, at.deadbandOverridePct));
                 if (Number.isFinite(at.evalSecond)) CONFIG.autoTrading.evalSecond = at.evalSecond;
                 if (Number.isFinite(at.maxGainCapDollars)) CONFIG.autoTrading.maxGainCapDollars = Math.min(1000, Math.max(0, at.maxGainCapDollars));
                 if (Number.isFinite(at.maxLossCapDollars)) CONFIG.autoTrading.maxLossCapDollars = Math.min(1000, Math.max(0, at.maxLossCapDollars));
@@ -2305,6 +2338,18 @@
             return "neutral";
         }
 
+        // Parses the raw, comma-separated override string on demand — never pre-split or cached,
+        // so it always reflects whatever's currently saved. Forgiving of formatting: trims whitespace
+        // and uppercases each symbol, so "qqq, dia" behaves the same as "QQQ,DIA". Chart display only
+        // for now — this list is inherently "symbols I do not plan to auto-trade," and does not touch
+        // the crossover decision logic in classifyDelta() or evaluateAutomatedTrading() at all.
+        function getDeadbandOverrideSymbols() {
+            return (CONFIG.autoTrading.deadbandOverrideSymbols || "")
+                .split(",")
+                .map(s => s.trim().toUpperCase())
+                .filter(s => s.length > 0);
+        }
+
         // Forces a fresh fetch, bypassing whatever's currently cached — a real-money decision should
         // never evaluate against data that might be stale from the UI's own independent refresh
         // timing. Mirrors DataSource.loadSeries()'s own cache-key format; if that format ever
@@ -2319,6 +2364,91 @@
         // hooked in from the existing 1-second timer below. One symbol's failure is isolated and
         // doesn't block evaluating the others; a failure in the shared positions fetch aborts the
         // entire cycle, since nothing downstream can be trusted without it.
+        // Fast risk checks — day caps (gain/loss) and per-position max-loss, on their own faster,
+        // independent cadence (every minute, same evalSecond, no 5-minute-mark requirement) rather
+        // than the slower buy/crossover cycle below. These read directly from Alpaca's account and
+        // position data (equity/last_equity, unrealized_plpc) — no bar series involved at all, so
+        // there's no "in-progress last bar" noise-reactivity concern the way there is for crossover,
+        // and no reason to hold these to the same 5-minute cadence that exists specifically to avoid
+        // reacting to that. Deliberately independent of evaluateAutomatedTrading() below — its own
+        // fresh fetch, its own gates, its own try/catch — rather than sharing state between two
+        // functions that fire on different schedules. Real motivating case: a position going from
+        // +0.01% to -4.8% entirely inside one 5-minute gap, invisible to the system the whole time.
+        async function evaluateFastRiskChecks() {
+            try {
+                if (!CONFIG.autoTrading.masterEnabled) return; // silent — the slow cycle already logs gate state
+                if (!isLiveTradingReady()) return;
+                const nowHmm = getHMM(new Date());
+                if (nowHmm < AUTO_TRADE_REGULAR_HOURS_START || nowHmm > AUTO_TRADE_REGULAR_HOURS_END) return;
+                if (autoTradeEnabledIds.size === 0) return;
+
+                let freshPositions;
+                let accountInfo;
+                try {
+                    accountInfo = await DataSource.loadAccountInfo();
+                    freshPositions = heldPositions;
+                } catch (err) {
+                    console.error("[AutoTrade:fast] positions fetch failed — no action taken this cycle.", err);
+                    return;
+                }
+
+                // Day cap check/reset — same logic the slow cycle used to own; now lives here exclusively,
+                // since it's a risk check, not a buy/crossover concern. The slow cycle below only ever
+                // reads dayCapLockoutActive now, never sets or resets it.
+                const currentSessionKey = getSessionWindow().sessionStart.getTime();
+                if (CONFIG.autoTrading.dayCapLockoutActive && CONFIG.autoTrading.dayCapLockoutSessionKey !== currentSessionKey) {
+                    console.log("[AutoTrade:fast] day cap lockout from a prior session — resetting for the new trading day");
+                    CONFIG.autoTrading.dayCapLockoutActive = false;
+                    CONFIG.autoTrading.dayCapLockoutSessionKey = null;
+                    saveSettings();
+                }
+                if (!CONFIG.autoTrading.dayCapLockoutActive) {
+                    const todayPL = accountInfo.todayPL;
+                    if (Number.isFinite(todayPL) && todayPL >= CONFIG.autoTrading.maxGainCapDollars) {
+                        console.log(`[AutoTrade:fast] MAX GAIN CAP HIT — today=$${todayPL.toFixed(2)}, cap=$${CONFIG.autoTrading.maxGainCapDollars}. Locking out new buys for the rest of the trading day.`);
+                        CONFIG.autoTrading.dayCapLockoutActive = true;
+                        CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
+                        saveSettings();
+                    } else if (Number.isFinite(todayPL) && todayPL <= -CONFIG.autoTrading.maxLossCapDollars) {
+                        console.log(`[AutoTrade:fast] MAX LOSS CAP HIT — today=$${todayPL.toFixed(2)}, cap=-$${CONFIG.autoTrading.maxLossCapDollars}. Locking out new buys for the rest of the trading day.`);
+                        CONFIG.autoTrading.dayCapLockoutActive = true;
+                        CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
+                        saveSettings();
+                    }
+                }
+
+                let tradedThisCycle = false;
+                for (const id of autoTradeEnabledIds) {
+                    const ticker = TICKERS.find(t => t.id === id);
+                    if (!ticker) continue;
+                    const symbol = ticker.symbol;
+                    if (!freshPositions.has(symbol)) continue; // only held positions have anything to risk-check
+                    try {
+                        const pos = freshPositions.get(symbol);
+                        let shouldSell = false;
+                        let reason = "";
+                        if (CONFIG.autoTrading.dayCapLockoutActive) {
+                            shouldSell = true;
+                            reason = "day cap";
+                        } else if (Number.isFinite(pos.pct) && pos.pct < CONFIG.autoTrading.maxLossPct) {
+                            shouldSell = true;
+                            reason = "max loss";
+                        }
+                        if (shouldSell) {
+                            await TradingAPI.sell(symbol);
+                            tradedThisCycle = true;
+                            console.log(`[AutoTrade:fast] ${symbol}: %cSOLD%c (${reason})`, AUTOTRADE_LOG_RED, "");
+                        }
+                    } catch (err) {
+                        console.error(`[AutoTrade:fast] ${symbol}: sell execution failed — no action taken.`, err);
+                    }
+                }
+                if (tradedThisCycle) renderAccountRow();
+            } catch (err) {
+                console.error("[AutoTrade:fast] unexpected error in fast risk-check cycle — no action taken.", err);
+            }
+        }
+
         async function evaluateAutomatedTrading() {
             try {
                 if (!CONFIG.autoTrading.masterEnabled) { console.log("[AutoTrade] skipped — master switch is off"); return; }
@@ -2347,38 +2477,10 @@
                     return;
                 }
 
-                // Day caps — account-level, evaluated once per cycle, before the per-symbol loop. Reuses
-                // the same TODAY figure already shown on the account card (equity - last_equity), not a
-                // separately-computed number. sessionStart identifies which trading day this lockout
-                // belongs to — if a previously-set lockout belongs to an earlier session, it's stale and
-                // gets cleared here rather than incorrectly carrying forward into a new day.
-                const currentSessionKey = getSessionWindow().sessionStart.getTime();
-                // Always-on status log, every cycle, regardless of whether anything actually triggers —
-                // matching the same "show current state every time" pattern the per-symbol crossover
-                // checks already use. Without this, the only day-cap logging that existed was tied to a
-                // reset/trigger actually happening, giving no visibility into "how close am I to either
-                // cap right now" on an otherwise ordinary cycle.
-                console.log(`[AutoTrade] day cap status — today=$${Number.isFinite(accountInfo.todayPL) ? accountInfo.todayPL.toFixed(2) : "n/a"}, gain cap=$${CONFIG.autoTrading.maxGainCapDollars}, loss cap=-$${CONFIG.autoTrading.maxLossCapDollars}, lockout=${CONFIG.autoTrading.dayCapLockoutActive ? "ACTIVE" : "off"}`);
-                if (CONFIG.autoTrading.dayCapLockoutActive && CONFIG.autoTrading.dayCapLockoutSessionKey !== currentSessionKey) {
-                    console.log("[AutoTrade] day cap lockout from a prior session — resetting for the new trading day");
-                    CONFIG.autoTrading.dayCapLockoutActive = false;
-                    CONFIG.autoTrading.dayCapLockoutSessionKey = null;
-                    saveSettings();
-                }
-                if (!CONFIG.autoTrading.dayCapLockoutActive) {
-                    const todayPL = accountInfo.todayPL;
-                    if (Number.isFinite(todayPL) && todayPL >= CONFIG.autoTrading.maxGainCapDollars) {
-                        console.log(`[AutoTrade] MAX GAIN CAP HIT — today=$${todayPL.toFixed(2)}, cap=$${CONFIG.autoTrading.maxGainCapDollars}. Locking out new buys for the rest of the trading day.`);
-                        CONFIG.autoTrading.dayCapLockoutActive = true;
-                        CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
-                        saveSettings();
-                    } else if (Number.isFinite(todayPL) && todayPL <= -CONFIG.autoTrading.maxLossCapDollars) {
-                        console.log(`[AutoTrade] MAX LOSS CAP HIT — today=$${todayPL.toFixed(2)}, cap=-$${CONFIG.autoTrading.maxLossCapDollars}. Locking out new buys for the rest of the trading day.`);
-                        CONFIG.autoTrading.dayCapLockoutActive = true;
-                        CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
-                        saveSettings();
-                    }
-                }
+                // Day cap state is now owned exclusively by evaluateFastRiskChecks() above (its own
+                // faster, independent cadence) — this cycle only ever reads dayCapLockoutActive here,
+                // never sets or resets it. Kept as a status log for visibility on this slower cycle too.
+                console.log(`[AutoTrade] day cap status (read-only here) — lockout=${CONFIG.autoTrading.dayCapLockoutActive ? "ACTIVE" : "off"}`);
 
                 let tradedThisCycle = false;
 
@@ -2389,37 +2491,35 @@
                     const isHeld = freshPositions.has(symbol);
 
                     if (isHeld) {
-                        // --- Sell / max-loss / day-cap: independent of the buy window and the master switch,
-                        // but still requires the bolt on and a position actually held. Any one trigger alone
-                        // is enough to sell; whichever applies first wins for this pass. Day-cap checked
-                        // first and short-circuits the rest — no need to fetch fresh series data for a
-                        // crossover check when the position is being sold regardless of what it shows.
+                        // --- Sell / day-cap: independent of the buy window and the master switch, but still
+                        // requires the bolt on and a position actually held. Per-position max-loss moved to
+                        // evaluateFastRiskChecks() above, on its own faster cadence — no longer checked here.
+                        // Day-cap checked first and short-circuits the rest — no need to fetch fresh series
+                        // data for a crossover check when the position is being sold regardless of what it
+                        // shows. This read-only day-cap check is a redundant backstop, not the primary path —
+                        // the fast cycle should already have sold anything day-cap-locked before this ever runs.
                         try {
-                            const pos = freshPositions.get(symbol);
                             let shouldSell = false;
                             let reason = "";
                             if (CONFIG.autoTrading.dayCapLockoutActive) {
                                 shouldSell = true;
                                 reason = "day cap";
                             } else {
-                                console.log(`[AutoTrade] ${symbol}: held, pct=${Number.isFinite(pos.pct) ? pos.pct.toFixed(2) + "%" : "n/a"}, maxLossPct=${CONFIG.autoTrading.maxLossPct}%`);
-                                if (Number.isFinite(pos.pct) && pos.pct < CONFIG.autoTrading.maxLossPct) {
-                                    shouldSell = true;
-                                    reason = "max loss";
-                                } else {
-                                    const series = await loadFreshTodaySeriesForAutoTrade(symbol);
-                                    if (series.close.length >= 2) {
-                                        const deltaPct = computePctDeltaSeries(series.close, series.sma);
-                                        const last = classifyDelta(deltaPct[deltaPct.length - 1]);
-                                        const prev = classifyDelta(deltaPct[deltaPct.length - 2]);
-                                        console.log(`[AutoTrade] ${symbol}: last bar=${last} (${deltaPct[deltaPct.length - 1].toFixed(3)}%), prev bar=${prev}`);
-                                        if (last === "red" && prev !== "red") {
-                                            shouldSell = true;
-                                            reason = "crossover";
-                                        }
-                                    } else {
-                                        console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`);
+                                const series = await loadFreshTodaySeriesForAutoTrade(symbol);
+                                // Index -1 is always the still-forming current bar, never trustworthy regardless
+                                // of timing — the last actually-closed, settled bar is -2, compared against -3.
+                                // Needs 3 bars now, not 2.
+                                if (series.close.length >= 3) {
+                                    const deltaPct = computePctDeltaSeries(series.close, series.sma);
+                                    const last = classifyDelta(deltaPct[deltaPct.length - 2]);
+                                    const prev = classifyDelta(deltaPct[deltaPct.length - 3]);
+                                    console.log(`[AutoTrade] ${symbol}: last closed bar=${last} (${deltaPct[deltaPct.length - 2].toFixed(3)}%), prev bar=${prev}`);
+                                    if (last === "red" && prev !== "red") {
+                                        shouldSell = true;
+                                        reason = "crossover";
                                     }
+                                } else {
+                                    console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`);
                                 }
                             }
                             if (shouldSell) {
@@ -2427,7 +2527,7 @@
                                 tradedThisCycle = true;
                                 console.log(`[AutoTrade] ${symbol}: %cSOLD%c (${reason})`, AUTOTRADE_LOG_RED, "");
                             } else {
-                                console.log(`[AutoTrade] ${symbol}: %cno sell%c — neither max-loss nor crossover triggered`, AUTOTRADE_LOG_GREY, "");
+                                console.log(`[AutoTrade] ${symbol}: %cno sell%c — not a fresh red crossover`, AUTOTRADE_LOG_GREY, "");
                             }
                         } catch (err) {
                             console.error(`[AutoTrade] ${symbol}: sell evaluation/execution failed — no action taken.`, err);
@@ -2447,11 +2547,13 @@
                     }
                     try {
                         const series = await loadFreshTodaySeriesForAutoTrade(symbol);
-                        if (series.close.length < 2) { console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`); continue; }
+                        // Same as the sell side — index -1 is always the still-forming current bar, never
+                        // trustworthy. The last actually-closed, settled bar is -2, compared against -3.
+                        if (series.close.length < 3) { console.log(`[AutoTrade] ${symbol}: not enough bars yet to evaluate crossover`); continue; }
                         const deltaPct = computePctDeltaSeries(series.close, series.sma);
-                        const last = classifyDelta(deltaPct[deltaPct.length - 1]);
-                        const prev = classifyDelta(deltaPct[deltaPct.length - 2]);
-                        console.log(`[AutoTrade] ${symbol}: not held, within window, last bar=${last} (${deltaPct[deltaPct.length - 1].toFixed(3)}%), prev bar=${prev}`);
+                        const last = classifyDelta(deltaPct[deltaPct.length - 2]);
+                        const prev = classifyDelta(deltaPct[deltaPct.length - 3]);
+                        console.log(`[AutoTrade] ${symbol}: not held, within window, last closed bar=${last} (${deltaPct[deltaPct.length - 2].toFixed(3)}%), prev bar=${prev}`);
                         if (last === "green" && prev !== "green") {
                             // Independent second enforcement layer for the $100 cap — even a stale config
                             // value that somehow bypassed the Settings-side clamp can't slip through here.
@@ -3120,7 +3222,7 @@
         // 2/3 (both seriesName "Close") share the visible price/percent scale, with an explicit
         // min/max computed from the actual data rather than left on auto.
         // =========================================================
-        function buildComboOptions(times, close, smaVals, { height = 220, showXAxis = true, accent = "#5C89B9", valueFormatter, sparkline = false, showAnnotations = true, smaWidth = 1.5 } = {}) {
+        function buildComboOptions(times, close, smaVals, { height = 220, showXAxis = true, accent = "#5C89B9", valueFormatter, sparkline = false, showAnnotations = true, smaWidth = 1.5, symbol = null } = {}) {
             const fmt = valueFormatter || fmtMoney;
             // One bar series instead of two — ApexCharts colors each bar red/green itself via
             // plotOptions.bar.colors.ranges, based on the value's sign. Half the series to compute
@@ -3139,6 +3241,13 @@
             const priceAxisMin = priceMin - pricePad, priceAxisMax = priceMax + pricePad;
             const sessionMarks = showAnnotations ? marketSessionAnnotations(times) : [];
             const hourMarks = showAnnotations ? hourlyAnnotations(times) : [];
+            // Resolves to the per-symbol override only when a symbol is actually passed AND it's in
+            // the (deliberately chart-display-only) watch-only list — Trend's composite call passes no
+            // symbol at all, so it always falls back to the global deadband, which is the correct
+            // behavior for a blended average that isn't really "a symbol" the override could apply to.
+            const effectiveDeadband = (symbol && getDeadbandOverrideSymbols().includes(symbol.toUpperCase()))
+                ? CONFIG.autoTrading.deadbandOverridePct
+                : CONFIG.autoTrading.deadbandPct;
 
             return {
                 chart: {
@@ -3157,20 +3266,22 @@
                 colors: ["#22C55E", "#F5F3EF", accent],
                 plotOptions: {
                     // Three ranges, not two — matches classifyDelta()'s own green/neutral/red split exactly,
-                    // using the same CONFIG.autoTrading.deadbandPct boundary the actual automated-trading
-                    // logic evaluates against. Previously this was a hard >=0 boundary with no neutral zone
-                    // at all, so a bar could show solid green while the bot itself read it as neutral (well
-                    // inside the deadband) — a real, confirmed gap between what was visible and what was
-                    // actually being evaluated, not just a cosmetic mismatch. Applies to every chart using
-                    // this shared function (Trend, Compare, Research), not just Compare — all three already
-                    // pass percentage-point-normalized data here, verified directly, so the same flat
-                    // threshold is meaningful across all of them, not just where automated trading lives.
+                    // using the same deadband boundary the actual automated-trading logic evaluates against
+                    // (or the per-symbol override, chart-display-only, resolved above — never the crossover
+                    // decision logic itself, which always reads the single global value regardless).
+                    // Previously this was a hard >=0 boundary with no neutral zone at all, so a bar could
+                    // show solid green while the bot itself read it as neutral (well inside the deadband) —
+                    // a real, confirmed gap between what was visible and what was actually being evaluated,
+                    // not just a cosmetic mismatch. Applies to every chart using this shared function
+                    // (Trend, Compare, Research), not just Compare — all three already pass
+                    // percentage-point-normalized data here, verified directly, so the same flat threshold
+                    // is meaningful across all of them, not just where automated trading lives.
                     bar: {
                         colors: {
                             ranges: [
-                                { from: -1e9, to: -CONFIG.autoTrading.deadbandPct, color: "#EF4444" },
-                                { from: -CONFIG.autoTrading.deadbandPct, to: CONFIG.autoTrading.deadbandPct, color: "#9FA8B5" },
-                                { from: CONFIG.autoTrading.deadbandPct, to: 1e9, color: "#22C55E" }
+                                { from: -1e9, to: -effectiveDeadband, color: "#EF4444" },
+                                { from: -effectiveDeadband, to: effectiveDeadband, color: "#9FA8B5" },
+                                { from: effectiveDeadband, to: 1e9, color: "#22C55E" }
                             ]
                         }
                     }
@@ -3582,6 +3693,7 @@
                     return `<div class="compare-tile">
           <p class="compare-tile-title" style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;"><span><span class="held-dot" id="compareHeldDot-${id}" style="display:none;"></span><span id="compareTitleSym-${id}">${t.symbol}</span> <span style="color:var(--muted); font-weight:400;">${t.name || ""}</span></span><span id="compareHeldGain-${id}" style="display:none; font-weight:700; font-size:13px; white-space:nowrap;"></span></p>
           <div id="compareChart-${id}"></div>
+          <span class="deadband-override-badge" id="compareDeadbandBadge-${id}" style="display:none;"></span>
           ${tradeButtons}
         </div>`;
                 }).join("") + `</div>`;
@@ -3603,7 +3715,7 @@
                 const pctSeries = s.close.map(c => ((c - base) / base) * 100);
                 const smaVals = s.sma.map(v => ((v - base) / base) * 100);
                 const pctFmt = v => round2(Number(v)).toFixed(2) + "%";
-                const opts = buildComboOptions(s.times, pctSeries, smaVals, { height: 170, showXAxis: false, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showAnnotations: true, smaWidth: 1.5 });
+                const opts = buildComboOptions(s.times, pctSeries, smaVals, { height: 170, showXAxis: false, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showAnnotations: true, smaWidth: 1.5, symbol: t.symbol });
 
                 if (compareCharts[id]) {
                     // Same instance, updated in place — no new ApexCharts(), no DOM rebuild.
@@ -3611,6 +3723,16 @@
                 } else {
                     compareCharts[id] = new ApexCharts(document.querySelector(`#compareChart-${id}`), opts);
                     compareCharts[id].render();
+                }
+
+                // Deadband override badge — chart display only, purely informational, no click handler.
+                // Shows the actual override value, not just a generic "on" flag, since the number itself
+                // is what determines how to read the bar colors underneath it.
+                const deadbandBadge = document.getElementById(`compareDeadbandBadge-${id}`);
+                if (deadbandBadge) {
+                    const isOverridden = getDeadbandOverrideSymbols().includes(t.symbol.toUpperCase());
+                    deadbandBadge.style.display = isOverridden ? "" : "none";
+                    if (isOverridden) deadbandBadge.textContent = `Override Enabled: ${CONFIG.autoTrading.deadbandOverridePct}%`;
                 }
 
                 // Symbol title colors green/red based on the same value the last delta bar shows —
@@ -3835,15 +3957,23 @@
 
             let container = document.getElementById("researchChart");
             if (!container) {
-                panel.innerHTML = `<div id="researchChart"></div>`;
+                panel.innerHTML = `<div style="position:relative;"><div id="researchChart"></div><span class="deadband-override-badge" id="researchDeadbandBadge" style="display:none;"></span></div>`;
                 container = document.getElementById("researchChart");
             }
-            const opts = buildComboOptions(data.times, pctSeries, smaVals, { height: 340, accent: ACCENT, valueFormatter: pctFmt, sparkline: true });
+            const opts = buildComboOptions(data.times, pctSeries, smaVals, { height: 340, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, symbol: researchSymbol });
             if (researchChart) {
                 researchChart.updateOptions(opts, true, true);
             } else {
                 researchChart = new ApexCharts(container, opts);
                 researchChart.render();
+            }
+
+            // Same badge pattern as Compare — chart display only, shows the actual override value.
+            const researchDeadbandBadge = document.getElementById("researchDeadbandBadge");
+            if (researchDeadbandBadge) {
+                const isOverridden = getDeadbandOverrideSymbols().includes(researchSymbol.toUpperCase());
+                researchDeadbandBadge.style.display = isOverridden ? "" : "none";
+                if (isOverridden) researchDeadbandBadge.textContent = `Override Enabled: ${CONFIG.autoTrading.deadbandOverridePct}%`;
             }
 
             const last = pctSeries[pctSeries.length - 1];
@@ -4207,6 +4337,8 @@
         const autoTradeInvestDollars = document.getElementById("autoTradeInvestDollars");
         const autoTradeMaxLossPct = document.getElementById("autoTradeMaxLossPct");
         const autoTradeDeadbandPct = document.getElementById("autoTradeDeadbandPct");
+        const autoTradeDeadbandOverrideSymbols = document.getElementById("autoTradeDeadbandOverrideSymbols");
+        const autoTradeDeadbandOverridePct = document.getElementById("autoTradeDeadbandOverridePct");
         const autoTradeMaxGainCap = document.getElementById("autoTradeMaxGainCap");
         const autoTradeMaxLossCap = document.getElementById("autoTradeMaxLossCap");
         const autoTradeEvalSecond = document.getElementById("autoTradeEvalSecond");
@@ -4219,6 +4351,8 @@
             autoTradeInvestDollars.value = CONFIG.autoTrading.investDollars;
             autoTradeMaxLossPct.value = CONFIG.autoTrading.maxLossPct;
             autoTradeDeadbandPct.value = CONFIG.autoTrading.deadbandPct;
+            autoTradeDeadbandOverrideSymbols.value = CONFIG.autoTrading.deadbandOverrideSymbols;
+            autoTradeDeadbandOverridePct.value = CONFIG.autoTrading.deadbandOverridePct;
             autoTradeMaxGainCap.value = CONFIG.autoTrading.maxGainCapDollars;
             autoTradeMaxLossCap.value = CONFIG.autoTrading.maxLossCapDollars;
             autoTradeEvalSecond.value = CONFIG.autoTrading.evalSecond;
@@ -4267,6 +4401,9 @@
             CONFIG.autoTrading.maxLossPct = Number.isFinite(parsedMaxLoss) ? Math.min(0, parsedMaxLoss) : CONFIG.autoTrading.maxLossPct;
             const parsedDeadband = parseFloat(autoTradeDeadbandPct.value);
             CONFIG.autoTrading.deadbandPct = Number.isFinite(parsedDeadband) ? Math.min(10, Math.max(0, parsedDeadband)) : CONFIG.autoTrading.deadbandPct;
+            CONFIG.autoTrading.deadbandOverrideSymbols = autoTradeDeadbandOverrideSymbols.value;
+            const parsedOverridePct = parseFloat(autoTradeDeadbandOverridePct.value);
+            CONFIG.autoTrading.deadbandOverridePct = Number.isFinite(parsedOverridePct) ? Math.min(10, Math.max(0, parsedOverridePct)) : CONFIG.autoTrading.deadbandOverridePct;
             const parsedMaxGainCap = parseFloat(autoTradeMaxGainCap.value);
             CONFIG.autoTrading.maxGainCapDollars = Number.isFinite(parsedMaxGainCap) ? Math.min(1000, Math.max(0, parsedMaxGainCap)) : CONFIG.autoTrading.maxGainCapDollars;
             const parsedMaxLossCap = parseFloat(autoTradeMaxLossCap.value);
@@ -4403,13 +4540,17 @@
                             if (currentView === "positions") renderPositions();
                         });
                     }
-                    // Automated trading — fires exactly once per matching (five-minute-mark, eval-second)
-                    // tick, same "tick rate equals check granularity, no duplicate-fire guard needed"
-                    // reasoning as everything else on this timer. getSessionWindow().isLive here is the
-                    // same gate the blue five-minute cue itself uses, so this only ever evaluates while
-                    // that cue would actually be showing — including implicitly never firing while a
-                    // historical date is being viewed.
-                    if (getSessionWindow().isLive && (new Date().getMinutes() % 5 === 0) && second === CONFIG.autoTrading.evalSecond) {
+                    // Automated trading — fires once per minute at minute%5===1 (not ===0), deliberately
+                    // offset one minute past each five-minute boundary, not aligned with it. The bar that
+                    // just closed at the boundary itself isn't reliable yet — both Alpaca and the user's
+                    // own proxy keep revising a bar's close for roughly a minute after its own window ends
+                    // before it's actually settled. Confirmed directly from loadSeries()'s own comment: the
+                    // series' last element is always the still-forming current bar, not occasionally stale
+                    // but structurally so — meaning the true "last closed" bar for crossover purposes is
+                    // always index -2, compared against index -3, never -1/-2 (see below). This offset no
+                    // longer lines up with the blue five-minute cue, which intentionally stays on its own
+                    // ===0 timing — the cue's own meaning wasn't part of this fix and is left untouched.
+                    if (getSessionWindow().isLive && (new Date().getMinutes() % 5 === 1) && second === CONFIG.autoTrading.evalSecond) {
                         evaluateAutomatedTrading();
                     }
                     // End-of-day sell — deliberately a SEPARATE if, not else-if. If AUTO_TRADE_EOD_SECOND
@@ -4430,6 +4571,16 @@
                         CONFIG.autoTrading.dayCapLockoutSessionKey = getSessionWindow().sessionStart.getTime();
                         saveSettings();
                         evaluateAutomatedTrading();
+                    }
+                    // Fast risk checks — day caps and per-position max-loss, every minute (same evalSecond,
+                    // no five-minute-mark requirement), independent of the slower buy/crossover cycle
+                    // above. A third, separate if — not folded into either of the two above — since this
+                    // fires far more often than either and shouldn't be coupled to their own timing logic.
+                    const nowHmmForFastCheck = getHMM(new Date());
+                    if (getSessionWindow().isLive
+                        && nowHmmForFastCheck >= AUTO_TRADE_REGULAR_HOURS_START && nowHmmForFastCheck <= AUTO_TRADE_REGULAR_HOURS_END
+                        && second === CONFIG.autoTrading.evalSecond) {
+                        evaluateFastRiskChecks();
                     }
                 }, 1000);
                 refreshBarTimer = setInterval(updateRefreshBar, 200); // visual only — no data-fetching side effects
