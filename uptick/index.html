@@ -1776,7 +1776,7 @@
                         <li>Enabling it on a symbol that's already moving is picked up on the very next check, not just
                             a fresh move from that point forward</li>
                     </ul>
-                    <p class="help-desc"><b>Buying and selling both work the same way: reconciliation, not a one-time
+                    <p class="help-desc"><b>Buying and selling both work the same way: state-based, not a one-time
                             trigger.</b> Every minute, each enabled symbol is asked one question — does its current
                         delta bar say it should be owned right now?</p>
                     <ul class="help-desc">
@@ -2011,12 +2011,12 @@
                 <tr>
                     <td id="autoTradeMaxGainCapLabel">Max gain cap ($) — sells everything, stops buying for the day</td>
                     <td style="text-align:right;"><input type="number" id="autoTradeMaxGainCap" class="edit-input"
-                            min="0" max="10000" step="10"></td>
+                            min="0" max="10000" step="5"></td>
                 </tr>
                 <tr>
                     <td id="autoTradeMaxLossCapLabel">Max loss cap ($) — same, mirrored</td>
                     <td style="text-align:right;"><input type="number" id="autoTradeMaxLossCap" class="edit-input"
-                            min="0" max="1000" step="10"></td>
+                            min="0" max="1000" step="5"></td>
                 </tr>
                 <tr>
                     <td>Trailing (%) — not active yet</td>
@@ -2098,6 +2098,7 @@
                 <div id="tablePanel" class="view-panel"></div>
                 <div id="researchPanel" class="view-panel"></div>
                 <div id="positionsPanel" class="view-panel"></div>
+                <div id="activitySummaryPanel"></div>
             </div>
 
             <p style="color:var(--muted); font-size:12px; margin-top:14px;">
@@ -2109,7 +2110,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V081</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V084</p>
         </div>
     </div>
 
@@ -2172,7 +2173,7 @@
                 // freely toggleable on and back off at any time, since "my read on the day was wrong" is
                 // an explicit, intended use case. Only ever blocks new buys — never touches selling, even
                 // for a position that's already held when this gets flipped on mid-day; that position
-                // keeps being managed by the normal sell/max-loss/reconciliation logic exactly as if this
+                // keeps being managed by the normal sell/max-loss/state-based logic exactly as if this
                 // flag didn't exist. Same 4am session-boundary reset pattern as the day-cap lockout, via
                 // its own independent session key, so it can't accidentally carry over into a new day —
                 // but a completely separate check, so resetting one can never affect the other.
@@ -2223,6 +2224,14 @@
         let selectedDate = null; // "pretend this day is today" — a picked historical date, or null for live Today. Session-only, never persisted.
         let lastActivityTime = Date.now(); // updated on any click; drives the 60-minute inactivity reset while selectedDate is active
         let selectedDateSetAt = null; // timestamp of when selectedDate was last set to a real (non-null) date — distinct from lastActivityTime, which updates on ANY click. Drives the 4am reset below: if today's real 4am boundary has passed since this timestamp, a historical date left selected overnight (even with the app otherwise active, so the 60-minute inactivity check alone wouldn't catch it) gets cleared for the new trading day.
+        // Governs whether renderActivitySummary() actually does anything the next time it's called.
+        // Starts true so the very first visit to Positions loads real data. Without this, the
+        // function was being called unconditionally from inside renderPositions() — which is itself
+        // called directly by the 15-second account-refresh timer, bypassing view-switch logic
+        // entirely — so the whole activity section (fetch, DOM rebuild, brief "Loading…" flash) was
+        // firing every 15 seconds while simply sitting on the Positions view, not just on genuine
+        // view-load or an explicit Refresh click as intended.
+        let activitySummaryNeedsLoad = true;
         let currentTf = "today";      // today | 5d | 1m
         let currentView = "trend";    // trend | compare | table
         let displayWindow = "full";   // full | regular | last6h — only meaningful when currentTf === "today"; a pure display-layer slice, doesn't touch fetching/SMA/session logic at all
@@ -2234,7 +2243,7 @@
         // restore-time clamps, and the buy execution's independent clamp at the moment it actually
         // fires. Raised 100 -> 150 on 2026-08-21 (sub-$100 orders weren't reliably filling), then
         // 150 -> 5000 on 2026-08-22 — asked for directly after a full clean trading day validated
-        // the reconciliation redesign against real conditions, exactly as this comment always said
+        // the state-based redesign against real conditions, exactly as this comment always said
         // a raise would need to happen: never a settings toggle. Declared here (not near getHMM(),
         // where it originally lived) for the same reason controlsExpanded was moved up —
         // applySavedSettings() below needs it and would otherwise hit the temporal dead zone trying
@@ -2617,7 +2626,7 @@
 
                     // --- Day-cap lockout: checked first, per symbol, before any bar data is even fetched.
                     // Sells a held position unconditionally; a not-held symbol is just skipped entirely —
-                    // no buying while locked out, regardless of what reconciliation would otherwise say. ---
+                    // no buying while locked out, regardless of what the state-based check would otherwise say. ---
                     if (CONFIG.autoTrading.dayCapLockoutActive) {
                         if (isHeld) {
                             try {
@@ -2633,7 +2642,7 @@
                         continue;
                     }
 
-                    // --- Reconciliation, replacing transition-only crossover detection. Reads current
+                    // --- State-based decision, replacing transition-only crossover detection. Reads current
                     // state only ("does this bar say I should own it, right now") rather than requiring a
                     // fresh transition — confirmed necessary after real, repeated misses: a bar settling to
                     // its true value after already shifting from "current" to "previous" meant a genuine
@@ -2641,7 +2650,7 @@
                     // logged for diagnostic context only — it plays no part in this decision anymore. Same
                     // -2/-3 index protection as before: index -1 is always the still-forming current bar,
                     // never trustworthy regardless of timing. Fetched once per symbol here, used by both
-                    // the held and not-held branches below, since reconciliation needs the same reading
+                    // the held and not-held branches below, since this state-based check needs the same reading
                     // either way. ---
                     let last, prev;
                     try {
@@ -2679,7 +2688,7 @@
                                 reason = "max loss";
                             } else if (shouldNotOwn) {
                                 shouldSell = true;
-                                reason = "reconcile";
+                                reason = "state-based";
                             }
                             if (shouldSell) {
                                 await TradingAPI.sell(symbol);
@@ -2694,8 +2703,8 @@
                         continue; // a held position is never also evaluated for buying
                     }
 
-                    // --- Not held: reconciliation buy, still gated by the buy window — that part is
-                    // unchanged, reconciliation doesn't touch when buying is allowed, only whether it
+                    // --- Not held: state-based buy, still gated by the buy window — that part is
+                    // unchanged, this check doesn't touch when buying is allowed, only whether it
                     // happens once it is. The manual no-buy override is checked here too, alongside the
                     // window — both are simply reasons to skip buying specifically, never reasons to touch
                     // a held position, which is why neither one lives in the day-cap block above (that one
@@ -2988,6 +2997,71 @@
             return { todayPL, todayPLPct, positionsValue, positionsPct, equity, buyingPower };
         }
 
+        // Turns raw Alpaca trade-activity rows into per-symbol round-trip summaries. Validated
+        // against two real, independent trading days before ever being trusted here — the exact same
+        // logic, checked by hand in Python against real account data first.
+        //
+        // Three steps, matching what those two validations confirmed:
+        // 1. Combine partial fills sharing one order_id into a single logical buy/sell event — a
+        //    partial fill is one decision Alpaca happened to split into multiple rows, not multiple
+        //    decisions.
+        // 2. Group by symbol, sort chronologically, pair consecutive buy->sell as one round trip.
+        // 3. If a symbol's FIRST event is a sell, it's closing a position that opened before this
+        //    query's date range (confirmed twice: a manually-held overnight position both times) —
+        //    excluded from every summary, since its true cost basis isn't knowable from this data
+        //    alone. Counted, never silently dropped without a trace.
+        function computeActivitySummary(activities) {
+            const byOrder = new Map();
+            for (const a of activities) {
+                if (!byOrder.has(a.order_id)) byOrder.set(a.order_id, []);
+                byOrder.get(a.order_id).push(a);
+            }
+            const events = [];
+            for (const [orderId, rows] of byOrder) {
+                const totalQty = rows.reduce((s, r) => s + parseFloat(r.qty), 0);
+                const totalNotional = rows.reduce((s, r) => s + parseFloat(r.qty) * parseFloat(r.price), 0);
+                const latestTime = rows.reduce((max, r) => r.transaction_time > max ? r.transaction_time : max, rows[0].transaction_time);
+                events.push({ orderId, symbol: rows[0].symbol, side: rows[0].side, notional: totalNotional, time: latestTime });
+            }
+
+            const bySymbol = new Map();
+            for (const e of events) {
+                if (!bySymbol.has(e.symbol)) bySymbol.set(e.symbol, []);
+                bySymbol.get(e.symbol).push(e);
+            }
+
+            const summaries = [];
+            let orphanCount = 0;
+            for (const [symbol, evsRaw] of bySymbol) {
+                const evs = evsRaw.slice().sort((a, b) => a.time < b.time ? -1 : a.time > b.time ? 1 : 0);
+                let i = 0;
+                if (evs.length && evs[0].side === "sell") { orphanCount++; i = 1; }
+                const trades = [];
+                while (i < evs.length - 1) {
+                    const buyEv = evs[i], sellEv = evs[i + 1];
+                    if (buyEv.side !== "buy" || sellEv.side !== "sell") { i++; continue; }
+                    trades.push(sellEv.notional - buyEv.notional);
+                    i += 2;
+                }
+                if (trades.length === 0) continue; // symbol had only an orphan close, no complete round trips today
+                const wins = trades.filter(t => t > 0);
+                const losses = trades.filter(t => t < 0);
+                const total = trades.reduce((s, t) => s + t, 0);
+                summaries.push({
+                    symbol,
+                    numTrades: trades.length,
+                    numWins: wins.length,
+                    numLosses: losses.length,
+                    bestWin: wins.length ? Math.max(...wins) : null,
+                    worstLoss: losses.length ? Math.min(...losses) : null,
+                    totalPL: total,
+                    avgPL: total / trades.length
+                });
+            }
+            summaries.sort((a, b) => a.symbol.localeCompare(b.symbol));
+            return { summaries, orphanCount };
+        }
+
         const DataSource = {
             async loadSeries(symbol, tf) {
                 // Keyed on selectedDate too, not just symbol+tf — otherwise picking a historical date
@@ -3101,6 +3175,55 @@
                     [TICKERS[2]?.symbol, { dollar: 7.85, pct: 0.62, costBasis: 1265.00, currentPrice: 88.90 }]
                 ].filter(([symbol]) => symbol)); // guards against a watchlist with fewer than 3 tickers
                 return generateSampleAccount();
+            },
+
+            // Today's completed trade activity, for the round-trip summary at the bottom of Positions.
+            // Reuses the exact same account credentials as loadAccountInfo() above — same Alpaca
+            // account, no separate auth needed. Single page only (page_size caps at 100 server-side) —
+            // pagination via page_token is a separate, not-yet-built piece; a day with more than 100
+            // raw fill rows would currently just show its first 100 rows' worth of activity.
+            async loadTodayActivities() {
+                if (CONFIG.dataMode !== "api" || !CONFIG.api.accountBaseUrl) return [];
+                const base = CONFIG.api.accountBaseUrl.replace(/\/$/, "");
+                const headers = {
+                    accept: "application/json",
+                    "APCA-API-KEY-ID": CONFIG.api.accountApiKey,
+                    "APCA-API-SECRET-KEY": CONFIG.api.accountApiSecret
+                };
+                // effectiveToday() — same single choke-point every other date decision in this app
+                // already goes through, so this respects a picked historical date the same way
+                // everything else does, rather than always meaning the real live "today."
+                const d = effectiveToday();
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                const baseUrl = `${base}/v2/account/activities?category=trade_activity&date=${dateStr}&direction=desc&page_size=100`;
+
+                // Pagination — genuinely different from the bars/series endpoint pattern the user's own
+                // older reference code was written against, confirmed directly from Alpaca's own docs
+                // before writing any of this: no next_page_token field on the response at all (the
+                // response is a plain array), so the *last item's own id* becomes the page_token for the
+                // next request. A returned page shorter than page_size (100) means it was the last page —
+                // that's the only termination signal, there's no separate "hasMore" flag to check.
+                let allActivities = [];
+                let pageToken = null;
+                let pageCount = 0;
+                const MAX_PAGES = 20; // 2000 rows — a generous real ceiling, not expected to ever be hit
+                // by a single day's activity, but a hard stop rather than trusting
+                // the loop to terminate on its own if something unexpected happens
+                while (pageCount < MAX_PAGES) {
+                    const url = pageToken ? `${baseUrl}&page_token=${encodeURIComponent(pageToken)}` : baseUrl;
+                    const res = await fetch(url, { headers });
+                    if (!res.ok) throw new Error("Activities request failed: " + res.status);
+                    const page = await res.json();
+                    allActivities.push(...page);
+                    pageCount++;
+                    if (page.length < 100) break; // short page — genuinely done, not just this page's worth
+                    pageToken = page[page.length - 1].id; // last item's own id, per Alpaca's documented convention
+                    await new Promise(resolve => setTimeout(resolve, 250)); // brief, courteous pause between
+                    // pages — same spirit as the
+                    // user's own older reference
+                    // code's pagination delay
+                }
+                return allActivities;
             }
         };
 
@@ -4042,10 +4165,105 @@
         // below): heldPositions updates on its own account-refresh cadence, independent of anything
         // currentSignature() tracks, so caching this view risked showing stale data exactly the way
         // seriesCache once did before it was keyed on selectedDate.
+        async function renderActivitySummary() {
+            const container = document.getElementById("activitySummaryPanel");
+            if (!container) return;
+            if (!activitySummaryNeedsLoad) return; // already loaded for this view-visit — the 15-second
+            // account-refresh timer calls renderPositions()
+            // directly, bypassing view-switch logic, so without
+            // this guard this would re-fetch and rebuild every tick
+            if (CONFIG.dataMode !== "api") {
+                container.innerHTML = "";
+                activitySummaryNeedsLoad = false;
+                return;
+            }
+            container.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin:20px 0 8px;">
+        <p class="metric-sub" style="margin:0;">Today's completed trades — round-trip summary, from account activity</p>
+        <button type="button" class="btn-cancel" id="activitySummaryRefresh" style="padding:4px 10px; font-size:12px;">Refresh</button>
+      </div>
+      <p class="metric-sub" id="activitySummaryStatus">Loading…</p>`;
+            document.getElementById("activitySummaryRefresh").addEventListener("click", () => {
+                activitySummaryNeedsLoad = true; // explicit user intent always forces a real reload,
+                // bypassing the same guard that blocks the timer above
+                renderActivitySummary();
+            });
+
+            let activities;
+            try {
+                activities = await DataSource.loadTodayActivities();
+            } catch (err) {
+                document.getElementById("activitySummaryStatus").textContent = "Couldn't load today's activity.";
+                console.error("[ActivitySummary] fetch failed", err);
+                activitySummaryNeedsLoad = false; // no auto-retry on the next timer tick — matches the
+                // same "only on explicit action" intent; Refresh is
+                // still available to try again manually
+                return;
+            }
+
+            const { summaries, orphanCount } = computeActivitySummary(activities);
+            const statusEl = document.getElementById("activitySummaryStatus");
+            if (summaries.length === 0) {
+                statusEl.textContent = orphanCount > 0
+                    ? `No completed round trips yet today (${orphanCount} position${orphanCount > 1 ? "s" : ""} opened before today, not shown).`
+                    : "No completed round trips yet today.";
+                activitySummaryNeedsLoad = false;
+                return;
+            }
+            statusEl.remove();
+
+            const totalTrades = summaries.reduce((s, r) => s + r.numTrades, 0);
+            const totalWins = summaries.reduce((s, r) => s + r.numWins, 0);
+            const totalLosses = summaries.reduce((s, r) => s + r.numLosses, 0);
+            const totalPL = summaries.reduce((s, r) => s + r.totalPL, 0);
+            const totalAvg = totalTrades ? totalPL / totalTrades : 0;
+            const fmtCell = v => v === null ? "-" : `${signPrefix(v)}${round2(v).toFixed(2)}`;
+
+            container.insertAdjacentHTML("beforeend", `
+      <div style="overflow-x:auto;">
+      <table class="data-table today-table" style="min-width:520px;">
+        <thead><tr>
+          <th>Symbol</th>
+          <th class="w3-hide-small"># Trades</th>
+          <th>W / L</th>
+          <th class="w3-hide-small">Best Win</th>
+          <th class="w3-hide-small">Worst Loss</th>
+          <th>Total P&amp;L</th>
+          <th class="w3-hide-small">Avg / Trade</th>
+        </tr></thead>
+        <tbody>
+          ${summaries.map(r => `
+            <tr>
+              <td>${r.symbol}</td>
+              <td class="w3-hide-small">${r.numTrades}</td>
+              <td><span style="color:#83B573;">${r.numWins}</span> / <span style="color:#C96A6A;">${r.numLosses}</span></td>
+              <td class="w3-hide-small" style="color:#83B573;">${r.bestWin === null ? "-" : signPrefix(r.bestWin) + round2(r.bestWin).toFixed(2)}</td>
+              <td class="w3-hide-small" style="color:#C96A6A;">${r.worstLoss === null ? "-" : signPrefix(r.worstLoss) + round2(r.worstLoss).toFixed(2)}</td>
+              <td class="${signClass(r.totalPL)}">${fmtCell(r.totalPL)}</td>
+              <td class="w3-hide-small ${signClass(r.avgPL)}">${fmtCell(r.avgPL)}</td>
+            </tr>`).join("")}
+          <tr class="positions-total-row" style="font-weight:700;">
+            <td>TOTAL</td>
+            <td class="w3-hide-small">${totalTrades}</td>
+            <td><span style="color:#83B573;">${totalWins}</span> / <span style="color:#C96A6A;">${totalLosses}</span></td>
+            <td class="w3-hide-small"></td>
+            <td class="w3-hide-small"></td>
+            <td class="${signClass(totalPL)}">${fmtCell(totalPL)}</td>
+            <td class="w3-hide-small ${signClass(totalAvg)}">${fmtCell(totalAvg)}</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      ${orphanCount > 0 ? `<p class="metric-sub" style="margin-top:6px;">${orphanCount} position${orphanCount > 1 ? "s" : ""} opened before today, not shown — cost basis not knowable from today's activity alone.</p>` : ""}`);
+            activitySummaryNeedsLoad = false;
+        }
+
         async function renderPositions() {
             document.getElementById("viewTitle").textContent = "Positions";
             document.getElementById("viewSub").textContent = "Your current open positions, from the live positions payload";
             const panel = document.getElementById("positionsPanel");
+            renderActivitySummary(); // fire-and-forget — independent of currently-held positions, so it
+            // still shows today's completed activity even if everything already closed out
 
             if (heldPositions.size === 0) {
                 panel.innerHTML = "<p class='metric-sub'>No open positions.</p>";
@@ -4220,6 +4438,12 @@
                 el.style.display = "none";
             });
             document.getElementById(currentView + "Panel").style.display = "";
+            // activitySummaryPanel deliberately isn't a .view-panel — it needs to survive
+            // positionsPanel's own "no open positions" early-return (which replaces that panel's
+            // entire innerHTML), so it can't be nested inside it either. Controlled explicitly here
+            // instead of through the generic toggle above, which only ever shows exactly one panel
+            // per view and would otherwise leave this permanently hidden.
+            document.getElementById("activitySummaryPanel").style.display = currentView === "positions" ? "" : "none";
             document.getElementById("researchSearchRow").style.display = currentView === "research" ? "flex" : "none";
             document.getElementById("tickerBar").classList.toggle("chips-muted", currentView === "research" || currentView === "positions");
             document.getElementById("tickerPresetRow").classList.toggle("chips-muted", currentView === "research" || currentView === "positions");
@@ -4360,7 +4584,12 @@
         });
         document.getElementById("viewToggle").addEventListener("click", (e) => {
             const btn = e.target.closest(".w3-button"); if (!btn) return;
+            const wasPositions = currentView === "positions";
             currentView = btn.dataset.view;
+            // Leaving Positions marks the activity summary stale, so the next arrival back — a genuine
+            // view-load, not just the account-refresh timer ticking while already there — triggers a
+            // real fetch again, matching the intended "on view load, plus manual Refresh" behavior.
+            if (wasPositions && currentView !== "positions") activitySummaryNeedsLoad = true;
             document.querySelectorAll("#viewToggle .w3-button").forEach(b => b.classList.toggle("active", b === btn));
             saveSettings();
             render();
@@ -4822,7 +5051,7 @@
                     // cadences specifically because crossover-detection needed to stay slow (avoid
                     // reacting to noise) while day-cap/max-loss could safely run fast (they read only
                     // account/position data, never the bar series). That reason no longer applies:
-                    // reconciliation-based buy/sell (see evaluateAutomatedTrading() itself) needs the
+                    // state-based buy/sell (see evaluateAutomatedTrading() itself) needs the
                     // same cadence as day-cap/max-loss, since it re-checks current state every cycle
                     // rather than waiting for a fresh transition — so both are back in one function,
                     // one fetch, one cadence. Confirmed numerically that this carries no new
