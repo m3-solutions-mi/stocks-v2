@@ -977,6 +977,20 @@
             white-space: nowrap;
         }
 
+        .help-mission {
+            border-left: 3px solid var(--ink);
+            padding: 2px 0 2px 14px;
+            margin: 0 0 18px 0;
+        }
+
+        .help-mission-text {
+            font-size: 14.5px;
+            font-style: italic;
+            line-height: 1.5;
+            color: var(--ink);
+            margin: 0;
+        }
+
         .help-desc code,
         .help-note code {
             font-family: Consolas, 'Courier New', monospace;
@@ -1554,6 +1568,10 @@
             </div>
 
             <div class="help-panel" id="helpPanelOverview">
+                <div class="help-mission">
+                    <p class="help-mission-text">"The bot doesn't need to be smarter than you were on your good days. It
+                        only needs to not have your bad ones."</p>
+                </div>
                 <div class="help-section">
                     <p class="help-heading">What Uptick shows</p>
                     <p class="help-desc">
@@ -1875,6 +1893,19 @@
                     autocomplete="off" style="margin-bottom:16px;">
                 <p class="metric-sub" style="margin:-10px 0 16px;">Key and secret are stored only in this browser's
                     local storage — never written into the app itself.</p>
+                <p class="field-label">Account chart minimum start date <span
+                        style="color:var(--muted); font-weight:400;">(refresh page after save)</span></p>
+                <input type="date" id="settingsAccountMinStartDate" class="edit-select" style="margin-bottom:8px;">
+                <p class="metric-sub" style="margin:-10px 0 16px;">Optional — clips pre-bot history (e.g. manual trading
+                    years) out of the daily-gains chart. Only ever narrows the requested window, never extends it; leave
+                    empty to just use the requested period as-is.</p>
+                <p class="field-label">Account chart daily target ($) <span
+                        style="color:var(--muted); font-weight:400;">(refresh page after save)</span></p>
+                <input type="number" id="settingsAccountDailyTarget" class="edit-select" placeholder="e.g. 300" step="1"
+                    style="margin-bottom:8px;">
+                <p class="metric-sub" style="margin:-10px 0 16px;">Optional — draws a flat reference line on the
+                    daily-gains chart at this dollar figure. Reference only, not a trading signal; leave empty for no
+                    line.</p>
             </div>
 
             <p class="settings-section-label">Chart</p>
@@ -2073,6 +2104,7 @@
                         <button class="w3-button" data-view="table"><i class="fa fa-table"></i> Table</button>
                         <button class="w3-button" data-view="positions"><i class="fa fa-briefcase"></i>
                             Positions</button>
+                        <button class="w3-button" data-view="account"><i class="fa fa-bar-chart"></i> Account</button>
                     </div>
                 </div>
             </div>
@@ -2098,6 +2130,7 @@
                 <div id="tablePanel" class="view-panel"></div>
                 <div id="researchPanel" class="view-panel"></div>
                 <div id="positionsPanel" class="view-panel"></div>
+                <div id="accountPanel" class="view-panel"></div>
                 <div id="activitySummaryPanel"></div>
             </div>
 
@@ -2110,7 +2143,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V084</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V086</p>
         </div>
     </div>
 
@@ -2127,7 +2160,17 @@
                 activeSymbolSource: "A", // "A" | "B"
                 accountBaseUrl: "",  // e.g. https://paper-api.alpaca.markets — /v2/account and /v2/positions are appended automatically
                 accountApiKey: "",   // never hardcoded here — always empty until entered in Settings and saved to localStorage
-                accountApiSecret: ""
+                accountApiSecret: "",
+                accountMinStartDate: "", // "YYYY-MM-DD" or "" — clips pre-bot history out of the Account
+                // view's daily-gains chart. Applied as the LATER (more recent) of this and (today - 14),
+                // so it can only ever narrow the requested window, never extend it — an older-than-14-days
+                // value here is silently ignored rather than pulling in more history than was requested.
+                accountDailyTargetDollars: NaN // reference-only annotation line on the daily-gains chart's
+                // bar (daily P&L) axis — NaN means "not set," no line drawn. A flat dollar figure,
+                // deliberately not derived from any %/capital-base calculation: capital varies too much
+                // day to day (Invest $ alone ranged $100-$1000 this week) for one "correct" base to
+                // convert a percent target into, so the user states the dollar figure directly instead.
+                // Chart is reference-only, not a trading signal — this line is not read by any decision logic.
             },
             smaPeriod: 5,
             lossAlertPct: -0.5, // threshold for the red hue on the Today/Positions cards and the Positions table's % Change cells — one setting drives all three
@@ -2286,6 +2329,7 @@
         const AUTO_TRADE_MORNING_CUTOFF_HMM = 1130;
         let seriesCache = {};         // symbol -> { times, close }
         let trendChart = null;
+        let dailyGainsChart = null;
         let compareCharts = {};
         let researchSymbol = null; // applied symbol, session-only — never persisted, resets on reload
         let researchChart = null;
@@ -2306,6 +2350,8 @@
                     symbolBaseUrlB: CONFIG.api.symbolBaseUrlB,
                     activeSymbolSource: CONFIG.api.activeSymbolSource,
                     accountBaseUrl: CONFIG.api.accountBaseUrl,
+                    accountMinStartDate: CONFIG.api.accountMinStartDate,
+                    accountDailyTargetDollars: CONFIG.api.accountDailyTargetDollars,
                     accountApiKey: CONFIG.api.accountApiKey,
                     accountApiSecret: CONFIG.api.accountApiSecret,
                     smaPeriod: CONFIG.smaPeriod,
@@ -2334,6 +2380,11 @@
             if (typeof saved.symbolBaseUrlB === "string") CONFIG.api.symbolBaseUrlB = saved.symbolBaseUrlB.trim();
             if (saved.activeSymbolSource === "A" || saved.activeSymbolSource === "B") CONFIG.api.activeSymbolSource = saved.activeSymbolSource;
             if (typeof saved.accountBaseUrl === "string") CONFIG.api.accountBaseUrl = saved.accountBaseUrl.trim();
+            if (typeof saved.accountMinStartDate === "string") CONFIG.api.accountMinStartDate = saved.accountMinStartDate.trim();
+            // Same NaN round-trip pattern as deadbandNegPct/maxLossPctMorning — JSON.stringify(NaN)
+            // becomes null, so Number.isFinite() correctly falls back to NaN ("no target set") rather
+            // than 0 or undefined whenever the saved value wasn't a real number.
+            CONFIG.api.accountDailyTargetDollars = Number.isFinite(saved.accountDailyTargetDollars) ? saved.accountDailyTargetDollars : NaN;
             if (typeof saved.accountApiKey === "string") CONFIG.api.accountApiKey = saved.accountApiKey;
             if (typeof saved.accountApiSecret === "string") CONFIG.api.accountApiSecret = saved.accountApiSecret;
             if (Number.isFinite(saved.smaPeriod)) CONFIG.smaPeriod = saved.smaPeriod;
@@ -2392,7 +2443,7 @@
                 tickerPresets = saved.tickerPresets.filter(p => p && typeof p.id === "string" && typeof p.name === "string" && Array.isArray(p.tickerIds));
             }
             if (["today", "10d", "30d", "90d", "180d"].includes(saved.currentTf)) currentTf = saved.currentTf;
-            if (["trend", "compare", "table", "research", "positions"].includes(saved.currentView)) currentView = saved.currentView;
+            if (["trend", "compare", "table", "research", "positions", "account"].includes(saved.currentView)) currentView = saved.currentView;
             if (["full", "regular", "last6h"].includes(saved.displayWindow)) displayWindow = saved.displayWindow;
             if (typeof saved.controlsExpanded === "boolean") controlsExpanded = saved.controlsExpanded;
             if (typeof saved.statsRowExpanded === "boolean") statsRowExpanded = saved.statsRowExpanded;
@@ -3037,21 +3088,36 @@
                 let i = 0;
                 if (evs.length && evs[0].side === "sell") { orphanCount++; i = 1; }
                 const trades = [];
+                const buyNotionals = []; // tracked separately from trades' own P&L delta, so total capital
+                // deployed can be summed independently of what came back from it
                 while (i < evs.length - 1) {
                     const buyEv = evs[i], sellEv = evs[i + 1];
                     if (buyEv.side !== "buy" || sellEv.side !== "sell") { i++; continue; }
                     trades.push(sellEv.notional - buyEv.notional);
+                    buyNotionals.push(buyEv.notional);
                     i += 2;
                 }
                 if (trades.length === 0) continue; // symbol had only an orphan close, no complete round trips today
                 const wins = trades.filter(t => t > 0);
                 const losses = trades.filter(t => t < 0);
                 const total = trades.reduce((s, t) => s + t, 0);
+                const costBasisSum = buyNotionals.reduce((s, n) => s + n, 0);
+                const avgCostBasis = costBasisSum / trades.length; // per-trade average, not a running sum —
+                // matches the existing avg-P&L-per-trade convention, and reads as a single, stable figure
+                // (should hold consistent across a symbol's trades today, since Invest $ is one fixed
+                // config value) rather than a number that just grows with trade count. Deliberately
+                // per-symbol only — no TOTAL-row equivalent (see the render function below): there's no
+                // single honest answer to "total cost basis" across symbols. It could mean total capital
+                // cycled through today (grows with trade count), or total capital committed across the
+                // whole watchlist (needs the enabled-symbol count, not this table's data, and would be
+                // silently wrong on any day where not every enabled symbol happens to trade). Same
+                // reasoning already applied to Best Win/Worst Loss in this same table.
                 summaries.push({
                     symbol,
                     numTrades: trades.length,
                     numWins: wins.length,
                     numLosses: losses.length,
+                    avgCostBasis,
                     bestWin: wins.length ? Math.max(...wins) : null,
                     worstLoss: losses.length ? Math.min(...losses) : null,
                     totalPL: total,
@@ -3224,6 +3290,33 @@
                     // code's pagination delay
                 }
                 return allActivities;
+            },
+
+            // Real daily P&L history, for the Account view's chart (§13/#3). Adapted from the user's own
+            // account.js history() reference — same endpoint, same pnl_reset=per_day (the field that
+            // makes each day's figure genuinely independent, not a slice of a running cumulative total),
+            // but returns { date: epoch ms, pnl } pairs matching what buildDailyGainsChartOptions()
+            // already expects, rather than the reference's own {t, net, pnl, pnl_pct} shape. Only pnl is
+            // used here — the reference's own net (equity) field was deliberately tried and rejected in
+            // an earlier version of this chart: equity's absolute scale is too flat relative to a single
+            // day's swing to be a useful visual, confirmed directly by the user from that prior build.
+            async loadPortfolioHistory(period = "14D", timeframe = "1D") {
+                if (CONFIG.dataMode !== "api" || !CONFIG.api.accountBaseUrl) return [];
+                const base = CONFIG.api.accountBaseUrl.replace(/\/$/, "");
+                const headers = {
+                    accept: "application/json",
+                    "APCA-API-KEY-ID": CONFIG.api.accountApiKey,
+                    "APCA-API-SECRET-KEY": CONFIG.api.accountApiSecret
+                };
+                const url = `${base}/v2/account/portfolio/history?period=${period}&timeframe=${timeframe}&intraday_reporting=extended_hours&pnl_reset=per_day`;
+                const res = await fetch(url, { headers });
+                if (!res.ok) throw new Error("Portfolio history request failed: " + res.status);
+                const json = await res.json();
+                return json.timestamp.map((t, i) => ({
+                    date: t * 1000, // epoch seconds -> ms, an unambiguous absolute moment — no timezone
+                    // parsing risk the way a bare date string would carry
+                    pnl: Number(json.profit_loss[i])
+                }));
             }
         };
 
@@ -4225,6 +4318,7 @@
         <thead><tr>
           <th>Symbol</th>
           <th class="w3-hide-small"># Trades</th>
+          <th class="w3-hide-small">Avg Cost Basis</th>
           <th>W / L</th>
           <th class="w3-hide-small">Best Win</th>
           <th class="w3-hide-small">Worst Loss</th>
@@ -4236,6 +4330,7 @@
             <tr>
               <td>${r.symbol}</td>
               <td class="w3-hide-small">${r.numTrades}</td>
+              <td class="w3-hide-small">${fmtMoney(r.avgCostBasis)}</td>
               <td><span style="color:#83B573;">${r.numWins}</span> / <span style="color:#C96A6A;">${r.numLosses}</span></td>
               <td class="w3-hide-small" style="color:#83B573;">${r.bestWin === null ? "-" : signPrefix(r.bestWin) + round2(r.bestWin).toFixed(2)}</td>
               <td class="w3-hide-small" style="color:#C96A6A;">${r.worstLoss === null ? "-" : signPrefix(r.worstLoss) + round2(r.worstLoss).toFixed(2)}</td>
@@ -4245,6 +4340,7 @@
           <tr class="positions-total-row" style="font-weight:700;">
             <td>TOTAL</td>
             <td class="w3-hide-small">${totalTrades}</td>
+            <td class="w3-hide-small"></td>
             <td><span style="color:#83B573;">${totalWins}</span> / <span style="color:#C96A6A;">${totalLosses}</span></td>
             <td class="w3-hide-small"></td>
             <td class="w3-hide-small"></td>
@@ -4328,6 +4424,168 @@
       </div>`;
             wirePositionsSellButtons(panel);
             updateTradeButtonsDisabledState();
+            renderStatCards([]);
+        }
+
+        // Static, hand-picked sample data for iterating on this chart's look and feel (list item #3,
+        // per explicit instruction — doesn't need to be randomized/seeded fresh like the app's other
+        // sample generators, since the goal here is stable, repeatable visuals to design against, not
+        // simulating live variability). A realistic mix, not a smooth clean uptrend: mostly modest
+        // days in both directions, one real outlier to stress-test the chart's scale, net average
+        // landing close to the 0.75%-per-day-equivalent target this whole project is built around.
+        // Dates built via explicit local Date(year, month, day) rather than a bare ISO string —
+        // "2026-08-11" parsed directly would be read as UTC midnight, which can silently display as
+        // the wrong calendar day once rendered in a negative-UTC-offset timezone like US Eastern.
+        // Matches the epoch-ms shape loadPortfolioHistory() returns for the real data path, so both
+        // paths feed buildDailyGainsChartOptions() identically.
+        const ld = (y, m, d) => new Date(y, m - 1, d).getTime();
+        const DAILY_GAINS_SAMPLE_DATA = [
+            { date: ld(2026, 8, 11), pnl: 4.20 },
+            { date: ld(2026, 8, 12), pnl: -2.10 },
+            { date: ld(2026, 8, 13), pnl: 6.80 },
+            { date: ld(2026, 8, 14), pnl: 3.40 },
+            { date: ld(2026, 8, 15), pnl: -14.50 },
+            { date: ld(2026, 8, 18), pnl: 5.00 },
+            { date: ld(2026, 8, 19), pnl: 2.20 },
+            { date: ld(2026, 8, 20), pnl: -3.60 },
+            { date: ld(2026, 8, 21), pnl: 7.10 },
+            { date: ld(2026, 8, 22), pnl: 5.29 },
+            { date: ld(2026, 8, 24), pnl: -8.40 },
+            { date: ld(2026, 8, 25), pnl: 4.10 },
+            { date: ld(2026, 8, 26), pnl: -1.40 },
+            { date: ld(2026, 8, 27), pnl: 6.80 }
+        ];
+
+        // Bar (daily P&L) + area (cumulative) combo, matching the app's existing dark-theme chart
+        // language (grid color, axis label styling, sign-based green/red) rather than inventing a new
+        // look. Two y-axes, since cumulative naturally grows to a different scale than any single
+        // day's bar — sharing one axis would flatten whichever series has the smaller range. No
+        // y-axis average annotation yet, per explicit instruction — held until the chart's actually
+        // visible and there's something real to react to.
+        // fmtMoney() alone reads oddly on negative values ("$-14.50" — $ before the minus sign,
+        // rather than the conventional "-$14.50"). Every other call site in this app only ever
+        // passes non-negative values (equity, prices, cost basis), so this gap was never exposed
+        // until now — daily P&L and cumulative P&L are both genuinely signed.
+        const fmtMoneySigned = v => v < 0 ? "-" + fmtMoney(-v) : fmtMoney(v);
+
+        function buildDailyGainsChartOptions(dailyData, dailyTargetDollars) {
+            let running = 0;
+            const cumulative = dailyData.map(d => { running += d.pnl; return running; });
+            const dates = dailyData.map(d => d.date);
+            const pnls = dailyData.map(d => d.pnl);
+            // Reference-only line on the bar (Daily P&L) axis specifically — yaxisIndex: 0 matches that
+            // axis's position in the yaxis array below, not the cumulative one. A flat dollar figure
+            // rather than a %-derived one: capital varies too much day to day (Invest $ alone has ranged
+            // $100-$1000) for one "correct" base to convert a percent target against. Not read by any
+            // decision logic — purely visual, matching the chart's own "reference, not trade decisions" purpose.
+            const targetAnnotation = Number.isFinite(dailyTargetDollars) ? [{
+                y: dailyTargetDollars,
+                yAxisIndex: 0,
+                borderColor: "#9FA8B5",
+                strokeDashArray: 4,
+                label: {
+                    text: `Target: ${fmtMoneySigned(dailyTargetDollars)}`,
+                    style: { color: "#9FA8B5", background: "transparent" },
+                    position: "left",
+                    offsetX: 40
+                }
+            }] : [];
+
+            return {
+                chart: { type: "line", height: 340, toolbar: { show: false }, animations: { enabled: false }, background: "transparent" },
+                theme: { mode: "dark" },
+                series: [
+                    { name: "Daily P&L", type: "column", data: dates.map((d, i) => ({ x: d, y: pnls[i] })) },
+                    { name: "Cumulative", type: "area", data: dates.map((d, i) => ({ x: d, y: cumulative[i] })) }
+                ],
+                colors: ["#22C55E", "#5C89B9"],
+                plotOptions: {
+                    bar: {
+                        colors: {
+                            ranges: [
+                                { from: -1e9, to: 0, color: "#EF4444" },
+                                { from: 0, to: 1e9, color: "#22C55E" }
+                            ]
+                        }
+                    }
+                },
+                fill: { opacity: [1, 0.15] },
+                stroke: { width: [0, 2], curve: "straight" },
+                grid: { borderColor: "#3C4552", strokeDashArray: 3 },
+                legend: { show: true, labels: { colors: "#9FA8B5" } },
+                dataLabels: { enabled: false },
+                xaxis: {
+                    type: "datetime",
+                    labels: { datetimeUTC: false, style: { colors: "#9FA8B5", fontSize: "10px" } },
+                    axisBorder: { show: false }
+                },
+                yaxis: [
+                    { seriesName: "Daily P&L", labels: { formatter: v => fmtMoneySigned(v), style: { colors: "#9FA8B5", fontSize: "10px" } } },
+                    { seriesName: "Cumulative", opposite: true, labels: { formatter: v => fmtMoneySigned(v), style: { colors: "#9FA8B5", fontSize: "10px" } } }
+                ],
+                annotations: { yaxis: targetAnnotation }
+            };
+        }
+
+        // Applies CONFIG.api.accountMinStartDate as a clip on already-fetched daily data — the LATER
+        // (more recent) of that setting and (today - 14 days), so it can only ever narrow the window,
+        // never expand past the requested period. An empty setting, or one older than 14 days back,
+        // is silently a no-op. Parses the "YYYY-MM-DD" <input type="date"> value via explicit
+        // Date(year, month, day) construction rather than new Date(string) — same UTC-midnight
+        // parsing pitfall avoided elsewhere in this same feature.
+        function applyMinStartDateClip(dailyData, minStartDateStr) {
+            const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+            let cutoff = fourteenDaysAgo;
+            if (minStartDateStr) {
+                const parts = minStartDateStr.split("-").map(Number);
+                if (parts.length === 3) {
+                    const minStartMs = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+                    cutoff = Math.max(cutoff, minStartMs); // later of the two — never expand past 14 days
+                }
+            }
+            return dailyData.filter(d => d.date >= cutoff);
+        }
+
+        // Real /v2/account/portfolio/history in api mode, falling back to the static sample data in
+        // sample mode — same live/sample split every other view in this app already follows.
+        async function renderAccountView() {
+            document.getElementById("viewTitle").textContent = "Account";
+            const panel = document.getElementById("accountPanel");
+            let dailyData;
+            if (CONFIG.dataMode === "api") {
+                try {
+                    dailyData = await DataSource.loadPortfolioHistory("14D", "1D");
+                    dailyData = applyMinStartDateClip(dailyData, CONFIG.api.accountMinStartDate);
+                } catch (err) {
+                    console.error("[Account] portfolio history fetch failed", err);
+                    if (dailyGainsChart) { try { dailyGainsChart.destroy(); } catch (e) { } dailyGainsChart = null; }
+                    panel.innerHTML = `<p class="metric-sub">Couldn't load account history.</p>`;
+                    renderStatCards([]);
+                    return;
+                }
+                document.getElementById("viewSub").textContent = "Daily gains over time — last 14 days";
+            } else {
+                dailyData = DAILY_GAINS_SAMPLE_DATA;
+                document.getElementById("viewSub").textContent = "Daily gains over time (sample data)";
+            }
+            if (!dailyData.length) {
+                if (dailyGainsChart) { try { dailyGainsChart.destroy(); } catch (e) { } dailyGainsChart = null; }
+                panel.innerHTML = `<p class="metric-sub">No account history available yet.</p>`;
+                renderStatCards([]);
+                return;
+            }
+            let container = document.getElementById("dailyGainsChart");
+            if (!container) {
+                panel.innerHTML = `<div id="dailyGainsChart"></div>`;
+                container = document.getElementById("dailyGainsChart");
+            }
+            const opts = buildDailyGainsChartOptions(dailyData, CONFIG.api.accountDailyTargetDollars);
+            if (dailyGainsChart) {
+                dailyGainsChart.updateOptions(opts, true, true);
+            } else {
+                dailyGainsChart = new ApexCharts(container, opts);
+                dailyGainsChart.render();
+            }
             renderStatCards([]);
         }
 
@@ -4445,10 +4703,10 @@
             // per view and would otherwise leave this permanently hidden.
             document.getElementById("activitySummaryPanel").style.display = currentView === "positions" ? "" : "none";
             document.getElementById("researchSearchRow").style.display = currentView === "research" ? "flex" : "none";
-            document.getElementById("tickerBar").classList.toggle("chips-muted", currentView === "research" || currentView === "positions");
-            document.getElementById("tickerPresetRow").classList.toggle("chips-muted", currentView === "research" || currentView === "positions");
-            document.getElementById("timeframeBar").classList.toggle("chips-muted", currentView === "positions");
-            document.getElementById("windowBar").classList.toggle("chips-muted", currentView === "positions");
+            document.getElementById("tickerBar").classList.toggle("chips-muted", currentView === "research" || currentView === "positions" || currentView === "account");
+            document.getElementById("tickerPresetRow").classList.toggle("chips-muted", currentView === "research" || currentView === "positions" || currentView === "account");
+            document.getElementById("timeframeBar").classList.toggle("chips-muted", currentView === "positions" || currentView === "account");
+            document.getElementById("windowBar").classList.toggle("chips-muted", currentView === "positions" || currentView === "account");
 
             const sig = currentSignature();
             // Positions bypasses this cache entirely — it's cheap to rebuild (no chart, no fetch) and
@@ -4470,6 +4728,7 @@
             else if (currentView === "compare") await renderCompare();
             else if (currentView === "table") await renderTable();
             else if (currentView === "positions") await renderPositions();
+            else if (currentView === "account") await renderAccountView();
             else await renderResearch();
 
             viewMeta[currentView] = {
@@ -4661,6 +4920,8 @@
         const settingsSymbolToken = document.getElementById("settingsSymbolToken");
         const settingsSymbolUrlB = document.getElementById("settingsSymbolUrlB");
         const settingsAccountUrl = document.getElementById("settingsAccountUrl");
+        const settingsAccountMinStartDate = document.getElementById("settingsAccountMinStartDate");
+        const settingsAccountDailyTarget = document.getElementById("settingsAccountDailyTarget");
         const settingsAccountKey = document.getElementById("settingsAccountKey");
         const settingsAccountSecret = document.getElementById("settingsAccountSecret");
         const settingsSmaPeriod = document.getElementById("settingsSmaPeriod");
@@ -4712,6 +4973,8 @@
             settingsSymbolToken.value = CONFIG.api.symbolToken;
             settingsSymbolUrlB.value = CONFIG.api.symbolBaseUrlB;
             settingsAccountUrl.value = CONFIG.api.accountBaseUrl;
+            settingsAccountMinStartDate.value = CONFIG.api.accountMinStartDate;
+            settingsAccountDailyTarget.value = Number.isFinite(CONFIG.api.accountDailyTargetDollars) ? CONFIG.api.accountDailyTargetDollars : "";
             settingsAccountKey.value = CONFIG.api.accountApiKey;
             settingsAccountSecret.value = CONFIG.api.accountApiSecret;
             settingsSmaPeriod.value = CONFIG.smaPeriod;
@@ -4758,6 +5021,9 @@
             CONFIG.api.symbolToken = settingsSymbolToken.value.trim();
             CONFIG.api.symbolBaseUrlB = settingsSymbolUrlB.value.trim();
             CONFIG.api.accountBaseUrl = settingsAccountUrl.value.trim();
+            CONFIG.api.accountMinStartDate = settingsAccountMinStartDate.value.trim();
+            const parsedDailyTarget = parseFloat(settingsAccountDailyTarget.value);
+            CONFIG.api.accountDailyTargetDollars = Number.isFinite(parsedDailyTarget) ? parsedDailyTarget : NaN;
             CONFIG.api.accountApiKey = settingsAccountKey.value;
             CONFIG.api.accountApiSecret = settingsAccountSecret.value;
             CONFIG.smaPeriod = Math.max(2, parseInt(settingsSmaPeriod.value, 10) || CONFIG.smaPeriod);

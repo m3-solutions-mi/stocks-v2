@@ -1,6 +1,6 @@
 # Uptick — Benefits at a Glance
 
-*Updated August 24, 2026 — after the app's first fully unsupervised trading day.*
+*Updated August 25, 2026 — after the app's first fully unsupervised trading day.*
 
 ---
 
@@ -34,11 +34,11 @@ A hard dollar cap on every position that can't be bypassed even by a stale setti
 
 ## You stay the pilot
 
-Manual trading is never touched by any of this — buy or sell by hand any time, for any reason, and the bot's own state never gets in the way. A day you already know is going to be bad, you can just say so, and undo that call in one tap if you're wrong.
+Manual trading is never touched by any of this — buy or sell by hand any time, for any reason. Worth being upfront about the flip side, though: if a symbol's bolt is left on, the bot *will* act on any position in it, including one you opened yourself, since it has no way to tell the two apart. Turning a bolt off is the one deliberate control for "hands off this position" — the toggle itself always succeeds, no confirmation or delay, taking effect on the bot's very next check. A day you already know is going to be bad, you can just say so, and undo that call in one tap if you're wrong.
 
 ## Watching your account, not just the market
 
-It knows the difference between "the market closed for the day" (routine, expected, no alarm) and "we hit a real gain or loss limit" (worth a visual flag). It won't touch a position you're managing yourself just because its own bolt happened to be left on.
+It knows the difference between "the market closed for the day" (routine, expected, no alarm) and "we hit a real gain or loss limit" (worth a visual flag).
 
 ## Built to be checked, not just trusted
 
