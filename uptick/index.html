@@ -259,6 +259,11 @@
             border-color: var(--ink);
         }
 
+        .loc-chip:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
         .loc-chip:hover:not(.active) {
             border-color: var(--muted);
             color: var(--ink);
@@ -1916,9 +1921,10 @@
                             max="200" step="1"></td>
                 </tr>
                 <tr>
-                    <td>Loss alert threshold (%)</td>
+                    <td>Loss alert threshold (%) <span style="color:var(--muted); font-weight:400;">(read-only — mirrors
+                            the bot's own Max Position Loss setting)</span></td>
                     <td style="text-align:right;"><input type="number" id="settingsLossAlertPct" class="edit-input"
-                            min="-100" max="0" step="0.1"></td>
+                            disabled style="opacity:.6; cursor:not-allowed;"></td>
                 </tr>
                 <tr>
                     <td>Chart refresh (seconds, 0 = off)</td>
@@ -1975,6 +1981,18 @@
                 <div class="loc-chip-row" id="autoTradeNoBuyToggle">
                     <button type="button" class="loc-chip" data-nobuy="off">Off</button>
                     <button type="button" class="loc-chip" data-nobuy="on">On</button>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <span class="metric-sub" style="margin:0;">Day cap lockout — active once either Max Gain/Loss cap trips,
+                    force-selling every held position and blocking new buys for the rest of today. Turning this off does
+                    not undo that on its own — if today's numbers still exceed whatever caps are currently set, the very
+                    next check re-locks it automatically. Raise the caps first if you want trading to actually
+                    continue.</span>
+                <div class="loc-chip-row" id="autoTradeDayCapClearToggle">
+                    <button type="button" class="loc-chip" data-daycap="off">Off</button>
+                    <button type="button" class="loc-chip" data-daycap="on" disabled
+                        title="Only the bot itself ever sets this — not a manual action">On</button>
                 </div>
             </div>
             <table class="edit-table" style="margin-bottom:16px;">
@@ -2143,7 +2161,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V086</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V087</p>
         </div>
     </div>
 
@@ -2173,14 +2191,14 @@
                 // Chart is reference-only, not a trading signal — this line is not read by any decision logic.
             },
             smaPeriod: 5,
-            lossAlertPct: -0.5, // threshold for the red hue on the Today/Positions cards and the Positions table's % Change cells — one setting drives all three
+            // No longer its own stored value — the visual "loss alert" threshold (Today/Positions cards,
+            // Positions table % Change cells) is now a live mirror of the bot's own getEffectiveMaxLossPct(),
+            // read directly wherever it's needed, not persisted separately. Resolves a gap this exact
+            // comment used to flag: the two were always conceptually the same "loss threshold," kept as
+            // separate settings that could silently drift apart — confirmed as a real, confusing gap when
+            // the bot's own threshold was changed without the display ever reflecting it.
             chartRefreshSeconds: 15,   // macro chips + ticker symbol data
             accountRefreshSeconds: 15, // account equity + positions — independent rate, matching the reference app's pattern of updating charts and account on their own cadences
-            // Settings-only for now, deliberately not wired to any execution logic yet — first step of
-            // a larger automated-trading feature, built incrementally. May end up overlapping with
-            // lossAlertPct in meaning (both are "loss thresholds") — kept separate for now since one is
-            // a UI cue and the other will eventually gate a real action; reconciling them, if it even
-            // makes sense to, is a later decision once the full feature has real shape.
             autoTrading: {
                 masterEnabled: false, // local to this device only — no backend exists, so this cannot control any other device running the app. Defaults off, deliberately.
                 startHmm: 930,
@@ -2355,7 +2373,6 @@
                     accountApiKey: CONFIG.api.accountApiKey,
                     accountApiSecret: CONFIG.api.accountApiSecret,
                     smaPeriod: CONFIG.smaPeriod,
-                    lossAlertPct: CONFIG.lossAlertPct,
                     chartRefreshSeconds: CONFIG.chartRefreshSeconds,
                     accountRefreshSeconds: CONFIG.accountRefreshSeconds,
                     autoTrading: CONFIG.autoTrading,
@@ -2388,7 +2405,6 @@
             if (typeof saved.accountApiKey === "string") CONFIG.api.accountApiKey = saved.accountApiKey;
             if (typeof saved.accountApiSecret === "string") CONFIG.api.accountApiSecret = saved.accountApiSecret;
             if (Number.isFinite(saved.smaPeriod)) CONFIG.smaPeriod = saved.smaPeriod;
-            if (Number.isFinite(saved.lossAlertPct)) CONFIG.lossAlertPct = saved.lossAlertPct;
             if (Number.isFinite(saved.chartRefreshSeconds)) CONFIG.chartRefreshSeconds = saved.chartRefreshSeconds;
             if (Number.isFinite(saved.accountRefreshSeconds)) CONFIG.accountRefreshSeconds = saved.accountRefreshSeconds;
             if (saved.autoTrading && typeof saved.autoTrading === "object") {
@@ -2693,6 +2709,33 @@
                         continue;
                     }
 
+                    // --- Per-position max-loss: checked second, still before any bar data is fetched — same
+                    // reasoning as the day-cap check above. This only ever needs freshPositions (Alpaca's
+                    // own position data, already fetched once per cycle for every symbol together), never
+                    // the bar series at all. Moved here (2026-08-28) after a real, observed miss: a position
+                    // was seen crossing this exact threshold live and continuing to fall, uncaught, until a
+                    // much later, looser threshold finally triggered the sell. Previously this check lived
+                    // inside the same try/continue block as the bar-series fetch below — so a symbol whose
+                    // series fetch happened to fail or come back short on a given cycle had this check
+                    // silently skipped too, despite never needing that data, contradicting this check's own
+                    // "independent of the buy window and the master switch" framing, which never accounted
+                    // for a dependency on the series fetch succeeding. Now checked unconditionally, every
+                    // cycle, for every held position, regardless of what happens with the series below. ---
+                    if (isHeld) {
+                        const pos = freshPositions.get(symbol);
+                        const effectiveMaxLossPct = getEffectiveMaxLossPct();
+                        if (Number.isFinite(pos.pct) && pos.pct < effectiveMaxLossPct) {
+                            try {
+                                await TradingAPI.sell(symbol);
+                                tradedThisCycle = true;
+                                console.log(`[AutoTrade] ${symbol}: %cSOLD%c (max loss)`, AUTOTRADE_LOG_RED, "");
+                            } catch (err) {
+                                console.error(`[AutoTrade] ${symbol}: sell execution failed — no action taken.`, err);
+                            }
+                            continue; // sold on max-loss alone — no need to also fetch the series this cycle
+                        }
+                    }
+
                     // --- State-based decision, replacing transition-only crossover detection. Reads current
                     // state only ("does this bar say I should own it, right now") rather than requiring a
                     // fresh transition — confirmed necessary after real, repeated misses: a bar settling to
@@ -2723,28 +2766,17 @@
                     const shouldNotOwn = last < -getEffectiveNegDeadband();
 
                     if (isHeld) {
-                        // --- Sell / max-loss: independent of the buy window and the master switch, but
-                        // still requires the bolt on and a position actually held. Per-position max-loss
-                        // checked first and independently — it's a hard safety threshold on the position's
-                        // own P&L, unrelated to what the delta bar currently reads; a position can be
-                        // losing money relative to its entry price while delta is still neutral or green,
-                        // since those are two genuinely different measurements. ---
+                        // --- State-based sell only — max-loss for this symbol already checked and cleared
+                        // above, before the series fetch even ran. ---
                         try {
-                            const pos = freshPositions.get(symbol);
                             let shouldSell = false;
-                            let reason = "";
-                            const effectiveMaxLossPct = getEffectiveMaxLossPct();
-                            if (Number.isFinite(pos.pct) && pos.pct < effectiveMaxLossPct) {
+                            if (shouldNotOwn) {
                                 shouldSell = true;
-                                reason = "max loss";
-                            } else if (shouldNotOwn) {
-                                shouldSell = true;
-                                reason = "state-based";
                             }
                             if (shouldSell) {
                                 await TradingAPI.sell(symbol);
                                 tradedThisCycle = true;
-                                console.log(`[AutoTrade] ${symbol}: %cSOLD%c (${reason})`, AUTOTRADE_LOG_RED, "");
+                                console.log(`[AutoTrade] ${symbol}: %cSOLD%c (state-based)`, AUTOTRADE_LOG_RED, "");
                             } else {
                                 console.log(`[AutoTrade] ${symbol}: %cno sell%c — correctly holding`, AUTOTRADE_LOG_GREY, "");
                             }
@@ -3845,7 +3877,7 @@
                 // the account refresh cadence instead — positions data only changes as often as that
                 // fetch happens, so there's no need for the 200ms clock-precision the timing cue needed.
                 const positionsCard = document.getElementById("positionsStatCard");
-                if (positionsCard) positionsCard.classList.toggle("loss-alert", a.positionsPct < CONFIG.lossAlertPct);
+                if (positionsCard) positionsCard.classList.toggle("loss-alert", a.positionsPct < getEffectiveMaxLossPct());
             } catch (e) {
                 console.warn("account info load failed", e);
                 row.innerHTML = `<p class="metric-sub">Couldn't load account info.</p>`;
@@ -4406,7 +4438,7 @@
             <tr>
               <td>${r.autoEnabled ? `<i class="fa fa-bolt" style="color:#5C89B9; margin-right:5px;" title="Automated trading is enabled for ${r.symbol} — indicator only, toggle it from the Compare tile"></i>` : ""}${r.symbol}</td>
               <td class="${signClass(r.dollar)}">${signPrefix(r.dollar)}${round2(r.dollar).toFixed(2)}</td>
-              <td class="${signClass(r.pct)}" style="${r.pct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(r.pct)}</td>
+              <td class="${signClass(r.pct)}" style="${r.pct < getEffectiveMaxLossPct() ? alertBg : ""}">${fmtPct(r.pct)}</td>
               <td class="${r.delta === null ? "dt-neutral" : signClass(r.delta)}" style="text-align:right;">${r.delta === null ? "—" : signPrefix(r.delta) + round2(r.delta).toFixed(2)}</td>
               <td style="text-align:right;">${fmtMoney(r.costBasis)}</td>
               <td style="text-align:center;"><button type="button" class="trade-btn trade-sell-btn" data-sell-symbol="${r.symbol}" title="Sell ${r.symbol} (full position)"><i class="fa fa-credit-card"></i></button></td>
@@ -4414,7 +4446,7 @@
           <tr class="positions-total-row" style="font-weight:700;">
             <td>TOTAL</td>
             <td class="${signClass(totalDollar)}">${signPrefix(totalDollar)}${round2(totalDollar).toFixed(2)}</td>
-            <td class="${signClass(totalPct)}" style="${totalPct < CONFIG.lossAlertPct ? alertBg : ""}">${fmtPct(totalPct)}</td>
+            <td class="${signClass(totalPct)}" style="${totalPct < getEffectiveMaxLossPct() ? alertBg : ""}">${fmtPct(totalPct)}</td>
             <td class="${totalDelta === null ? "dt-neutral" : signClass(totalDelta)}" style="text-align:right;">${totalDelta === null ? "—" : signPrefix(totalDelta) + round2(totalDelta).toFixed(2)}</td>
             <td style="text-align:right;">${fmtMoney(totalCostBasis)}</td>
             <td></td>
@@ -4978,7 +5010,8 @@
             settingsAccountKey.value = CONFIG.api.accountApiKey;
             settingsAccountSecret.value = CONFIG.api.accountApiSecret;
             settingsSmaPeriod.value = CONFIG.smaPeriod;
-            settingsLossAlertPct.value = CONFIG.lossAlertPct;
+            settingsLossAlertPct.value = getEffectiveMaxLossPct(); // read-only display — always the bot's
+            // own current effective threshold, live, regardless of whether the master switch is on
             settingsChartRefreshSec.value = CONFIG.chartRefreshSeconds;
             settingsAccountRefreshSec.value = CONFIG.accountRefreshSeconds;
             draftTickers = TICKERS.map(t => ({ ...t }));
@@ -5027,8 +5060,8 @@
             CONFIG.api.accountApiKey = settingsAccountKey.value;
             CONFIG.api.accountApiSecret = settingsAccountSecret.value;
             CONFIG.smaPeriod = Math.max(2, parseInt(settingsSmaPeriod.value, 10) || CONFIG.smaPeriod);
-            const parsedLossAlert = parseFloat(settingsLossAlertPct.value);
-            CONFIG.lossAlertPct = Number.isFinite(parsedLossAlert) ? Math.min(0, parsedLossAlert) : CONFIG.lossAlertPct;
+            // Loss alert threshold field is now read-only, always derived live from
+            // getEffectiveMaxLossPct() — nothing to read from the input or save here.
             CONFIG.chartRefreshSeconds = Math.max(0, parseInt(settingsChartRefreshSec.value, 10) || 0);
             CONFIG.accountRefreshSeconds = Math.max(0, parseInt(settingsAccountRefreshSec.value, 10) || 0);
             if (draftTickers.length) {
@@ -5055,6 +5088,7 @@
         const autoTradeModal = document.getElementById("autoTradeModal");
         const autoTradeMasterToggle = document.getElementById("autoTradeMasterToggle");
         const autoTradeNoBuyToggle = document.getElementById("autoTradeNoBuyToggle");
+        const autoTradeDayCapClearToggle = document.getElementById("autoTradeDayCapClearToggle");
         const autoTradeStartHmm = document.getElementById("autoTradeStartHmm");
         const autoTradeEndHmm = document.getElementById("autoTradeEndHmm");
         const autoTradeInvestDollars = document.getElementById("autoTradeInvestDollars");
@@ -5072,6 +5106,15 @@
         function openAutoTradeModal() {
             autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", (b.dataset.master === "on") === CONFIG.autoTrading.masterEnabled));
             autoTradeNoBuyToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", (b.dataset.nobuy === "on") === CONFIG.autoTrading.manualNoBuyToday));
+            // Shared by both the toggle below and the cap-field highlighting further down — gated on
+            // isLive too, not just the persisted flag alone (it can legitimately still read true over a
+            // weekend, but nothing is actually being prevented if the market isn't even open), and on
+            // the reason specifically being a real cap trigger, never "eod" (routine daily close, not
+            // something worth flagging as an active lockout the user would want to clear).
+            const dayCapReallyActive = CONFIG.autoTrading.dayCapLockoutActive
+                && getSessionWindow().isLive
+                && (CONFIG.autoTrading.dayCapLockoutReason === "gain" || CONFIG.autoTrading.dayCapLockoutReason === "loss");
+            autoTradeDayCapClearToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", (b.dataset.daycap === "on") === dayCapReallyActive));
             autoTradeStartHmm.value = CONFIG.autoTrading.startHmm;
             autoTradeEndHmm.value = CONFIG.autoTrading.endHmm;
             autoTradeInvestDollars.value = CONFIG.autoTrading.investDollars;
@@ -5085,18 +5128,6 @@
             autoTradeMaxLossCap.value = CONFIG.autoTrading.maxLossCapDollars;
             // Populated fresh every time the dialog opens, same as every other field here — no live
             // update while it's open, matching how nothing else in this dialog refreshes mid-view either.
-            // Gated on isLive too, not just the persisted flag alone — the flag can legitimately still
-            // read true over a weekend (it's still "Friday's session" until Monday's actually begins,
-            // and the stale-session reset only ever fires once the evaluator itself runs), but nothing
-            // is actually being prevented right now if the market isn't even open. Showing "active" in
-            // that case would be misleading, not just stale — this keeps the label honest about
-            // whether something is currently happening, not just what the raw flag says.
-            // Also gated on the reason specifically being a real cap trigger, never "eod" — the EOD
-            // close sets this same flag every single trading day as routine, expected operation, not
-            // something worth a visual flag. Only a genuine gain/loss cap crossing is noteworthy.
-            const dayCapReallyActive = CONFIG.autoTrading.dayCapLockoutActive
-                && getSessionWindow().isLive
-                && (CONFIG.autoTrading.dayCapLockoutReason === "gain" || CONFIG.autoTrading.dayCapLockoutReason === "loss");
             const dayCapTitle = "A day cap was hit — no new buys until this resets automatically at the next trading day's 4am boundary. Selling and per-position max-loss are unaffected.";
             ["autoTradeMaxGainCapLabel", "autoTradeMaxLossCapLabel"].forEach(id => {
                 const el = document.getElementById(id);
@@ -5119,6 +5150,11 @@
         });
         autoTradeNoBuyToggle.querySelectorAll(".loc-chip").forEach(btn => {
             btn.addEventListener("click", () => autoTradeNoBuyToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
+        });
+        autoTradeDayCapClearToggle.querySelectorAll(".loc-chip").forEach(btn => {
+            // "on" is disabled in the HTML itself, so it never receives a click — only "off" is ever
+            // actually clickable here, matching that this is a one-way clear action, not a real toggle.
+            btn.addEventListener("click", () => autoTradeDayCapClearToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
         });
 
         document.getElementById("autoTradeSave").addEventListener("click", () => {
@@ -5151,6 +5187,17 @@
             // very next evaluation cycle would see null !== currentSessionKey and immediately reset
             // the flag straight back off, one cycle after the user turned it on.
             CONFIG.autoTrading.manualNoBuyTodaySessionKey = noBuyNowOn ? getSessionWindow().sessionStart.getTime() : null;
+            // Day-cap lockout clear — deliberately one-directional. "off" here means the user explicitly
+            // asked to clear an active lockout; clearing it does NOT undo the underlying cause. If
+            // today's actual P&L still exceeds whatever caps are currently configured, the evaluator's
+            // own existing check re-locks it automatically on its very next pass — the same logic that
+            // already runs every cycle, nothing new needed there. Raising the caps enough (or the day's
+            // numbers genuinely no longer exceeding them) is what actually makes the clear stick.
+            const activeDayCapClear = autoTradeDayCapClearToggle.querySelector(".loc-chip.active");
+            if (activeDayCapClear && activeDayCapClear.dataset.daycap === "off" && CONFIG.autoTrading.dayCapLockoutActive) {
+                CONFIG.autoTrading.dayCapLockoutActive = false;
+                CONFIG.autoTrading.dayCapLockoutReason = null;
+            }
             const parsedStart = parseInt(autoTradeStartHmm.value, 10);
             CONFIG.autoTrading.startHmm = Number.isFinite(parsedStart) ? Math.min(1559, Math.max(930, parsedStart)) : CONFIG.autoTrading.startHmm;
             const parsedEnd = parseInt(autoTradeEndHmm.value, 10);
