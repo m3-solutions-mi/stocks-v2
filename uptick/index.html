@@ -1592,6 +1592,12 @@
                     </p>
                 </div>
                 <div class="help-section">
+                    <p class="help-heading">Today / Positions cards</p>
+                    <p class="help-desc">TODAY's own % reads against a daily $ goal when one's set in Settings — e.g. a
+                        $150 gain against a $300 goal reads as 50%, not a tiny fraction of total account equity. Falls
+                        back to the plain equity-based % whenever no goal is configured, same as it's always worked.</p>
+                </div>
+                <div class="help-section">
                     <p class="help-heading">Symbol groups</p>
                     <p class="help-desc">The row of chips above the ticker bar are named snapshots of which symbols are
                         currently selected — not separate watchlists. Your actual watchlist (the full ticker roster) is
@@ -1643,6 +1649,11 @@
                     <p class="help-heading">Compare</p>
                     <p class="help-desc">Every selected ticker side by side, each with its own Close/SMA/delta chart,
                         same as the Combined chart but per-ticker.</p>
+                    <p class="help-desc">Top-right of each tile, when not held: today's own % change, plus — in a
+                        second, aqua-colored number — how today compares to yesterday's close, whenever that's been
+                        captured. Only captured for bolt-enabled symbols, once a day, at the automated evaluator's own
+                        end-of-day trigger — not a live fetch, and only happens on whichever device was actually running
+                        the bot at that moment. A symbol never captured this way just shows the first number alone.</p>
                 </div>
                 <div class="help-section">
                     <p class="help-heading">Table</p>
@@ -1680,6 +1691,23 @@
                     <p class="help-desc">5-minute intraday data ("Today") isn't retained indefinitely by most data
                         providers — a date far enough in the past may come back empty even though 10D/30D/etc. for that
                         same date work fine. That's a data availability limit, not a bug.</p>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">Account</p>
+                    <p class="help-desc">A bar per trading day for the last 14 days — today's realized P&amp;L, straight
+                        from Alpaca's own portfolio history, not derived from anything else in the app. A second,
+                        lighter line tracks the cumulative total across the same window.</p>
+                    <ul class="help-desc">
+                        <li>Bars are colored the same green/red as everywhere else in the app — no separate convention
+                            to learn</li>
+                        <li>A dashed reference line appears if a daily $ target is set in Settings — purely visual,
+                            never read by any trading logic</li>
+                        <li>The window can be clipped to a chosen start date in Settings, so history from before you
+                            started using the bot doesn't dilute the picture — it can only ever shrink the 14-day
+                            window, never extend past it</li>
+                        <li>Fetches once when you switch to this view — the Refresh button re-pulls on demand; nothing
+                            here auto-updates on its own timer</li>
+                    </ul>
                 </div>
             </div>
 
@@ -1831,18 +1859,44 @@
                     <p class="help-desc"><b>Invest $ is capped at $5,000</b> during this testing phase — hardcoded, not
                         something a larger Settings number can override. A buy is also skipped, silently and safely, if
                         buying power doesn't actually cover the configured amount.</p>
-                    <p class="help-desc"><b>Max gain cap / Max loss cap ($)</b> — account-level, not per-symbol.
-                        Crossing either one:</p>
+                    <p class="help-desc"><b>Max gain cap ($)</b> — account-level, not per-symbol. Once today's total
+                        gain reaches this, sells every bolt-enabled held position and locks out new buying for the rest
+                        of the trading day.</p>
+                    <p class="help-desc"><b>Max loss/gain-protect cap ($)</b> — same lockout mechanism as above, but a
+                        direct signed threshold rather than always a loss magnitude below zero.</p>
+                    <ul class="help-desc">
+                        <li>A negative value protects against loss, same as before (e.g. -20 locks out once today drops
+                            to -$20)</li>
+                        <li>A positive value protects an existing gain instead — locks out if today's total drops below
+                            that figure (e.g. +15 locks out if a $25 gain slips back to $12)</li>
+                        <li>Useful specifically after re-enabling via the clear toggle below, mid-day, once Max Gain has
+                            already tripped — protects whatever's already banked rather than only ever limiting fresh
+                            downside from zero</li>
+                    </ul>
+                    <p class="help-desc">Once either cap trips:</p>
                     <ul class="help-desc">
                         <li>Sells every bolt-enabled held position individually</li>
                         <li>Locks out new buying for the rest of the trading day — even if the sell itself nudges today
                             back across the line afterward</li>
-                        <li>Resets at the next trading day's 4:00 AM boundary</li>
+                        <li>Resets at the next trading day's 4:00 AM boundary — or clear it yourself sooner (see below)
+                        </li>
                         <li>Never affects manual trading, either way</li>
                     </ul>
                     <p class="help-desc">The cap fields themselves turn amber in Settings while a real cap trigger is
                         currently locking out new buys. The routine end-of-day close uses this same lockout mechanism,
                         but that's normal daily behavior and isn't flagged the same way.</p>
+                    <p class="help-desc"><b>Day cap lockout — Off/On toggle, right below No buy today.</b> "On" is never
+                        a real choice — it's disabled, since only the bot itself ever sets it, reflecting whatever's
+                        actually happening. "Off" is a genuine action: clearing an active lockout yourself.</p>
+                    <ul class="help-desc">
+                        <li>Clearing it doesn't undo the underlying cause on its own — if today's numbers still exceed
+                            whatever caps are currently configured, the very next check re-locks it automatically</li>
+                        <li>Raising the caps first (or the day's numbers genuinely no longer exceeding them) is what
+                            actually makes the clear stick</li>
+                        <li>Built specifically for a deliberate, watched day — a cap trips as expected, you're confident
+                            the rest of the day still looks good, and want the bot back engaged rather than stuck
+                            manual-only until tomorrow</li>
+                    </ul>
                     <p class="help-desc"><b>No buy today</b> — a separate switch from the master one, freely reversible
                         any time.</p>
                     <ul class="help-desc">
@@ -2063,9 +2117,9 @@
                             min="0" max="10000" step="5"></td>
                 </tr>
                 <tr>
-                    <td id="autoTradeMaxLossCapLabel">Max loss cap ($) — same, mirrored</td>
+                    <td id="autoTradeMaxLossCapLabel">Max loss/gain-protect cap ($) — direct threshold, +/-</td>
                     <td style="text-align:right;"><input type="number" id="autoTradeMaxLossCap" class="edit-input"
-                            min="0" max="1000" step="5"></td>
+                            min="-1000" max="1000" step="5"></td>
                 </tr>
                 <tr>
                     <td>Trailing (%) — not active yet</td>
@@ -2161,7 +2215,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V087</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V088</p>
         </div>
     </div>
 
@@ -2212,7 +2266,12 @@
                 deadbandOverridePct: 0.25, // the override value applied to symbols in the list above
                 evalSecond: 59, // which second (0-59) within the blue five-minute cue's already-fixed active minute to evaluate at — not a setting for the cue itself, which stays tied to the chart's own bar windows
                 maxGainCapDollars: 100, // account-level, dollars, ceiling 10000 (Max Loss cap stays at 1000 — deliberately not raised alongside Gain) — once today's gain reaches this, sell every bolt-enabled held position and lock out new buying for the rest of the trading day
-                maxLossCapDollars: 100, // same, mirrored for a loss — stored as a positive magnitude, compared against -maxLossCapDollars
+                maxLossCapDollars: -100, // direct threshold, not a magnitude — todayPL <= this value locks
+                // out. Negative protects against loss (e.g. -20 locks out at -$20, same behavior as the
+                // old positive-magnitude convention it replaced); positive protects an existing gain
+                // (e.g. +15 locks out if today's total drops below +$15) — useful specifically after
+                // re-enabling via the day-cap clear toggle mid-day, to guard whatever's already banked
+                // rather than only ever limiting fresh downside from zero.
                 // Internal state, not a user-editable field — no dialog input for either of these. Sticky
                 // and one-way: once true, stays true regardless of what today reads afterward (selling a
                 // position realizes P&L via the bid-ask spread, so today can tick back across the
@@ -2229,6 +2288,15 @@
                 // field exists purely so the UI can distinguish "show the indicator" from "don't," never
                 // to display the reason text itself.
                 dayCapLockoutReason: null, // "gain" | "loss" | "eod" | null
+                // Symbol -> yesterday's close price, {} by default. Captured once per bolt-enabled symbol
+                // at the EOD trigger below, on the workhorse device only (this is client-side, browser
+                // timer-based capture — it only happens if the app was actually open at 15:55 that day,
+                // and only for whichever symbols were bolt-enabled at that exact moment). No fallback if
+                // a symbol was never captured; the Compare card display simply shows nothing extra for it.
+                // Deliberately the raw price, not a pre-computed % — so the displayed % change against it
+                // stays live and accurate as the current price moves throughout the day, rather than a
+                // number frozen at capture time.
+                previousClosePrices: {},
                 // A completely separate flag from the day-cap lockout above, not a reuse of it — that one
                 // is deliberately sticky/one-way for the rest of the session; this one is the opposite,
                 // freely toggleable on and back off at any time, since "my read on the day was wrong" is
@@ -2427,12 +2495,15 @@
                 if (Number.isFinite(at.deadbandOverridePct)) CONFIG.autoTrading.deadbandOverridePct = Math.min(10, Math.max(0, at.deadbandOverridePct));
                 if (Number.isFinite(at.evalSecond)) CONFIG.autoTrading.evalSecond = at.evalSecond;
                 if (Number.isFinite(at.maxGainCapDollars)) CONFIG.autoTrading.maxGainCapDollars = Math.min(10000, Math.max(0, at.maxGainCapDollars));
-                if (Number.isFinite(at.maxLossCapDollars)) CONFIG.autoTrading.maxLossCapDollars = Math.min(1000, Math.max(0, at.maxLossCapDollars));
+                if (Number.isFinite(at.maxLossCapDollars)) CONFIG.autoTrading.maxLossCapDollars = Math.min(1000, Math.max(-1000, at.maxLossCapDollars));
                 if (typeof at.dayCapLockoutActive === "boolean") CONFIG.autoTrading.dayCapLockoutActive = at.dayCapLockoutActive;
                 if (Number.isFinite(at.dayCapLockoutSessionKey)) CONFIG.autoTrading.dayCapLockoutSessionKey = at.dayCapLockoutSessionKey;
                 if (typeof at.dayCapLockoutReason === "string" || at.dayCapLockoutReason === null) CONFIG.autoTrading.dayCapLockoutReason = at.dayCapLockoutReason;
                 if (typeof at.manualNoBuyToday === "boolean") CONFIG.autoTrading.manualNoBuyToday = at.manualNoBuyToday;
                 if (Number.isFinite(at.manualNoBuyTodaySessionKey)) CONFIG.autoTrading.manualNoBuyTodaySessionKey = at.manualNoBuyTodaySessionKey;
+                if (at.previousClosePrices && typeof at.previousClosePrices === "object" && !Array.isArray(at.previousClosePrices)) {
+                    CONFIG.autoTrading.previousClosePrices = at.previousClosePrices;
+                }
                 // JSON.stringify(NaN) silently becomes "null", not "NaN" — JSON simply can't represent
                 // NaN, so a genuine NaN never survives the round-trip as-is. Restoring null (or anything
                 // else that isn't a real finite number) back to NaN here is what makes "not using it yet"
@@ -2663,8 +2734,8 @@
                         CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
                         CONFIG.autoTrading.dayCapLockoutReason = "gain";
                         saveSettings();
-                    } else if (Number.isFinite(todayPL) && todayPL <= -CONFIG.autoTrading.maxLossCapDollars) {
-                        console.log(`[AutoTrade] MAX LOSS CAP HIT — today=$${todayPL.toFixed(2)}, cap=-$${CONFIG.autoTrading.maxLossCapDollars}. Locking out new buys for the rest of the trading day.`);
+                    } else if (Number.isFinite(todayPL) && todayPL <= CONFIG.autoTrading.maxLossCapDollars) {
+                        console.log(`[AutoTrade] MAX LOSS/GAIN-PROTECT CAP HIT — today=$${todayPL.toFixed(2)}, cap=$${CONFIG.autoTrading.maxLossCapDollars}. Locking out new buys for the rest of the trading day.`);
                         CONFIG.autoTrading.dayCapLockoutActive = true;
                         CONFIG.autoTrading.dayCapLockoutSessionKey = currentSessionKey;
                         CONFIG.autoTrading.dayCapLockoutReason = "loss";
@@ -3831,12 +3902,24 @@
                 const changePct = hasPrior && lastPositionsValue !== 0 ? (change / lastPositionsValue) * 100 : null;
                 lastPositionsValue = a.positionsValue;
 
+                // Today card's own % — against the configured daily goal when one's set, rather than
+                // total account equity. Equity-based was technically correct but not very useful: a real
+                // day's gain is a tiny fraction of total equity, so the number never read as "how's today
+                // going." Goal-based reuses accountDailyTargetDollars (the same value already driving the
+                // chart's own y-axis line) rather than a second, separate setting — deliberately a
+                // different scope from the bot's own Max Gain cap, since raising that cap mid-day (via the
+                // new clear toggle) shouldn't silently move what this card considers "the goal." Falls
+                // back to the original equity-based % whenever no goal is configured, unchanged from before.
+                const todayPctForCard = Number.isFinite(CONFIG.api.accountDailyTargetDollars) && CONFIG.api.accountDailyTargetDollars > 0
+                    ? (a.todayPL / CONFIG.api.accountDailyTargetDollars) * 100
+                    : a.todayPLPct;
+
                 const cards = [
                     {
                         key: "today",
                         label: "TODAY",
                         value: signPrefix(a.todayPL) + round2(a.todayPL).toFixed(2),
-                        sub: fmtPct(a.todayPLPct),
+                        sub: fmtPct(todayPctForCard),
                         up: upDownNeutral(a.todayPL)
                     },
                     {
@@ -3854,7 +3937,7 @@
                         up: upDownNeutral(change)
                     }
                 ];
-                row.innerHTML = `<span id="wallClock" style="position:absolute; top:6px; right:30px; color:var(--ink); font-size:24px; font-variant-numeric:tabular-nums; white-space:nowrap;"></span><span id="acctBalancePower" style="position:absolute; top:6px; left:16px; color:#5C89B9; font-size:13px; font-variant-numeric:tabular-nums; white-space:nowrap;"></span><div class="stat-row" data-count="3">` + cards.map(c => `
+                row.innerHTML = `<span id="wallClock" style="position:absolute; top:6px; right:30px; color:var(--ink); font-size:24px; font-variant-numeric:tabular-nums; white-space:nowrap; cursor:pointer;" title="Click to force a full page reload — useful on iOS home-screen apps, which can otherwise keep running a stale, cached version after a new one's been deployed"></span><span id="acctBalancePower" style="position:absolute; top:6px; left:16px; color:#5C89B9; font-size:13px; font-variant-numeric:tabular-nums; white-space:nowrap;"></span><div class="stat-row" data-count="3">` + cards.map(c => `
         <div class="stat-col"><div class="stat-card" ${c.key === "today" ? `id="todayStatCard"` : ""}${c.key === "positions" ? `id="positionsStatCard"` : ""}>
           <p class="stat-label">${c.label}</p>
           <p class="stat-value" style="${c.up === "up" ? "color:#83B573" : c.up === "down" ? "color:#C96A6A" : c.up === "neutral" ? "color:#9FA8B5" : ""}">${c.value}</p>
@@ -3863,6 +3946,12 @@
           ${c.key === "positions" ? `<button type="button" id="liquidateAllBtn" class="liquidate-btn" title="Liquidate account (close all positions)"><i class="fa fa-ban"></i></button>` : ""}
         </div></div>`).join("") + `</div>`;
                 document.getElementById("liquidateAllBtn").addEventListener("click", handleLiquidateAllClick);
+                // Rebuilt fresh every render (this whole row is torn down and reconstructed every account
+                // refresh), so the listener has to be reattached every time too, same as liquidateAllBtn's
+                // own listener right above. True forces a genuine cache-bypassing fetch, not just a normal
+                // reload — the exact fix for iOS home-screen apps otherwise silently continuing to run a
+                // stale, cached version even after a new deploy — same pattern as the user's own old app.
+                document.getElementById("wallClock").addEventListener("click", () => window.location.reload(true));
 
                 // "-" whenever either value is null (Sample mode has no real account behind it to report
                 // on) — data layer returns null, this is the one place that becomes a display string.
@@ -4215,8 +4304,28 @@
                         gainEl.style.color = signColor(dollar);
                     } else {
                         gainEl.style.display = "";
-                        gainEl.textContent = signPrefix(pct) + round2(pct).toFixed(2) + "%";
                         gainEl.style.color = "#5C89B9";
+                        let html = signPrefix(pct) + round2(pct).toFixed(2) + "%";
+                        // Previous-close reference. In api mode, appended only when a captured value actually
+                        // exists for this symbol (bolt-enabled at some prior EOD — no fallback otherwise,
+                        // matching the deliberately-scoped, single-device design agreed on when this was
+                        // built). Sample mode never has real captured data (no real EOD trigger, no real
+                        // account) — shows a plain "-" instead of silently omitting the segment, so the
+                        // layout itself is visible and consistent even without live data behind it. Own color
+                        // (aqua) via a nested span either way, since gainEl's own style.color above only
+                        // covers the base text — needs innerHTML here rather than textContent for the two
+                        // colors to coexist.
+                        if (CONFIG.dataMode === "sample") {
+                            html += ` | <span style="color:#4FD1C5;">-</span>`;
+                        } else {
+                            const prevClose = CONFIG.autoTrading.previousClosePrices[t.symbol];
+                            const currentPrice = s.close[s.close.length - 1];
+                            if (Number.isFinite(prevClose) && prevClose > 0 && Number.isFinite(currentPrice)) {
+                                const prevClosePct = ((currentPrice - prevClose) / prevClose) * 100;
+                                html += ` | <span style="color:#4FD1C5;">${signPrefix(prevClosePct)}${round2(prevClosePct).toFixed(2)}%</span>`;
+                            }
+                        }
+                        gainEl.innerHTML = html;
                     }
                 }
 
@@ -4583,6 +4692,28 @@
         async function renderAccountView() {
             document.getElementById("viewTitle").textContent = "Account";
             const panel = document.getElementById("accountPanel");
+            // Destroyed and reset here, unconditionally, before the header rebuild below wipes out
+            // whatever container it was attached to — without this, a second call (e.g. clicking
+            // Refresh after a successful render) would rebuild a fresh #dailyGainsChart div but still
+            // try to updateOptions() on the now-orphaned old instance, silently failing to render at
+            // all. Same bug shape already caught and fixed on the error/empty paths — reintroduced here
+            // by making the header rebuild unconditional, now closed the same way.
+            if (dailyGainsChart) { try { dailyGainsChart.destroy(); } catch (e) { } dailyGainsChart = null; }
+            // Header row (title context + Refresh) built once, unconditionally, before any of the
+            // data-dependent branches below — stays present even on the error/empty-data paths, same
+            // as the activity-summary's own Refresh button. A direct button click calls this function
+            // directly, bypassing render()'s own view-signature caching entirely (that caching lives in
+            // render() itself, keyed on things like ticker selection this view doesn't depend on at
+            // all) — so Refresh always genuinely re-fetches, regardless of whether a plain view-switch
+            // would have. 4am auto-refresh deliberately not built — manual Refresh covers the real need.
+            panel.innerHTML = `
+      <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+        <button type="button" class="btn-cancel" id="accountViewRefresh" style="padding:4px 10px; font-size:12px;">Refresh</button>
+      </div>
+      <div id="accountViewBody"></div>`;
+            document.getElementById("accountViewRefresh").addEventListener("click", renderAccountView);
+            const body = document.getElementById("accountViewBody");
+
             let dailyData;
             if (CONFIG.dataMode === "api") {
                 try {
@@ -4590,8 +4721,7 @@
                     dailyData = applyMinStartDateClip(dailyData, CONFIG.api.accountMinStartDate);
                 } catch (err) {
                     console.error("[Account] portfolio history fetch failed", err);
-                    if (dailyGainsChart) { try { dailyGainsChart.destroy(); } catch (e) { } dailyGainsChart = null; }
-                    panel.innerHTML = `<p class="metric-sub">Couldn't load account history.</p>`;
+                    body.innerHTML = `<p class="metric-sub">Couldn't load account history.</p>`;
                     renderStatCards([]);
                     return;
                 }
@@ -4601,14 +4731,13 @@
                 document.getElementById("viewSub").textContent = "Daily gains over time (sample data)";
             }
             if (!dailyData.length) {
-                if (dailyGainsChart) { try { dailyGainsChart.destroy(); } catch (e) { } dailyGainsChart = null; }
-                panel.innerHTML = `<p class="metric-sub">No account history available yet.</p>`;
+                body.innerHTML = `<p class="metric-sub">No account history available yet.</p>`;
                 renderStatCards([]);
                 return;
             }
             let container = document.getElementById("dailyGainsChart");
             if (!container) {
-                panel.innerHTML = `<div id="dailyGainsChart"></div>`;
+                body.innerHTML = `<div id="dailyGainsChart"></div>`;
                 container = document.getElementById("dailyGainsChart");
             }
             const opts = buildDailyGainsChartOptions(dailyData, CONFIG.api.accountDailyTargetDollars);
@@ -5225,7 +5354,7 @@
             const parsedMaxGainCap = parseFloat(autoTradeMaxGainCap.value);
             CONFIG.autoTrading.maxGainCapDollars = Number.isFinite(parsedMaxGainCap) ? Math.min(10000, Math.max(0, parsedMaxGainCap)) : CONFIG.autoTrading.maxGainCapDollars;
             const parsedMaxLossCap = parseFloat(autoTradeMaxLossCap.value);
-            CONFIG.autoTrading.maxLossCapDollars = Number.isFinite(parsedMaxLossCap) ? Math.min(1000, Math.max(0, parsedMaxLossCap)) : CONFIG.autoTrading.maxLossCapDollars;
+            CONFIG.autoTrading.maxLossCapDollars = Number.isFinite(parsedMaxLossCap) ? Math.min(1000, Math.max(-1000, parsedMaxLossCap)) : CONFIG.autoTrading.maxLossCapDollars;
             const parsedEvalSecond = parseInt(autoTradeEvalSecond.value, 10);
             CONFIG.autoTrading.evalSecond = Number.isFinite(parsedEvalSecond) ? Math.min(59, Math.max(0, parsedEvalSecond)) : CONFIG.autoTrading.evalSecond;
             // Disabled field — deliberately not read from .value at all here. Stays NaN until the field
@@ -5391,6 +5520,25 @@
                         CONFIG.autoTrading.dayCapLockoutActive = true;
                         CONFIG.autoTrading.dayCapLockoutSessionKey = getSessionWindow().sessionStart.getTime();
                         CONFIG.autoTrading.dayCapLockoutReason = "eod";
+                        // Previous-close capture, one bolt-enabled symbol at a time, gated on both the master
+                        // switch and the individual symbol's own bolt state — matches the same two conditions
+                        // already required for anything else in this evaluator to touch a symbol at all. An
+                        // approximation, not a precise 4:00 PM close, worth being honest about: this fires at
+                        // 15:55, so the latest available bar is still the current, still-forming one, a few
+                        // minutes before the session's true close — acceptable given this is reference-only,
+                        // never read by any trading decision, same as the daily-gains chart's own target line.
+                        if (CONFIG.autoTrading.masterEnabled) {
+                            for (const id of autoTradeEnabledIds) {
+                                const t = TICKERS.find(tk => tk.id === id);
+                                if (!t) continue;
+                                loadFreshTodaySeriesForAutoTrade(t.symbol).then(series => {
+                                    if (series.close.length) {
+                                        CONFIG.autoTrading.previousClosePrices[t.symbol] = series.close[series.close.length - 1];
+                                        saveSettings();
+                                    }
+                                }).catch(err => console.error(`[AutoTrade] ${t.symbol}: previous-close capture failed`, err));
+                            }
+                        }
                         saveSettings();
                         evaluateAutomatedTrading();
                     }
