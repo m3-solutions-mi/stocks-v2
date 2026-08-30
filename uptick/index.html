@@ -2148,9 +2148,9 @@
                 stored.</p>
             <table class="edit-table" style="margin-bottom:16px;">
                 <tr>
-                    <td>Seed ($)</td>
+                    <td>Seed ($K)</td>
                     <td style="text-align:right;"><input type="number" id="calcSeed" class="edit-input" min="0"
-                            step="100"></td>
+                            step="0.1"></td>
                 </tr>
                 <tr>
                     <td>Average daily (%)</td>
@@ -2288,7 +2288,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V089</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V090</p>
         </div>
     </div>
 
@@ -2301,7 +2301,8 @@
             calculator: { // Standalone "what if" projection tool — deliberately separate from
                 // autoTrading, since it has no connection to any trading logic or real account data at
                 // all. Inputs only; results are never persisted, always recomputed fresh on demand.
-                seedDollars: NaN,
+                seedThousands: NaN, // raw input as typed (e.g. 43.5 for $43,500) — multiplied by 1000 only
+                // at the point of calculation, never stored as a full dollar amount
                 dailyPct: NaN,
                 days: NaN
             },
@@ -2546,7 +2547,7 @@
             // of correctly falling back to NaN. Same pattern as accountDailyTargetDollars elsewhere.
             if (saved.calculator && typeof saved.calculator === "object") {
                 const c = saved.calculator;
-                if (Number.isFinite(c.seedDollars)) CONFIG.calculator.seedDollars = c.seedDollars;
+                if (Number.isFinite(c.seedThousands)) CONFIG.calculator.seedThousands = c.seedThousands;
                 if (Number.isFinite(c.dailyPct)) CONFIG.calculator.dailyPct = c.dailyPct;
                 if (Number.isFinite(c.days)) CONFIG.calculator.days = c.days;
             }
@@ -3825,7 +3826,7 @@
         // 2/3 (both seriesName "Close") share the visible price/percent scale, with an explicit
         // min/max computed from the actual data rather than left on auto.
         // =========================================================
-        function buildComboOptions(times, close, smaVals, { height = 220, showXAxis = true, accent = "#5C89B9", valueFormatter, sparkline = false, showAnnotations = true, smaWidth = 1.5, symbol = null } = {}) {
+        function buildComboOptions(times, close, smaVals, { height = 220, showXAxis = true, accent = "#5C89B9", valueFormatter, sparkline = false, showAnnotations = true, showCustomMarks = false, smaWidth = 1.5, symbol = null } = {}) {
             const fmt = valueFormatter || fmtMoney;
             // One bar series instead of two — ApexCharts colors each bar red/green itself via
             // plotOptions.bar.colors.ranges, based on the value's sign. Half the series to compute
@@ -3844,6 +3845,7 @@
             const priceAxisMin = priceMin - pricePad, priceAxisMax = priceMax + pricePad;
             const sessionMarks = showAnnotations ? marketSessionAnnotations(times) : [];
             const hourMarks = showAnnotations ? hourlyAnnotations(times) : [];
+            const customMarks = showCustomMarks ? customTimeAnnotations(times) : [];
             // Resolves to the per-symbol override only when a symbol is actually passed AND it's in
             // the (deliberately chart-display-only) watch-only list — Trend's composite call passes no
             // symbol at all, so it always falls back to the global deadband, which is the correct
@@ -3918,6 +3920,15 @@
                             borderColor: "#9FA8B5",
                             borderWidth: 1
                             // no strokeDashArray — solid, and no label — deliberately quiet
+                        })),
+                        ...customMarks.map(m => ({
+                            x: m.x,
+                            borderColor: m.color,
+                            borderWidth: 1
+                            // Appended after hourMarks specifically — ApexCharts layers later array entries on
+                            // top of earlier ones, so this naturally renders above the hourly grid lines at the
+                            // same visual position, exactly as intended, with no z-index or explicit ordering
+                            // config needed.
                         }))
                     ],
                     yaxis: [{
@@ -3965,6 +3976,24 @@
                 marks.push(mark.getTime());
             }
             return marks.filter(x => x >= times[0] && x <= times[times.length - 1]);
+        }
+
+        // Single shared list — adding a future mark (e.g. 1:30 PM) is a one-line addition here, and it
+        // automatically applies everywhere showCustomMarks is passed (currently Compare and Research),
+        // rather than needing to touch each chart's own call site individually.
+        const CUSTOM_TIME_MARKS = [
+            { hour: 11, minute: 0, color: "#4FD1C5" } // same aqua already used for the previous-close
+            // indicator on these same Compare cards — teal read as too hard to distinguish from the
+            // existing grey hourly grid at this size; this reuses an already-established color rather
+            // than introducing a new one
+        ];
+        function customTimeAnnotations(times) {
+            if (currentTf !== "today" || !times.length) return [];
+            const day = new Date(times[0]);
+            return CUSTOM_TIME_MARKS.map(m => {
+                const mark = new Date(day); mark.setHours(m.hour, m.minute, 0, 0);
+                return { x: mark.getTime(), color: m.color };
+            }).filter(m => m.x >= times[0] && m.x <= times[times.length - 1]);
         }
 
         // =========================================================
@@ -4347,7 +4376,7 @@
                 const pctSeries = s.close.map(c => ((c - base) / base) * 100);
                 const smaVals = s.sma.map(v => ((v - base) / base) * 100);
                 const pctFmt = v => round2(Number(v)).toFixed(2) + "%";
-                const opts = buildComboOptions(s.times, pctSeries, smaVals, { height: 170, showXAxis: false, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showAnnotations: true, smaWidth: 1.5, symbol: t.symbol });
+                const opts = buildComboOptions(s.times, pctSeries, smaVals, { height: 170, showXAxis: false, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showAnnotations: true, showCustomMarks: true, smaWidth: 1.5, symbol: t.symbol });
 
                 if (compareCharts[id]) {
                     // Same instance, updated in place — no new ApexCharts(), no DOM rebuild.
@@ -4909,7 +4938,7 @@
                 panel.innerHTML = `<div style="position:relative;"><div id="researchChart"></div><span class="deadband-override-badge" id="researchDeadbandBadge" style="display:none;"></span></div>`;
                 container = document.getElementById("researchChart");
             }
-            const opts = buildComboOptions(data.times, pctSeries, smaVals, { height: 340, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, symbol: researchSymbol });
+            const opts = buildComboOptions(data.times, pctSeries, smaVals, { height: 340, accent: ACCENT, valueFormatter: pctFmt, sparkline: true, showCustomMarks: true, symbol: researchSymbol });
             if (researchChart) {
                 researchChart.updateOptions(opts, true, true);
             } else {
@@ -5389,13 +5418,15 @@
         const calcResults = document.getElementById("calcResults");
 
         function computeAndShowCalcResults() {
-            const seed = parseFloat(calcSeed.value);
+            const seedThousands = parseFloat(calcSeed.value);
             const dailyPct = parseFloat(calcDailyPct.value);
             const days = parseFloat(calcDays.value);
-            if (!Number.isFinite(seed) || !Number.isFinite(dailyPct) || !Number.isFinite(days) || days <= 0) {
+            if (!Number.isFinite(seedThousands) || !Number.isFinite(dailyPct) || !Number.isFinite(days) || days <= 0) {
                 calcResults.style.display = "none";
                 return;
             }
+            const seed = seedThousands * 1000; // the only place this conversion happens — every other
+            // reference to "seed" from here on is already the real dollar amount
             const simplePct = dailyPct * days;
             const simpleDollars = seed * (simplePct / 100);
             const compoundPct = (Math.pow(1 + dailyPct / 100, days) - 1) * 100;
@@ -5415,7 +5446,7 @@
         }
 
         function openCalcModal() {
-            calcSeed.value = Number.isFinite(CONFIG.calculator.seedDollars) ? CONFIG.calculator.seedDollars : "";
+            calcSeed.value = Number.isFinite(CONFIG.calculator.seedThousands) ? CONFIG.calculator.seedThousands : "";
             calcDailyPct.value = Number.isFinite(CONFIG.calculator.dailyPct) ? CONFIG.calculator.dailyPct : "";
             calcDays.value = Number.isFinite(CONFIG.calculator.days) ? CONFIG.calculator.days : "";
             // Shows results immediately from whatever was already saved last time, rather than an empty
@@ -5427,17 +5458,34 @@
         document.getElementById("calcClose").addEventListener("click", () => { calcModal.classList.remove("open"); unlockPageScroll(); });
         document.getElementById("calcCancel").addEventListener("click", () => { calcModal.classList.remove("open"); unlockPageScroll(); });
         calcModal.addEventListener("click", (e) => { if (e.target === calcModal) { calcModal.classList.remove("open"); unlockPageScroll(); } });
-        document.getElementById("calcApply").addEventListener("click", () => {
-            // Inputs only ever get persisted here, on explicit Apply — never just from opening/viewing
-            // the dialog. Results themselves are never saved at all, always recomputed fresh above.
-            const seed = parseFloat(calcSeed.value);
+        // Inputs only ever get persisted here — never just from opening/viewing the dialog. Results
+        // themselves are never saved at all, always recomputed fresh in computeAndShowCalcResults().
+        // Shared by the explicit Apply button and the auto-apply-on-blur/Enter behavior below, so
+        // there's exactly one place this logic lives rather than two copies that could drift apart.
+        function applyCalcInputs() {
+            const seedThousands = parseFloat(calcSeed.value);
             const dailyPct = parseFloat(calcDailyPct.value);
             const days = parseFloat(calcDays.value);
-            CONFIG.calculator.seedDollars = Number.isFinite(seed) ? seed : NaN;
+            CONFIG.calculator.seedThousands = Number.isFinite(seedThousands) ? seedThousands : NaN;
             CONFIG.calculator.dailyPct = Number.isFinite(dailyPct) ? dailyPct : NaN;
             CONFIG.calculator.days = Number.isFinite(days) ? days : NaN;
             saveSettings();
             computeAndShowCalcResults();
+        }
+        document.getElementById("calcApply").addEventListener("click", applyCalcInputs);
+        // Auto-apply on blur or Enter, but only once all three fields already hold a real, finite
+        // value — avoids silently saving/computing against a partially-filled form (e.g. tabbing away
+        // from Seed before Days has ever been touched at all).
+        function allCalcFieldsFilled() {
+            return Number.isFinite(parseFloat(calcSeed.value))
+                && Number.isFinite(parseFloat(calcDailyPct.value))
+                && Number.isFinite(parseFloat(calcDays.value));
+        }
+        [calcSeed, calcDailyPct, calcDays].forEach(input => {
+            input.addEventListener("blur", () => { if (allCalcFieldsFilled()) applyCalcInputs(); });
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && allCalcFieldsFilled()) { e.preventDefault(); applyCalcInputs(); }
+            });
         });
         autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(btn => {
             btn.addEventListener("click", () => autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
