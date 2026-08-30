@@ -1651,9 +1651,12 @@
                         same as the Combined chart but per-ticker.</p>
                     <p class="help-desc">Top-right of each tile, when not held: today's own % change, plus — in a
                         second, aqua-colored number — how today compares to yesterday's close, whenever that's been
-                        captured. Only captured for bolt-enabled symbols, once a day, at the automated evaluator's own
-                        end-of-day trigger — not a live fetch, and only happens on whichever device was actually running
-                        the bot at that moment. A symbol never captured this way just shows the first number alone.</p>
+                        captured. Captured once a day, at 15:55, for whatever's actually selected/showing on this view
+                        at that exact moment — not the full watchlist, and not tied to which symbols are bolt-enabled.
+                        No master-switch dependency either; any device open at that moment captures its own values
+                        independently, so different devices may end up with slightly different numbers if they weren't
+                        all showing the same selection at the time. A symbol never captured this way just shows the
+                        first number alone.</p>
                 </div>
                 <div class="help-section">
                     <p class="help-heading">Table</p>
@@ -2134,6 +2137,76 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="calcModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <p class="modal-title">Projection Calculator</p>
+                <button class="modal-close" id="calcClose" aria-label="Close"><i class="fa fa-times"></i></button>
+            </div>
+            <p class="metric-sub" style="margin:0 0 16px;">A "what if" tool only — no connection to any real account
+                data or trading decision. Inputs are saved for next time; results are always recalculated fresh, never
+                stored.</p>
+            <table class="edit-table" style="margin-bottom:16px;">
+                <tr>
+                    <td>Seed ($)</td>
+                    <td style="text-align:right;"><input type="number" id="calcSeed" class="edit-input" min="0"
+                            step="100"></td>
+                </tr>
+                <tr>
+                    <td>Average daily (%)</td>
+                    <td style="text-align:right;"><input type="number" id="calcDailyPct" class="edit-input" step="0.01">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Number of days</td>
+                    <td style="text-align:right;"><input type="number" id="calcDays" class="edit-input" min="1"
+                            step="1"></td>
+                </tr>
+            </table>
+            <div id="calcResults" style="display:none;">
+                <table class="edit-table" style="margin-bottom:16px;">
+                    <tr>
+                        <td colspan="2" style="font-weight:700; padding-top:8px;">Simple (no reinvestment)</td>
+                    </tr>
+                    <tr>
+                        <td>Total gain ($)</td>
+                        <td style="text-align:right;" id="calcSimpleDollars">-</td>
+                    </tr>
+                    <tr>
+                        <td>Total gain (%)</td>
+                        <td style="text-align:right;" id="calcSimplePct">-</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight:700; padding-top:8px;">Re-invested (compounded)</td>
+                    </tr>
+                    <tr>
+                        <td>Total gain ($)</td>
+                        <td style="text-align:right;" id="calcCompoundDollars">-</td>
+                    </tr>
+                    <tr>
+                        <td>Total gain (%)</td>
+                        <td style="text-align:right;" id="calcCompoundPct">-</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight:700; padding-top:8px;">Re-invest vs. Simple</td>
+                    </tr>
+                    <tr>
+                        <td>Delta ($)</td>
+                        <td style="text-align:right;" id="calcDeltaDollars">-</td>
+                    </tr>
+                    <tr>
+                        <td>Delta (%)</td>
+                        <td style="text-align:right;" id="calcDeltaPct">-</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="calcCancel">Close</button>
+                <button class="btn-save" id="calcApply">Apply</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== Main ===== -->
     <div class="wrap">
         <div class="panel">
@@ -2215,7 +2288,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V088</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V089</p>
         </div>
     </div>
 
@@ -2225,6 +2298,13 @@
         // =========================================================
         const CONFIG = {
             dataMode: "sample", // "sample" | "api"
+            calculator: { // Standalone "what if" projection tool — deliberately separate from
+                // autoTrading, since it has no connection to any trading logic or real account data at
+                // all. Inputs only; results are never persisted, always recomputed fresh on demand.
+                seedDollars: NaN,
+                dailyPct: NaN,
+                days: NaN
+            },
             api: {
                 symbolBaseUrlA: "",  // primary symbol data source — GET {base}/series/{symbol}?tf={tf}
                 symbolToken: "", // appended as ?token= on symbolBaseUrlA requests only — never symbolBaseUrlB. Security through obscurity, not real access control; the backend already reads ?token= but ignores it until this is populated with something it checks against an allowlist.
@@ -2431,6 +2511,7 @@
             try {
                 localStorage.setItem(SETTINGS_KEY, JSON.stringify({
                     dataMode: CONFIG.dataMode,
+                    calculator: CONFIG.calculator,
                     symbolBaseUrlA: CONFIG.api.symbolBaseUrlA,
                     symbolToken: CONFIG.api.symbolToken,
                     symbolBaseUrlB: CONFIG.api.symbolBaseUrlB,
@@ -2460,6 +2541,15 @@
             const saved = loadSettings();
             if (!saved) return;
             if (saved.dataMode === "sample" || saved.dataMode === "api") CONFIG.dataMode = saved.dataMode;
+            // Individual field validation, not a blanket object assignment — JSON.stringify(NaN) becomes
+            // null, so a wholesale copy would silently replace the "not set" defaults with null instead
+            // of correctly falling back to NaN. Same pattern as accountDailyTargetDollars elsewhere.
+            if (saved.calculator && typeof saved.calculator === "object") {
+                const c = saved.calculator;
+                if (Number.isFinite(c.seedDollars)) CONFIG.calculator.seedDollars = c.seedDollars;
+                if (Number.isFinite(c.dailyPct)) CONFIG.calculator.dailyPct = c.dailyPct;
+                if (Number.isFinite(c.days)) CONFIG.calculator.days = c.days;
+            }
             if (typeof saved.symbolBaseUrlA === "string") CONFIG.api.symbolBaseUrlA = saved.symbolBaseUrlA.trim();
             if (typeof saved.symbolToken === "string") CONFIG.api.symbolToken = saved.symbolToken.trim();
             if (typeof saved.symbolBaseUrlB === "string") CONFIG.api.symbolBaseUrlB = saved.symbolBaseUrlB.trim();
@@ -3703,6 +3793,16 @@
         function signPrefix(v) {
             return signOf(v) > 0 ? "+" : "";
         }
+        // Used specifically on the Compare cards' not-held delta indicators — a visually stronger
+        // distinction than the plain +/- prefix, per direct user feedback that the sign character
+        // alone was hard to read at a glance there. Not applied anywhere else signPrefix() is
+        // already used (Positions table, account activity table, etc.) — those weren't flagged as
+        // hard to read, and changing them wasn't asked for. Callers must pass Math.abs(v) as the
+        // value itself alongside this, since the arrow already conveys direction — showing a minus
+        // sign too would be redundant.
+        function arrowPrefix(v) {
+            return v > 0 ? "▲ " : (v < 0 ? "▼ " : "");
+        }
         function signClass(v) {
             const s = signOf(v);
             return s === 0 ? "dt-neutral" : (s > 0 ? "dt-up" : "dt-down");
@@ -4305,7 +4405,7 @@
                     } else {
                         gainEl.style.display = "";
                         gainEl.style.color = "#5C89B9";
-                        let html = signPrefix(pct) + round2(pct).toFixed(2) + "%";
+                        let html = arrowPrefix(pct) + round2(Math.abs(pct)).toFixed(2) + "%";
                         // Previous-close reference. In api mode, appended only when a captured value actually
                         // exists for this symbol (bolt-enabled at some prior EOD — no fallback otherwise,
                         // matching the deliberately-scoped, single-device design agreed on when this was
@@ -4322,7 +4422,7 @@
                             const currentPrice = s.close[s.close.length - 1];
                             if (Number.isFinite(prevClose) && prevClose > 0 && Number.isFinite(currentPrice)) {
                                 const prevClosePct = ((currentPrice - prevClose) / prevClose) * 100;
-                                html += ` | <span style="color:#4FD1C5;">${signPrefix(prevClosePct)}${round2(prevClosePct).toFixed(2)}%</span>`;
+                                html += ` | <span style="color:#4FD1C5;">${arrowPrefix(prevClosePct)}${round2(Math.abs(prevClosePct)).toFixed(2)}%</span>`;
                             }
                         }
                         gainEl.innerHTML = html;
@@ -4707,10 +4807,12 @@
             // all) — so Refresh always genuinely re-fetches, regardless of whether a plain view-switch
             // would have. 4am auto-refresh deliberately not built — manual Refresh covers the real need.
             panel.innerHTML = `
-      <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;">
         <button type="button" class="btn-cancel" id="accountViewRefresh" style="padding:4px 10px; font-size:12px;">Refresh</button>
+        <button type="button" class="btn-cancel" id="accountViewCalc" style="padding:4px 10px; font-size:12px;"><i class="fa fa-calculator"></i> Calculator</button>
       </div>
       <div id="accountViewBody"></div>`;
+            document.getElementById("accountViewCalc").addEventListener("click", openCalcModal);
             document.getElementById("accountViewRefresh").addEventListener("click", renderAccountView);
             const body = document.getElementById("accountViewBody");
 
@@ -5274,6 +5376,69 @@
         document.getElementById("autoTradeClose").addEventListener("click", () => { autoTradeModal.classList.remove("open"); unlockPageScroll(); });
         document.getElementById("autoTradeCancel").addEventListener("click", () => { autoTradeModal.classList.remove("open"); unlockPageScroll(); });
         autoTradeModal.addEventListener("click", (e) => { if (e.target === autoTradeModal) { autoTradeModal.classList.remove("open"); unlockPageScroll(); } });
+
+        // Projection calculator — a standalone "what if" tool, no connection to any real account data
+        // or trading logic at all. Formulas: simple (no reinvestment) = seed * (dailyPct * days / 100);
+        // compound (re-invested) = seed * ((1 + dailyPct/100)^days - 1). Verified against the user's
+        // own known reference point (0.75%/day over 250 days = 187.5% simple, matching this project's
+        // own established "income, not compounding" target) before being trusted.
+        const calcModal = document.getElementById("calcModal");
+        const calcSeed = document.getElementById("calcSeed");
+        const calcDailyPct = document.getElementById("calcDailyPct");
+        const calcDays = document.getElementById("calcDays");
+        const calcResults = document.getElementById("calcResults");
+
+        function computeAndShowCalcResults() {
+            const seed = parseFloat(calcSeed.value);
+            const dailyPct = parseFloat(calcDailyPct.value);
+            const days = parseFloat(calcDays.value);
+            if (!Number.isFinite(seed) || !Number.isFinite(dailyPct) || !Number.isFinite(days) || days <= 0) {
+                calcResults.style.display = "none";
+                return;
+            }
+            const simplePct = dailyPct * days;
+            const simpleDollars = seed * (simplePct / 100);
+            const compoundPct = (Math.pow(1 + dailyPct / 100, days) - 1) * 100;
+            const compoundDollars = seed * (compoundPct / 100);
+            document.getElementById("calcSimpleDollars").textContent = fmtMoneySigned(simpleDollars);
+            document.getElementById("calcSimplePct").textContent = arrowPrefix(simplePct) + round2(Math.abs(simplePct)).toFixed(2) + "%";
+            document.getElementById("calcCompoundDollars").textContent = fmtMoneySigned(compoundDollars);
+            document.getElementById("calcCompoundPct").textContent = arrowPrefix(compoundPct) + round2(Math.abs(compoundPct)).toFixed(2) + "%";
+            // Plain subtraction of the two already-computed values above — same units as everything else
+            // shown, not a ratio or relative measure. Saves the exact manual step this whole calculator
+            // exists to avoid in the first place.
+            const deltaDollars = compoundDollars - simpleDollars;
+            const deltaPct = compoundPct - simplePct;
+            document.getElementById("calcDeltaDollars").textContent = fmtMoneySigned(deltaDollars);
+            document.getElementById("calcDeltaPct").textContent = arrowPrefix(deltaPct) + round2(Math.abs(deltaPct)).toFixed(2) + "%";
+            calcResults.style.display = "";
+        }
+
+        function openCalcModal() {
+            calcSeed.value = Number.isFinite(CONFIG.calculator.seedDollars) ? CONFIG.calculator.seedDollars : "";
+            calcDailyPct.value = Number.isFinite(CONFIG.calculator.dailyPct) ? CONFIG.calculator.dailyPct : "";
+            calcDays.value = Number.isFinite(CONFIG.calculator.days) ? CONFIG.calculator.days : "";
+            // Shows results immediately from whatever was already saved last time, rather than an empty
+            // section every time the dialog opens — Apply is only needed after actually changing a value.
+            computeAndShowCalcResults();
+            calcModal.classList.add("open");
+            lockPageScroll();
+        }
+        document.getElementById("calcClose").addEventListener("click", () => { calcModal.classList.remove("open"); unlockPageScroll(); });
+        document.getElementById("calcCancel").addEventListener("click", () => { calcModal.classList.remove("open"); unlockPageScroll(); });
+        calcModal.addEventListener("click", (e) => { if (e.target === calcModal) { calcModal.classList.remove("open"); unlockPageScroll(); } });
+        document.getElementById("calcApply").addEventListener("click", () => {
+            // Inputs only ever get persisted here, on explicit Apply — never just from opening/viewing
+            // the dialog. Results themselves are never saved at all, always recomputed fresh above.
+            const seed = parseFloat(calcSeed.value);
+            const dailyPct = parseFloat(calcDailyPct.value);
+            const days = parseFloat(calcDays.value);
+            CONFIG.calculator.seedDollars = Number.isFinite(seed) ? seed : NaN;
+            CONFIG.calculator.dailyPct = Number.isFinite(dailyPct) ? dailyPct : NaN;
+            CONFIG.calculator.days = Number.isFinite(days) ? days : NaN;
+            saveSettings();
+            computeAndShowCalcResults();
+        });
         autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(btn => {
             btn.addEventListener("click", () => autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
         });
@@ -5520,24 +5685,27 @@
                         CONFIG.autoTrading.dayCapLockoutActive = true;
                         CONFIG.autoTrading.dayCapLockoutSessionKey = getSessionWindow().sessionStart.getTime();
                         CONFIG.autoTrading.dayCapLockoutReason = "eod";
-                        // Previous-close capture, one bolt-enabled symbol at a time, gated on both the master
-                        // switch and the individual symbol's own bolt state — matches the same two conditions
-                        // already required for anything else in this evaluator to touch a symbol at all. An
-                        // approximation, not a precise 4:00 PM close, worth being honest about: this fires at
+                        // Previous-close capture — whatever's currently selected/showing on the Compare view
+                        // (selectedTickerIds), not the bot's own enabled symbols and not the full watchlist.
+                        // No master-switch gate at all — this has nothing to do with automated trading, so it
+                        // shouldn't depend on whether that's on. Deliberately scoped to the Compare selection
+                        // specifically, not the full TICKERS list, on the user's own reasoning: watchlists can
+                        // grow with symbols added just for quick reference that aren't worth fetching for every
+                        // single day — capturing only what's actually being looked at keeps this proportional
+                        // to real use rather than load scaling with however large the watchlist eventually gets.
+                        // An approximation, not a precise 4:00 PM close, worth being honest about: this fires at
                         // 15:55, so the latest available bar is still the current, still-forming one, a few
                         // minutes before the session's true close — acceptable given this is reference-only,
                         // never read by any trading decision, same as the daily-gains chart's own target line.
-                        if (CONFIG.autoTrading.masterEnabled) {
-                            for (const id of autoTradeEnabledIds) {
-                                const t = TICKERS.find(tk => tk.id === id);
-                                if (!t) continue;
-                                loadFreshTodaySeriesForAutoTrade(t.symbol).then(series => {
-                                    if (series.close.length) {
-                                        CONFIG.autoTrading.previousClosePrices[t.symbol] = series.close[series.close.length - 1];
-                                        saveSettings();
-                                    }
-                                }).catch(err => console.error(`[AutoTrade] ${t.symbol}: previous-close capture failed`, err));
-                            }
+                        for (const id of selectedTickerIds) {
+                            const t = TICKERS.find(tk => tk.id === id);
+                            if (!t) continue;
+                            loadFreshTodaySeriesForAutoTrade(t.symbol).then(series => {
+                                if (series.close.length) {
+                                    CONFIG.autoTrading.previousClosePrices[t.symbol] = series.close[series.close.length - 1];
+                                    saveSettings();
+                                }
+                            }).catch(err => console.error(`[AutoTrade] ${t.symbol}: previous-close capture failed`, err));
                         }
                         saveSettings();
                         evaluateAutomatedTrading();
