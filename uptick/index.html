@@ -569,6 +569,54 @@
             border-top: 3px solid var(--line);
         }
 
+        /* Journal — bounded height, internal scroll, sticky header. Scoped to this one table only;
+     every other table in the app shows its full content with no scroll container at all. What
+     prints matches what's visible on screen — deliberately no print override to force
+     scrolled-past rows into a printout, since older entries aren't meant to dominate the page. */
+        .journal-table-wrap {
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .journal-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--panel);
+            z-index: 1;
+        }
+
+        /* Overrides .data-table's generic 2nd-column right-align/bold, meant for numeric $/% tables —
+     the journal's own 2nd column is free text, not a number, same reasoning as .today-table's
+     own override right above it in this file. */
+        .journal-table td:nth-child(2),
+        .journal-table th:nth-child(2) {
+            text-align: left;
+            font-weight: 400;
+        }
+
+        .journal-table textarea {
+            width: 100%;
+            background: var(--bg2);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            padding: 8px 10px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .journal-table textarea:focus {
+            outline: none;
+            border-color: var(--muted);
+        }
+
+        .journal-table td.journal-readonly {
+            color: var(--muted);
+            white-space: pre-wrap;
+        }
+
         .compare-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -1537,6 +1585,13 @@
                         quiet reference grid for the regular trading session, distinct from the dashed pink Open/Close
                         lines at 9:30/4:00.</p>
                 </div>
+                <div class="help-section">
+                    <p class="help-heading"><span class="help-swatch" style="background:#4FD1C5"></span>11:00 AM marker
+                    </p>
+                    <p class="help-desc">A solid aqua line on Compare and Research (not Combined) — a single, fixed
+                        custom reference point, currently at 11:00 AM. Purely visual, same as the hourly grey marks; not
+                        read by any trading decision.</p>
+                </div>
             </div>
 
             <div class="help-panel" id="helpPanelViews" style="display:none;">
@@ -1550,14 +1605,21 @@
                     <p class="help-heading">Compare</p>
                     <p class="help-desc">Every selected ticker side by side, each with its own Close/SMA/delta chart,
                         same as the Combined chart but per-ticker.</p>
-                    <p class="help-desc">Top-right of each tile, when not held: today's own % change, plus — in a
-                        second, aqua-colored number — how today compares to yesterday's close, whenever that's been
-                        captured. Captured once a day, at 15:55, for whatever's actually selected/showing on this view
-                        at that exact moment — not the full watchlist, and not tied to which symbols are bolt-enabled.
-                        No master-switch dependency either; any device open at that moment captures its own values
-                        independently, so different devices may end up with slightly different numbers if they weren't
-                        all showing the same selection at the time. A symbol never captured this way just shows the
-                        first number alone.</p>
+                    <p class="help-desc">Top-right of each tile, when not held: today's own % change, shown with an
+                        up/down triangle instead of a plain +/- sign, plus — in a second, aqua-colored number of its own
+                        — how today compares to yesterday's close, whenever that's been captured. Captured once a day,
+                        at 15:55, for whatever's actually selected/showing on this view at that exact moment — not the
+                        full watchlist, and not tied to which symbols are bolt-enabled. No master-switch dependency
+                        either; any device open at that moment captures its own values independently, so different
+                        devices may end up with slightly different numbers if they weren't all showing the same
+                        selection at the time. A symbol never captured this way just shows the first number alone.</p>
+                    <p class="help-desc">Bottom-right of each tile: <b>"Potential"</b> — a theoretical gain figure,
+                        purely illustrative. Replays the same buy-on-green/sell-on-red logic the bot itself uses against
+                        this window's own bars, restricted to regular trading hours (9:30 AM–3:55 PM). It's a measure of
+                        what this chart's own shape could have captured, not a backtest and not comparable to the bot's
+                        real trading — real fills, fees, timing, and day caps all differ. Also shown on Research, for
+                        the same reason: a quick read on whether a symbol's actual movement pattern is one this strategy
+                        could meaningfully capture, before deciding it's worth watching or trading at all.</p>
                 </div>
                 <div class="help-section">
                     <p class="help-heading">Table</p>
@@ -1611,6 +1673,40 @@
                             window, never extend past it</li>
                         <li>Fetches once when you switch to this view — the Refresh button re-pulls on demand; nothing
                             here auto-updates on its own timer</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">Projection calculator</p>
+                    <p class="help-desc">The calculator icon next to Account's own Refresh button opens a standalone
+                        "what if" tool — no connection to any real account data or trading decision. Enter a seed amount
+                        (in thousands, e.g. type 43.5 for $43,500), an average daily %, and a number of days; it shows
+                        the total gain both simple (no reinvestment) and compounded, in both dollars and percent, plus
+                        the delta between the two strategies.</p>
+                    <ul class="help-desc">
+                        <li>Inputs are saved and restored the next time it's opened; results are always recalculated
+                            fresh, never stored</li>
+                        <li>Auto-applies on blur or Enter once all three fields hold a value, in addition to the
+                            explicit Apply button</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">Journal</p>
+                    <p class="help-desc">A small table below Account's own daily-gains chart — not a separate view, so
+                        printing Account naturally captures both the day's numbers and the day's note together. One row
+                        per day, most-recent first; the table's length is just however many days actually have a note,
+                        with no fixed cap.</p>
+                    <ul class="help-desc">
+                        <li>Today's own row sits at the top, always present — a plain text box with a Save button,
+                            placeholder "What happened today?"</li>
+                        <li>Freely re-editable and re-savable any number of times while it's still today; the moment the
+                            calendar date changes, that row locks to permanent, read-only display, same as every earlier
+                            day</li>
+                        <li>Saving with the box left empty removes that day's entry rather than storing a blank one</li>
+                        <li>Stored in its own separate place in this browser, independent of every other setting — not
+                            included in Export/Import, and not affected by Reset saved data</li>
+                        <li>Since it's just plain browser storage, a day can be backfilled directly (edit the stored
+                            value, then reload the page) — useful for adding a note for a day you forgot to write one at
+                            the time</li>
                     </ul>
                 </div>
             </div>
@@ -1735,8 +1831,8 @@
                             trigger.</b> Every minute, each enabled symbol is asked one question — does its current
                         delta bar say it should be owned right now?</p>
                     <ul class="help-desc">
-                        <li>Should be owned, not already held, buy window open, no-buy override off, enough buying power
-                            → buys</li>
+                        <li>Should be owned, not already held, buy window open, "Buy today" on, enough buying power →
+                            buys</li>
                         <li>Held, but the bar says it shouldn't be → sells (buy window doesn't apply to selling — a held
                             position needs an exit any time the market's open)</li>
                     </ul>
@@ -1789,8 +1885,8 @@
                     <p class="help-desc">The cap fields themselves turn amber in Settings while a real cap trigger is
                         currently locking out new buys. The routine end-of-day close uses this same lockout mechanism,
                         but that's normal daily behavior and isn't flagged the same way.</p>
-                    <p class="help-desc"><b>Day cap lockout — Off/On toggle, right below No buy today.</b> "On" is never
-                        a real choice — it's disabled, since only the bot itself ever sets it, reflecting whatever's
+                    <p class="help-desc"><b>Day cap lockout — Off/On toggle, right below Buy today.</b> "On" is never a
+                        real choice — it's disabled, since only the bot itself ever sets it, reflecting whatever's
                         actually happening. "Off" is a genuine action: clearing an active lockout yourself.</p>
                     <ul class="help-desc">
                         <li>Clearing it doesn't undo the underlying cause on its own — if today's numbers still exceed
@@ -1801,13 +1897,14 @@
                             the rest of the day still looks good, and want the bot back engaged rather than stuck
                             manual-only until tomorrow</li>
                     </ul>
-                    <p class="help-desc"><b>No buy today</b> — a separate switch from the master one, freely reversible
-                        any time.</p>
+                    <p class="help-desc"><b>Buy today</b> — a separate switch from the master one, freely reversible any
+                        time. ON allows new buys as normal (the default); OFF blocks them for the rest of today.</p>
                     <ul class="help-desc">
-                        <li>Blocks new buys only, for the rest of today</li>
-                        <li>Anything already held keeps being watched and sold exactly as normal</li>
-                        <li>Meant for calling a day "done" before anything has traded — undo it just as easily if that
-                            read turns out wrong</li>
+                        <li>Turning it off blocks new buys only, for the rest of today</li>
+                        <li>Anything already held keeps being watched and sold exactly as normal, regardless of this
+                            switch</li>
+                        <li>Meant for calling a day "done" before anything has traded — turn it back on just as easily
+                            if that read turns out wrong</li>
                     </ul>
                 </div>
             </div>
@@ -1930,12 +2027,12 @@
                 </div>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <span class="metric-sub" style="margin:0;">No buy today — blocks new buys only for the rest of today,
-                    resets automatically tomorrow at 4am. Freely reversible, unlike the day caps — flip back off any
-                    time if the day turns out differently.</span>
-                <div class="loc-chip-row" id="autoTradeNoBuyToggle">
-                    <button type="button" class="loc-chip" data-nobuy="off">Off</button>
-                    <button type="button" class="loc-chip" data-nobuy="on">On</button>
+                <span class="metric-sub" style="margin:0;">Buy today — ON allows new buys as normal; OFF blocks new buys
+                    for the rest of today, resets automatically tomorrow at 4am. Freely reversible, unlike the day caps
+                    — flip back on any time if the day turns out differently.</span>
+                <div class="loc-chip-row" id="autoTradeBuyTodayToggle">
+                    <button type="button" class="loc-chip" data-buytoday="off">Off</button>
+                    <button type="button" class="loc-chip" data-buytoday="on">On</button>
                 </div>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -2186,7 +2283,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V093</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V095</p>
         </div>
     </div>
 
@@ -2292,6 +2389,46 @@
         };
 
         const SETTINGS_KEY = "uptick-settings-v1";
+        // Deliberately its own separate key, not folded into SETTINGS_KEY — that blob gets rewritten
+        // on nearly every small settings change, and Export/Import moves it between devices; a
+        // growing, unbounded journal history has no reason to ride along with either of those. Shape
+        // is a plain { "YYYY-MM-DD": "note text" } map — simple and hand-editable on purpose, so
+        // backfilling a past day (paste an edited copy of this object back into localStorage, then
+        // reload) stays an easy, supported workflow, not just an accident of the implementation.
+        const JOURNAL_KEY = "uptick-journal-v1";
+        let journalEntries = {}; // read once at load, same pattern as CONFIG itself — only ever
+        // written back to localStorage on an explicit save, never on every keystroke
+
+        function loadJournal() {
+            try {
+                const raw = localStorage.getItem(JOURNAL_KEY);
+                const parsed = raw ? JSON.parse(raw) : {};
+                return (parsed && typeof parsed === "object" && !Array.isArray(parsed)) ? parsed : {};
+            } catch (e) { return {}; }
+        }
+        function saveJournal() {
+            try {
+                localStorage.setItem(JOURNAL_KEY, JSON.stringify(journalEntries));
+            } catch (e) { console.warn("Could not save journal:", e); }
+        }
+        journalEntries = loadJournal();
+
+        // Local date components, not toISOString() — that's always UTC, which can silently land on
+        // the wrong calendar day once rendered in a negative-UTC-offset timezone like US Eastern.
+        // Same pattern already used for the tab-title date and the activities-endpoint date param.
+        function todayDateKey() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        }
+        // "DD-MMM" display format (e.g. "28-Aug") — parses the YYYY-MM-DD key directly via explicit
+        // Date(year, month, day) construction, not new Date(string), for the same UTC-midnight
+        // parsing pitfall already avoided elsewhere in this app.
+        function formatJournalDate(dateKey) {
+            const [y, m, d] = dateKey.split("-").map(Number);
+            const date = new Date(y, m - 1, d);
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return `${String(d).padStart(2, "0")}-${months[date.getMonth()]}`;
+        }
 
         // Fixed market-context chips (top right). Structurally identical to a watchlist ticker —
         // just always shown, never removed from Settings.
@@ -2799,12 +2936,14 @@
                     }
                 }
 
-                // Manual no-buy override — a completely independent flag and reset check from the
+                // "Buy today" manual override — a completely independent flag and reset check from the
                 // day-cap block above. Only ever reset here on a stale session, never set/triggered here
                 // (it's user-toggled from the dialog, not something this evaluation loop decides on its
-                // own the way day-cap is).
+                // own the way day-cap is). The underlying flag keeps its original name/meaning
+                // (manualNoBuyToday, TRUE = buying blocked) even though the UI now shows it inverted as
+                // "Buy today".
                 if (CONFIG.autoTrading.manualNoBuyToday && CONFIG.autoTrading.manualNoBuyTodaySessionKey !== currentSessionKey) {
-                    console.log("[AutoTrade] manual no-buy override from a prior session — resetting for the new trading day");
+                    console.log("[AutoTrade] 'Buy today' override from a prior session — resetting for the new trading day");
                     CONFIG.autoTrading.manualNoBuyToday = false;
                     CONFIG.autoTrading.manualNoBuyTodaySessionKey = null;
                     saveSettings();
@@ -2915,12 +3054,12 @@
 
                     // --- Not held: state-based buy, still gated by the buy window — that part is
                     // unchanged, this check doesn't touch when buying is allowed, only whether it
-                    // happens once it is. The manual no-buy override is checked here too, alongside the
-                    // window — both are simply reasons to skip buying specifically, never reasons to touch
-                    // a held position, which is why neither one lives in the day-cap block above (that one
-                    // does affect selling; these two deliberately never do). ---
+                    // happens once it is. The "Buy today" manual override is checked here too, alongside
+                    // the window — both are simply reasons to skip buying specifically, never reasons to
+                    // touch a held position, which is why neither one lives in the day-cap block above
+                    // (that one does affect selling; these two deliberately never do). ---
                     if (CONFIG.autoTrading.manualNoBuyToday) {
-                        console.log(`[AutoTrade] ${symbol}: not held, but manual no-buy override is active for today — no new buys`);
+                        console.log(`[AutoTrade] ${symbol}: not held, but "Buy today" is off — no new buys`);
                         continue;
                     }
                     if (nowHmm < CONFIG.autoTrading.startHmm || nowHmm > CONFIG.autoTrading.endHmm) {
@@ -2934,7 +3073,7 @@
                             const investAmount = Math.min(AUTO_TRADE_MAX_INVEST_DOLLARS, CONFIG.autoTrading.investDollars);
                             // Checked against the same accountInfo already fetched this cycle — no extra
                             // network call. Console-only, matching every other decision this evaluator makes
-                            // (day-cap, max-loss, no-buy) — none of those use a toast/popup either, and an
+                            // (day-cap, max-loss, buy-today) — none of those use a toast/popup either, and an
                             // underfunded buy isn't more noteworthy than a day-cap liquidation. In practice a
                             // secondary safety net given the configured invest ceiling ($5000) times the number
                             // of enabled symbols already bounds total exposure well below most real balances —
@@ -3207,19 +3346,26 @@
             return { todayPL, todayPLPct, positionsValue, positionsPct, equity, buyingPower };
         }
 
-        // Turns raw Alpaca trade-activity rows into per-symbol round-trip summaries. Validated
-        // against two real, independent trading days before ever being trusted here — the exact same
-        // logic, checked by hand in Python against real account data first.
+        // Turns raw Alpaca trade-activity rows into per-symbol round-trip summaries.
         //
-        // Three steps, matching what those two validations confirmed:
+        // Steps:
         // 1. Combine partial fills sharing one order_id into a single logical buy/sell event — a
         //    partial fill is one decision Alpaca happened to split into multiple rows, not multiple
         //    decisions.
-        // 2. Group by symbol, sort chronologically, pair consecutive buy->sell as one round trip.
-        // 3. If a symbol's FIRST event is a sell, it's closing a position that opened before this
-        //    query's date range (confirmed twice: a manually-held overnight position both times) —
-        //    excluded from every summary, since its true cost basis isn't knowable from this data
-        //    alone. Counted, never silently dropped without a trace.
+        // 2. Group by symbol, sort chronologically.
+        // 3. Accumulate ALL consecutive buys since the last sell together (summing their notionals),
+        //    then pair that combined total against the next sell as one round trip — NOT a strict
+        //    1-to-1 buy→sell alternation. Found and fixed after a real, confirmed bug: a day mixing
+        //    manual trades (including a liquidate) with the bot's own automated ones produced several
+        //    consecutive buys for the same symbol before a single combined sell closed them all. The
+        //    old strict-pairing logic silently orphaned all but the last buy and attributed the ENTIRE
+        //    combined sell against just that one, producing wildly inflated, implausible "gains" (a
+        //    reported +$997.81 and +$1993.52 "best win" on ordinary ~$1000 positions) — traced to this
+        //    exact mechanism using the user's own real activity data before being trusted as the fix.
+        // 4. A sell with no accumulated buys before it (either the symbol's very first event, or two
+        //    sells in a row with no buy between them) is an orphan — its true cost basis isn't knowable
+        //    from this data alone, so it's excluded from every summary but counted, never silently
+        //    dropped without a trace.
         function computeActivitySummary(activities) {
             const byOrder = new Map();
             for (const a of activities) {
@@ -3228,7 +3374,6 @@
             }
             const events = [];
             for (const [orderId, rows] of byOrder) {
-                const totalQty = rows.reduce((s, r) => s + parseFloat(r.qty), 0);
                 const totalNotional = rows.reduce((s, r) => s + parseFloat(r.qty) * parseFloat(r.price), 0);
                 const latestTime = rows.reduce((max, r) => r.transaction_time > max ? r.transaction_time : max, rows[0].transaction_time);
                 events.push({ orderId, symbol: rows[0].symbol, side: rows[0].side, notional: totalNotional, time: latestTime });
@@ -3244,19 +3389,31 @@
             let orphanCount = 0;
             for (const [symbol, evsRaw] of bySymbol) {
                 const evs = evsRaw.slice().sort((a, b) => a.time < b.time ? -1 : a.time > b.time ? 1 : 0);
-                let i = 0;
-                if (evs.length && evs[0].side === "sell") { orphanCount++; i = 1; }
                 const trades = [];
                 const buyNotionals = []; // tracked separately from trades' own P&L delta, so total capital
                 // deployed can be summed independently of what came back from it
-                while (i < evs.length - 1) {
-                    const buyEv = evs[i], sellEv = evs[i + 1];
-                    if (buyEv.side !== "buy" || sellEv.side !== "sell") { i++; continue; }
-                    trades.push(sellEv.notional - buyEv.notional);
-                    buyNotionals.push(buyEv.notional);
-                    i += 2;
+                let accumBuyNotional = 0;
+                let accumBuyCount = 0;
+                for (const ev of evs) {
+                    if (ev.side === "buy") {
+                        accumBuyNotional += ev.notional;
+                        accumBuyCount++;
+                    } else if (ev.side === "sell") {
+                        if (accumBuyCount > 0) {
+                            trades.push(ev.notional - accumBuyNotional);
+                            buyNotionals.push(accumBuyNotional);
+                            accumBuyNotional = 0;
+                            accumBuyCount = 0;
+                        } else {
+                            orphanCount++; // closing a position that opened before this query's date range,
+                            // or two sells with no buy between them — cost basis unknowable
+                        }
+                    }
                 }
-                if (trades.length === 0) continue; // symbol had only an orphan close, no complete round trips today
+                // Any buys still accumulated with no closing sell yet today are deliberately NOT counted
+                // as a trade — matches the existing convention that only fully closed round trips appear
+                // in this summary at all.
+                if (trades.length === 0) continue; // symbol had only orphan closes, no complete round trips today
                 const wins = trades.filter(t => t > 0);
                 const losses = trades.filter(t => t < 0);
                 const total = trades.reduce((s, t) => s + t, 0);
@@ -4820,10 +4977,15 @@
         <button type="button" class="btn-cancel" id="accountViewRefresh" style="padding:4px 10px; font-size:12px;">Refresh</button>
         <button type="button" class="btn-cancel" id="accountViewCalc" style="padding:4px 10px; font-size:12px;"><i class="fa fa-calculator"></i> Calculator</button>
       </div>
-      <div id="accountViewBody"></div>`;
+      <div id="accountViewBody"></div>
+      <div id="accountJournalBody" style="margin-top:22px;"></div>`;
             document.getElementById("accountViewCalc").addEventListener("click", openCalcModal);
             document.getElementById("accountViewRefresh").addEventListener("click", renderAccountView);
             const body = document.getElementById("accountViewBody");
+            // Journal lives below the chart regardless of whether the chart's own data fetch succeeds —
+            // it's purely localStorage-based, no fetch involved, so a chart error/empty-data path
+            // shouldn't hide it. Populated here, before any of the chart-dependent early returns below.
+            renderJournal(document.getElementById("accountJournalBody"));
 
             let dailyData;
             if (CONFIG.dataMode === "api") {
@@ -4859,6 +5021,55 @@
                 dailyGainsChart.render();
             }
             renderStatCards([]);
+        }
+
+        // Every date that currently has a saved note, most-recent first, plus today's own row always
+        // present at the top even when empty — the table's size is driven purely by how many notes
+        // actually exist, not by any trading-history window (no 14-day/30-day cap, no paging). Only
+        // today's row is ever editable, and only while it's still actually today; every other row,
+        // including today's own once the calendar date changes, is permanent, read-only display.
+        // Lives below the Account view's own daily-gains chart (not a separate nav view) so a printout
+        // naturally captures both the day's numbers and the day's note together on one page.
+        function renderJournal(container) {
+            const todayKey = todayDateKey();
+            const otherKeys = Object.keys(journalEntries).filter(k => k !== todayKey).sort().reverse();
+
+            const todayRowHtml = `
+      <tr>
+        <td style="white-space:nowrap; vertical-align:top; padding-top:14px;">${formatJournalDate(todayKey)}</td>
+        <td>
+          <textarea id="journalTodayInput" placeholder="What happened today?">${(journalEntries[todayKey] || "").replace(/</g, "&lt;")}</textarea>
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-save" id="journalSaveBtn" style="padding:6px 14px; font-size:12px;">Save</button>
+          </div>
+        </td>
+      </tr>`;
+            const otherRowsHtml = otherKeys.map(k => `
+      <tr>
+        <td style="white-space:nowrap; vertical-align:top;">${formatJournalDate(k)}</td>
+        <td class="journal-readonly">${journalEntries[k].replace(/</g, "&lt;")}</td>
+      </tr>`).join("");
+
+            container.innerHTML = `
+      <p class="metric-sub" style="font-weight:700; color:var(--ink); margin:0 0 8px;">Journal</p>
+      <div class="journal-table-wrap">
+        <table class="data-table journal-table" style="table-layout:fixed; width:100%;">
+          <thead><tr><th style="width:90px;">Date</th><th>Note</th></tr></thead>
+          <tbody>${todayRowHtml}${otherRowsHtml}</tbody>
+        </table>
+      </div>`;
+
+            document.getElementById("journalSaveBtn").addEventListener("click", () => {
+                const text = document.getElementById("journalTodayInput").value.trim();
+                if (text) {
+                    journalEntries[todayKey] = text;
+                } else {
+                    delete journalEntries[todayKey]; // an emptied-out note shouldn't linger as a stored
+                    // blank entry — clearing the field and saving removes it
+                }
+                saveJournal();
+                renderJournal(container);
+            });
         }
 
         // Purely a lookup tool — no path connects a researched symbol to the real watchlist. Ticker
@@ -4993,10 +5204,17 @@
             document.getElementById("windowBar").classList.toggle("chips-muted", currentView === "positions" || currentView === "account");
 
             const sig = currentSignature();
-            // Positions bypasses this cache entirely — it's cheap to rebuild (no chart, no fetch) and
-            // depends on heldPositions, which updates on its own account-refresh cadence rather than
-            // anything currentSignature() tracks. Caching it risked showing stale data the exact way
-            // seriesCache once did before it included selectedDate in its key.
+            // Positions bypasses this cache entirely — cheap to rebuild (no chart, no fetch) and depends
+            // on heldPositions, updating on its own account-refresh cadence. Account is deliberately NOT
+            // in this bypass list, even though it now also holds the Journal table below the chart —
+            // the chart-refresh timer calls render() every CONFIG.chartRefreshSeconds regardless of
+            // which view is active, and an earlier version of this bypass meant that periodic call was
+            // rebuilding the entire Account panel every ~15 seconds, destroying the journal textarea's
+            // DOM (and whatever was typed into it) mid-edit — a real, observed bug, not theoretical.
+            // The journal's own Save button already re-renders itself directly after saving, so this
+            // cache was never actually needed to keep it fresh; the one remaining edge case (switching
+            // away from Account, the calendar day rolling over, then switching back with nothing else
+            // ever changing the signature) is a rare enough scenario not worth reintroducing that bug for.
             if (currentView !== "positions" && viewSignatures[currentView] === sig) {
                 const meta = viewMeta[currentView];
                 if (meta) {
@@ -5339,7 +5557,7 @@
         // =========================================================
         const autoTradeModal = document.getElementById("autoTradeModal");
         const autoTradeMasterToggle = document.getElementById("autoTradeMasterToggle");
-        const autoTradeNoBuyToggle = document.getElementById("autoTradeNoBuyToggle");
+        const autoTradeBuyTodayToggle = document.getElementById("autoTradeBuyTodayToggle");
         const autoTradeDayCapClearToggle = document.getElementById("autoTradeDayCapClearToggle");
         const autoTradeStartHmm = document.getElementById("autoTradeStartHmm");
         const autoTradeEndHmm = document.getElementById("autoTradeEndHmm");
@@ -5357,7 +5575,10 @@
 
         function openAutoTradeModal() {
             autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", (b.dataset.master === "on") === CONFIG.autoTrading.masterEnabled));
-            autoTradeNoBuyToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", (b.dataset.nobuy === "on") === CONFIG.autoTrading.manualNoBuyToday));
+            // "Buy today: ON" displays when buying is allowed — i.e. when manualNoBuyToday (the
+            // underlying flag, unchanged in name/meaning) is FALSE. Inverted from the toggle's own old
+            // "No buy today" framing, on purpose — matches the master switch's own "on = active" pattern.
+            autoTradeBuyTodayToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", (b.dataset.buytoday === "on") === !CONFIG.autoTrading.manualNoBuyToday));
             // Shared by both the toggle below and the cap-field highlighting further down — gated on
             // isLive too, not just the persisted flag alone (it can legitimately still read true over a
             // weekend, but nothing is actually being prevented if the market isn't even open), and on
@@ -5482,8 +5703,8 @@
         autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(btn => {
             btn.addEventListener("click", () => autoTradeMasterToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
         });
-        autoTradeNoBuyToggle.querySelectorAll(".loc-chip").forEach(btn => {
-            btn.addEventListener("click", () => autoTradeNoBuyToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
+        autoTradeBuyTodayToggle.querySelectorAll(".loc-chip").forEach(btn => {
+            btn.addEventListener("click", () => autoTradeBuyTodayToggle.querySelectorAll(".loc-chip").forEach(b => b.classList.toggle("active", b === btn)));
         });
         autoTradeDayCapClearToggle.querySelectorAll(".loc-chip").forEach(btn => {
             // "on" is disabled in the HTML itself, so it never receives a click — only "off" is ever
@@ -5512,15 +5733,17 @@
 
             const activeMaster = autoTradeMasterToggle.querySelector(".loc-chip.active");
             CONFIG.autoTrading.masterEnabled = activeMaster ? activeMaster.dataset.master === "on" : CONFIG.autoTrading.masterEnabled;
-            const activeNoBuy = autoTradeNoBuyToggle.querySelector(".loc-chip.active");
-            const noBuyNowOn = activeNoBuy ? activeNoBuy.dataset.nobuy === "on" : CONFIG.autoTrading.manualNoBuyToday;
-            CONFIG.autoTrading.manualNoBuyToday = noBuyNowOn;
+            // "Buy today: ON" means buying is allowed, so manualNoBuyToday (unchanged in name/meaning,
+            // still TRUE = blocked) gets the INVERSE of what the active button reads.
+            const activeBuyToday = autoTradeBuyTodayToggle.querySelector(".loc-chip.active");
+            const buyTodayNowOn = activeBuyToday ? activeBuyToday.dataset.buytoday === "on" : !CONFIG.autoTrading.manualNoBuyToday;
+            CONFIG.autoTrading.manualNoBuyToday = !buyTodayNowOn;
             // Session key must be set HERE, at the moment of turning on — not left for the evaluator's
             // own reset check to handle, since that check only ever resets a STALE key, it never sets
             // a fresh one. Without this, saving with the toggle on would leave the key null, and the
             // very next evaluation cycle would see null !== currentSessionKey and immediately reset
             // the flag straight back off, one cycle after the user turned it on.
-            CONFIG.autoTrading.manualNoBuyTodaySessionKey = noBuyNowOn ? getSessionWindow().sessionStart.getTime() : null;
+            CONFIG.autoTrading.manualNoBuyTodaySessionKey = CONFIG.autoTrading.manualNoBuyToday ? getSessionWindow().sessionStart.getTime() : null;
             // Day-cap lockout clear — deliberately one-directional. "off" here means the user explicitly
             // asked to clear an active lockout; clearing it does NOT undo the underlying cause. If
             // today's actual P&L still exceeds whatever caps are currently configured, the evaluator's
