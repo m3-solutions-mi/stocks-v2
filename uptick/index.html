@@ -1633,6 +1633,11 @@
                         research: there's no path from here to your real watchlist. Ticker selection and symbol groups
                         both grey out and have no effect while this view is active. Not saved between sessions — the
                         searched symbol resets on reload.</p>
+                    <p class="help-desc"><b>Dump to console</b> — logs this chart's exact current data (raw and
+                        %-normalized close/SMA, delta, a human-readable time label, and the deadband/SMA/buy-window
+                        settings in effect) as plain text, ready to copy and paste directly into a conversation. Fetches
+                        fresh at the moment it's clicked — nothing is stored between clicks, so timing the click is how
+                        a specific moment gets captured.</p>
                 </div>
                 <div class="help-section">
                     <p class="help-heading">Picking a past date</p>
@@ -1657,6 +1662,13 @@
                     <p class="help-desc">5-minute intraday data ("Today") isn't retained indefinitely by most data
                         providers — a date far enough in the past may come back empty even though 10D/30D/etc. for that
                         same date work fine. That's a data availability limit, not a bug.</p>
+                </div>
+                <div class="help-section">
+                    <p class="help-heading">4:00 AM reset</p>
+                    <p class="help-desc">At the start of every new trading day, the app automatically switches to
+                        Compare, Today, and Last 6H — regardless of which view, timeframe, or window it was left on the
+                        night before. Covers stepping away or leaving the app open on some other page overnight, not
+                        just the habit of deliberately parking it on Compare beforehand.</p>
                 </div>
                 <div class="help-section">
                     <p class="help-heading">Account</p>
@@ -2254,6 +2266,9 @@
                     <input type="text" id="researchSymbolInput" class="edit-select" placeholder="Symbol (e.g. AAPL)"
                         autocomplete="off" style="margin-bottom:0; max-width:150px;">
                     <button type="button" id="researchApplyBtn" class="chip-settings">Apply</button>
+                    <button type="button" id="researchDumpBtn" class="chip-settings" style="margin-left:8px;"
+                        title="Logs this chart's own current series data to the console — copy/paste it directly into chat">Dump
+                        to console</button>
                 </div>
                 <p class="metric-title" id="viewTitle">Combined</p>
                 <p class="metric-sub" id="viewSub">—</p>
@@ -2283,7 +2298,7 @@
                 <a href="#" id="resetSavedData"
                     style="color:var(--muted); text-decoration:underline; margin-left:6px;">Reset saved data</a>
             </p>
-            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V095</p>
+            <p style="color:var(--muted); font-size:11px; margin-top:6px;">V096</p>
         </div>
     </div>
 
@@ -2468,6 +2483,11 @@
         let lastPositionDollars = new Map(); // symbol -> previous refresh's dollar gain, captured right before heldPositions gets overwritten — feeds the Positions table's per-row Delta column
         let selectedDate = null; // "pretend this day is today" — a picked historical date, or null for live Today. Session-only, never persisted.
         let lastActivityTime = Date.now(); // updated on any click; drives the 60-minute inactivity reset while selectedDate is active
+        // Tracks which trading day's own 4am session boundary the "force Compare/Today/Last 6H"
+        // check below has already run for — initialized to the CURRENT session at script-load time
+        // (not null) specifically so it doesn't fire immediately on every page load, only when the
+        // boundary is genuinely crossed while the app is already open and running.
+        let lastViewForceSessionKey = getSessionWindow().sessionStart.getTime();
         let selectedDateSetAt = null; // timestamp of when selectedDate was last set to a real (non-null) date — distinct from lastActivityTime, which updates on ANY click. Drives the 4am reset below: if today's real 4am boundary has passed since this timestamp, a historical date left selected overnight (even with the app otherwise active, so the 60-minute inactivity check alone wouldn't catch it) gets cleared for the new trading day.
         // Governs whether renderActivitySummary() actually does anything the next time it's called.
         // Starts true so the very first visit to Positions loads real data. Without this, the
@@ -2514,6 +2534,15 @@
         const AUTOTRADE_LOG_GREEN = "background:#2C7E4C; color:#FFF; padding:1px 5px; border-radius:3px; font-weight:600;";
         const AUTOTRADE_LOG_RED = "background:#AA3030; color:#FFF; padding:1px 5px; border-radius:3px; font-weight:600;";
         const AUTOTRADE_LOG_GREY = "background:#6B7280; color:#FFF; padding:1px 5px; border-radius:3px; font-weight:600;";
+        // Same orange already used app-wide as the SMA line's own accent color (see ACCENT below) —
+        // reused here, not a new color, so this reads as consistent with the rest of the app rather
+        // than an arbitrary addition. Marks where a new evaluation cycle starts in the console, since
+        // that boundary was otherwise difficult to visually pick out from the surrounding detail lines.
+        // Dark text, not white — verified via contrast ratio, not guessed: white on this orange is
+        // 2.03:1, actually worse than the brighter chart-bar green already rejected for the same
+        // reason elsewhere in this file. The app's own dark background color (#12161C) against this
+        // orange measures 8.95:1, comfortably above the 3.0 minimum.
+        const AUTOTRADE_LOG_ORANGE = "background:#F5A623; color:#12161C; padding:1px 5px; border-radius:3px; font-weight:600;";
         // Regular trading hours (930-1559), matching the existing "regular session upper bound"
         // convention already used elsewhere (Buy Start/End HMM's own validation range) rather than
         // introducing a different boundary like 1600. isLive itself spans a much broader 4am-8pm
@@ -2879,6 +2908,34 @@
         // fresh fetch, its own gates, its own try/catch — rather than sharing state between two
         // functions that fire on different schedules. Real motivating case: a position going from
         // +0.01% to -4.8% entirely inside one 5-minute gap, invisible to the system the whole time.
+        // Stale-session resets for "Buy today" and the day-cap lockout — deliberately its own,
+        // separate function from evaluateAutomatedTrading() below, called unconditionally from the
+        // once-a-minute timer rather than living inside the evaluator's own regular-hours-gated body.
+        // Real, confirmed bug this fixes: both resets used to live inside evaluateAutomatedTrading(),
+        // which returns immediately whenever nowHmm < 930 — meaning neither reset could ever fire
+        // before 9:30am regardless of when the actual trading day began at 4:00am. A "Buy today: off"
+        // set the previous day would silently survive until the evaluator's own first tick of the new
+        // day (9:30:55am by default), undoing a deliberate setting well after the person expected it
+        // to have already reset at the real day boundary — confirmed as the likely cause of a real
+        // incident. Pure "is this stored flag stale?" checks — no dependency on live account data or
+        // trading hours at all, so there's no reason either one needs to wait for the evaluator itself.
+        function resetStaleSessionFlags() {
+            const currentSessionKey = getSessionWindow().sessionStart.getTime();
+            if (CONFIG.autoTrading.dayCapLockoutActive && CONFIG.autoTrading.dayCapLockoutSessionKey !== currentSessionKey) {
+                console.log("[AutoTrade] day cap lockout from a prior session — resetting for the new trading day");
+                CONFIG.autoTrading.dayCapLockoutActive = false;
+                CONFIG.autoTrading.dayCapLockoutSessionKey = null;
+                CONFIG.autoTrading.dayCapLockoutReason = null;
+                saveSettings();
+            }
+            if (CONFIG.autoTrading.manualNoBuyToday && CONFIG.autoTrading.manualNoBuyTodaySessionKey !== currentSessionKey) {
+                console.log("[AutoTrade] 'Buy today' override from a prior session — resetting for the new trading day");
+                CONFIG.autoTrading.manualNoBuyToday = false;
+                CONFIG.autoTrading.manualNoBuyTodaySessionKey = null;
+                saveSettings();
+            }
+        }
+
         async function evaluateAutomatedTrading() {
             try {
                 if (!CONFIG.autoTrading.masterEnabled) { console.log("[AutoTrade] skipped — master switch is off"); return; }
@@ -2891,7 +2948,7 @@
                 if (autoTradeEnabledIds.size === 0) { console.log("[AutoTrade] skipped — no symbols currently enabled"); return; }
 
                 const enabledSymbols = [...autoTradeEnabledIds].map(id => (TICKERS.find(t => t.id === id) || {}).symbol || id);
-                console.log(`[AutoTrade] evaluating cycle — enabled: ${enabledSymbols.join(", ")}`);
+                console.log(`%c[AutoTrade] evaluating cycle%c — enabled: ${enabledSymbols.join(", ")}`, AUTOTRADE_LOG_ORANGE, "");
 
                 let freshPositions;
                 let accountInfo;
@@ -2907,18 +2964,12 @@
                     return;
                 }
 
-                // Day cap check/reset/trigger — account-level, evaluated once per cycle. Reuses the same
-                // TODAY figure already shown on the account card (equity - last_equity). sessionStart
-                // identifies which trading day this lockout belongs to — a previously-set lockout from an
-                // earlier session is stale and gets cleared here rather than incorrectly carrying forward.
+                // Day cap trigger check — account-level, evaluated once per cycle. Reuses the same TODAY
+                // figure already shown on the account card (equity - last_equity). The stale-session
+                // RESET for this lockout now lives in resetStaleSessionFlags(), called unconditionally
+                // from the once-a-minute timer so it fires at the real 4am boundary — this block only
+                // ever sets a fresh lockout, using accountInfo, which is why it still needs to live here.
                 const currentSessionKey = getSessionWindow().sessionStart.getTime();
-                if (CONFIG.autoTrading.dayCapLockoutActive && CONFIG.autoTrading.dayCapLockoutSessionKey !== currentSessionKey) {
-                    console.log("[AutoTrade] day cap lockout from a prior session — resetting for the new trading day");
-                    CONFIG.autoTrading.dayCapLockoutActive = false;
-                    CONFIG.autoTrading.dayCapLockoutSessionKey = null;
-                    CONFIG.autoTrading.dayCapLockoutReason = null;
-                    saveSettings();
-                }
                 if (!CONFIG.autoTrading.dayCapLockoutActive) {
                     const todayPL = accountInfo.todayPL;
                     if (Number.isFinite(todayPL) && todayPL >= CONFIG.autoTrading.maxGainCapDollars) {
@@ -2934,19 +2985,6 @@
                         CONFIG.autoTrading.dayCapLockoutReason = "loss";
                         saveSettings();
                     }
-                }
-
-                // "Buy today" manual override — a completely independent flag and reset check from the
-                // day-cap block above. Only ever reset here on a stale session, never set/triggered here
-                // (it's user-toggled from the dialog, not something this evaluation loop decides on its
-                // own the way day-cap is). The underlying flag keeps its original name/meaning
-                // (manualNoBuyToday, TRUE = buying blocked) even though the UI now shows it inverted as
-                // "Buy today".
-                if (CONFIG.autoTrading.manualNoBuyToday && CONFIG.autoTrading.manualNoBuyTodaySessionKey !== currentSessionKey) {
-                    console.log("[AutoTrade] 'Buy today' override from a prior session — resetting for the new trading day");
-                    CONFIG.autoTrading.manualNoBuyToday = false;
-                    CONFIG.autoTrading.manualNoBuyTodaySessionKey = null;
-                    saveSettings();
                 }
 
                 let tradedThisCycle = false;
@@ -5145,13 +5183,16 @@
                 if (isOverridden) researchDeadbandBadge.textContent = `Override Enabled: ${CONFIG.autoTrading.deadbandOverridePct}%`;
             }
 
+            // Deadband values in effect for this symbol right now — shared by the theo-gain label below
+            // and the console dump, computed once rather than duplicated in two places.
+            const isOverriddenForGain = getDeadbandOverrideSymbols().includes(researchSymbol.toUpperCase());
+            const posDeadband = isOverriddenForGain ? CONFIG.autoTrading.deadbandOverridePct : CONFIG.autoTrading.deadbandPct;
+            const negDeadband = isOverriddenForGain ? CONFIG.autoTrading.deadbandOverridePct : getEffectiveNegDeadband();
+            const deltaSeries = pctSeries.map((c, i) => c - smaVals[i]);
+
             // Same theoretical-gain label as Compare, same reasoning.
             const researchTheoGainEl = document.getElementById("researchTheoGain");
             if (researchTheoGainEl) {
-                const isOverriddenForGain = getDeadbandOverrideSymbols().includes(researchSymbol.toUpperCase());
-                const posDeadband = isOverriddenForGain ? CONFIG.autoTrading.deadbandOverridePct : CONFIG.autoTrading.deadbandPct;
-                const negDeadband = isOverriddenForGain ? CONFIG.autoTrading.deadbandOverridePct : getEffectiveNegDeadband();
-                const deltaSeries = pctSeries.map((c, i) => c - smaVals[i]);
                 const theoGainPct = computeTheoreticalGainPct(data.times, pctSeries, deltaSeries, posDeadband, negDeadband);
                 researchTheoGainEl.textContent = "Potential: " + arrowPrefix(theoGainPct) + round2(Math.abs(theoGainPct)).toFixed(2) + "%";
                 researchTheoGainEl.style.color = signColor(theoGainPct);
@@ -5178,6 +5219,51 @@
         document.getElementById("researchApplyBtn").addEventListener("click", applyResearchSearch);
         document.getElementById("researchSymbolInput").addEventListener("keydown", (e) => {
             if (e.key === "Enter") { e.preventDefault(); applyResearchSearch(); }
+        });
+        // Independently fetches and computes the same data renderResearch() itself uses — no stored
+        // state from the last render at all, deliberately. The only thing that changes between a
+        // render and a button click is the still-forming last bar; a click always reflects exactly
+        // what's live at that instant, timed by the person clicking it, not a cached snapshot.
+        document.getElementById("researchDumpBtn").addEventListener("click", async () => {
+            if (!researchSymbol) { console.log("[Research dump] no symbol searched yet — nothing to dump"); return; }
+            let data;
+            try {
+                data = await DataSource.loadSeries(researchSymbol, currentTf);
+                data = applyDisplayWindow(data, displayWindow, currentTf);
+            } catch (err) {
+                console.log(`[Research dump] couldn't load data for "${researchSymbol}": ${err.message}`);
+                return;
+            }
+            if (!data || !data.close || data.close.length === 0) {
+                console.log(`[Research dump] no data available for "${researchSymbol}"`);
+                return;
+            }
+            const base = data.close[0];
+            const pctSeries = data.close.map(c => ((c - base) / base) * 100);
+            const smaVals = data.sma.map(v => ((v - base) / base) * 100);
+            const isOverridden = getDeadbandOverrideSymbols().includes(researchSymbol.toUpperCase());
+            const posDeadband = isOverridden ? CONFIG.autoTrading.deadbandOverridePct : CONFIG.autoTrading.deadbandPct;
+            const negDeadband = isOverridden ? CONFIG.autoTrading.deadbandOverridePct : getEffectiveNegDeadband();
+            const deltaSeries = pctSeries.map((c, i) => c - smaVals[i]);
+            const timesLabel = data.times.map(t => new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }));
+            console.log(`[Research dump] ${researchSymbol} | tf=${currentTf} | posDeadband=${posDeadband} | negDeadband=${negDeadband}`, {
+                times: data.times,
+                timesLabel,
+                rawClose: data.close,
+                rawSma: data.sma,
+                pctClose: pctSeries,
+                pctSma: smaVals,
+                delta: deltaSeries,
+                settings: {
+                    smaPeriod: CONFIG.smaPeriod,
+                    deadbandPct: CONFIG.autoTrading.deadbandPct,
+                    deadbandNegPct: getEffectiveNegDeadband(),
+                    startHmm: CONFIG.autoTrading.startHmm,
+                    endHmm: CONFIG.autoTrading.endHmm,
+                    maxLossPct: CONFIG.autoTrading.maxLossPct,
+                    maxLossPctMorning: CONFIG.autoTrading.maxLossPctMorning
+                }
+            });
         });
 
         function tfLabel() {
@@ -5492,7 +5578,11 @@
         document.getElementById("settingsChip").addEventListener("click", openSettingsModal);
         document.getElementById("settingsClose").addEventListener("click", () => { settingsModal.classList.remove("open"); unlockPageScroll(); });
         document.getElementById("settingsCancel").addEventListener("click", () => { settingsModal.classList.remove("open"); unlockPageScroll(); });
-        settingsModal.addEventListener("click", (e) => { if (e.target === settingsModal) { settingsModal.classList.remove("open"); unlockPageScroll(); } });
+        // Deliberately NO click-outside-to-close on this modal — unlike Help/Calculator, a stray
+        // click here can silently discard real trading configuration with no warning at all. Found
+        // as a real, confirmed incident: closing this way after toggling a field but before hitting
+        // Save looked identical to the change having taken effect, until the next evaluator cycle
+        // proved otherwise. Close, Cancel, and Save all remain fully available as explicit actions.
 
         dataModeToggle.querySelectorAll(".loc-chip").forEach(btn => {
             btn.addEventListener("click", () => {
@@ -5617,7 +5707,10 @@
         document.getElementById("autoTradeChip").addEventListener("click", openAutoTradeModal);
         document.getElementById("autoTradeClose").addEventListener("click", () => { autoTradeModal.classList.remove("open"); unlockPageScroll(); });
         document.getElementById("autoTradeCancel").addEventListener("click", () => { autoTradeModal.classList.remove("open"); unlockPageScroll(); });
-        autoTradeModal.addEventListener("click", (e) => { if (e.target === autoTradeModal) { autoTradeModal.classList.remove("open"); unlockPageScroll(); } });
+        // Deliberately NO click-outside-to-close on this modal — same reasoning as Settings above.
+        // This one's the actual, confirmed incident: a stray click here can discard automated-trading
+        // config with no warning, indistinguishable from having saved successfully until later.
+        // Close, Cancel, and Save all remain fully available as explicit actions.
 
         // Projection calculator — a standalone "what if" tool, no connection to any real account data
         // or trading logic at all. Formulas: simple (no reinvestment) = seed * (dailyPct * days / 100);
@@ -6001,6 +6094,32 @@
             render();
         }
         setInterval(() => {
+            // Stale-session resets for "Buy today" and the day-cap lockout (item 4) — unconditional,
+            // independent of selectedDate, so both actually reset at 4:00 AM instead of waiting for
+            // evaluateAutomatedTrading()'s own first tick at 9:30am.
+            resetStaleSessionFlags();
+
+            // Force Compare/Today/Last 6H at the 4am trading-day boundary (item 3) — covers stepping
+            // away or falling asleep on some other view/timeframe overnight, not just the deliberate
+            // "leave it on Compare/6H" habit. Independent of selectedDate and of the historical-date
+            // reset logic below — this fires purely off the real trading-day boundary being crossed
+            // while the app is already open, tracked via lastViewForceSessionKey (initialized to the
+            // CURRENT session at script-load, not null, so it never fires on a plain page load).
+            const currentViewForceSessionKey = getSessionWindow().sessionStart.getTime();
+            if (lastViewForceSessionKey !== currentViewForceSessionKey) {
+                console.log("[4am reset] forcing Compare / Today / Last 6H for the new trading day");
+                lastViewForceSessionKey = currentViewForceSessionKey;
+                currentView = "compare";
+                currentTf = "today";
+                displayWindow = "last6h";
+                document.querySelectorAll("#viewToggle .w3-button").forEach(b => b.classList.toggle("active", b.dataset.view === "compare"));
+                document.querySelectorAll("#timeframeBar .w3-button").forEach(b => b.classList.toggle("active", b.dataset.tf === "today"));
+                document.querySelectorAll("#windowBar .w3-button").forEach(b => b.classList.toggle("active", b.dataset.window === "last6h"));
+                document.getElementById("windowBar").style.display = "flex";
+                saveSettings();
+                render();
+            }
+
             if (!selectedDate) return;
             const inactiveTooLong = Date.now() - lastActivityTime > 60 * 60 * 1000;
             const real4am = new Date(); real4am.setHours(4, 0, 0, 0);
