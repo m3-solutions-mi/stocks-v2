@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BITEMAP_VERSION: v013 (bump only on a STABLE snapshot; keep this line and the
+<!-- BITEMAP_VERSION: v014 (bump only on a STABLE snapshot; keep this line and the
      #versionLabel text below in sync — the snapshot workflow greps this line) -->
 <html lang="en">
 
@@ -359,35 +359,6 @@
         .loc-chip:hover:not(.active) {
             border-color: var(--muted);
             color: var(--ink);
-        }
-
-        /* A persistent, remembered-across-visits on/off switch (as opposed to .action-chip, which is
-     a one-shot action) — used for "always save new catch photos to the device's photo library". */
-        .icon-toggle {
-            width: 38px;
-            height: 38px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            border-radius: 10px;
-            border: 1.5px solid var(--line);
-            color: var(--muted);
-            background: transparent;
-            cursor: pointer;
-            transition: all .15s ease;
-        }
-
-        .icon-toggle:hover {
-            border-color: var(--muted);
-            color: var(--ink);
-        }
-
-        .icon-toggle.active {
-            background: var(--ink);
-            color: #0F1319;
-            border-color: var(--ink);
         }
 
         .wp-photo-strip {
@@ -768,6 +739,10 @@
             border-color: var(--muted);
         }
 
+        .wp-row-locate button+button {
+            margin-left: 6px;
+        }
+
         .waypoints-table-empty {
             padding: 32px 20px;
             text-align: center;
@@ -1075,21 +1050,18 @@
             </div>
 
             <p class="settings-section-label">Photos</p>
-            <!-- No "capture" attribute on purpose: that would force the camera open directly every
-           time, with no way to instead pick an existing photo from your library — and camera-
-           captured photos never carry EXIF location/device data anyway (iOS strips it for
-           privacy on any photo taken through a website's camera prompt). Leaving this as a
-           plain file picker gives you both: "Take Photo" for a fast capture at cast time, or
-           "Photo Library" later to add a richer photo (with its metadata intact) to the same
-           catch. -->
-            <input type="file" accept="image/*" id="wpPhotoInput" style="display:none;">
+            <!-- Two separate inputs, two separate buttons: "capture" forces the camera open directly
+           (fast, but never carries EXIF location/device data — iOS strips that from any photo
+           taken through a website's camera prompt), while the plain picker goes straight to the
+           library so you can add back a richer photo — one that still has its metadata — later. -->
+            <input type="file" accept="image/*" capture="environment" id="wpPhotoInput" style="display:none;">
+            <input type="file" accept="image/*" id="wpPhotoGalleryInput" style="display:none;">
             <div class="wp-photo-strip" id="wpPhotoStrip"></div>
             <div style="display:flex; gap:10px; align-items:center; margin-bottom:6px;">
-                <button type="button" class="btn-cancel" id="wpPhotoAddBtn" style="margin-top:0;">Add photo</button>
-                <button type="button" class="icon-toggle" id="wpSaveToPhotosToggle"
-                    title="Always save new photos to your device's photo library too"
-                    aria-label="Always save new photos to your device's photo library too" aria-pressed="false"><i
-                        class="fa fa-picture-o"></i></button>
+                <button type="button" class="action-chip" id="wpPhotoAddBtn" title="Take a photo"
+                    aria-label="Take a photo"><i class="fa fa-camera"></i></button>
+                <button type="button" class="action-chip" id="wpPhotoGalleryBtn" title="Choose from your photo library"
+                    aria-label="Choose from your photo library"><i class="fa fa-picture-o"></i></button>
             </div>
             <p class="settings-hint" id="wpPhotoStatus" style="display:none;"></p>
 
@@ -1099,6 +1071,8 @@
             <p class="settings-hint" id="wpShareStatus" style="display:none;"></p>
             <div class="modal-actions">
                 <button class="btn-delete" id="waypointDelete" style="display:none;">Delete</button>
+                <button class="action-chip" id="waypointMapsBtn" title="Open in Google Maps"
+                    aria-label="Open in Google Maps" style="margin-top:10px;"><i class="fa fa-map-signs"></i></button>
                 <button class="btn-cancel" id="waypointShare" style="display:none;">Share</button>
                 <button class="btn-cancel" id="waypointCancel">Cancel</button>
                 <button class="btn-save" id="waypointSave">Save</button>
@@ -1118,19 +1092,15 @@
                 Click anywhere on the Waypoints map, or tap the pin icon in the header, to log a catch
                 there. Every field has a default so you can log one fast — species defaults to "Fish,"
                 the time defaults to now — and it grabs the current wind, temperature, pressure, and
-                cloud cover for that exact spot automatically. "Add photo" lets you take a fresh photo
-                or pick one from your library, and shrinks whichever you choose down before saving it,
-                so it doesn't eat much storage — tap it again to add more, up to 4 per catch, and tap
-                the × on any thumbnail to drop it. A camera-captured photo never carries location/device
-                info (iOS strips that from any photo taken through a website's camera prompt), so if you
-                want a catch's pin and time set automatically, pick an existing photo that still has its
-                metadata — from your library, or one someone sent you — as the first photo you add to a
-                new catch; later photos on the same catch never move the pin regardless. Next to "Add
-                photo" is a
-                small photo icon toggle — turn it on (it stays on for future catches too) and saving a
-                catch with a newly-added photo will also offer to save the full-resolution original to
-                your phone's photo library via the share sheet, since the copy BITEMAP stores is shrunk
-                down to save space. Only shows up where your browser supports it.
+                cloud cover for that exact spot automatically. The camera icon takes a fresh photo; the
+                picture icon next to it opens your photo library instead. Either way it shrinks the
+                photo down before saving it, so it doesn't eat much storage — tap again to add more, up
+                to 4 per catch, and tap the × on any thumbnail to drop it. A camera-captured photo never
+                carries location/device info (iOS strips that from any photo taken through a website's
+                camera prompt), so if you want a catch's pin and time set automatically, pick an
+                existing photo that still has its metadata — from your library, or one someone sent you
+                — as the first photo you add to a new catch; later photos on the same catch never move
+                the pin regardless.
             </p>
 
             <p class="settings-section-label" style="margin-top:18px;">Editing, deleting, or sharing a catch</p>
@@ -1138,8 +1108,11 @@
                 Click any pin you've added to reopen it, change anything, or delete it. From there,
                 Share sends the catch's details (and its photos, if it has any) through your device's normal
                 share sheet — Messages, Mail, wherever — or copies the details to your clipboard if
-                sharing isn't available. The 5 sample pins you see before you've logged anything are
-                just placeholders — they disappear the moment you add your first real one.
+                sharing isn't available. The map-signs icon opens that exact spot in Google Maps,
+                where you can switch to satellite view to size up the structure — since BITEMAP's own
+                map is plain OpenStreetMap and doesn't do satellite imagery itself. The 5 sample pins
+                you see before you've logged anything are just placeholders — they disappear the moment
+                you add your first real one.
             </p>
 
             <p class="settings-section-label" style="margin-top:18px;">Table view</p>
@@ -1147,7 +1120,9 @@
                 The second Waypoints tab (table icon) is a simple list of every catch you've logged,
                 most recent first — tap a row to open it for editing, same as tapping its pin on the
                 map. Handy once you've got enough pins that finding the right one on the map takes a
-                second look.
+                second look. Each row also has its own map-marker icon (centers that pin on the
+                Waypoints map) and map-signs icon (opens it in Google Maps) without opening the row
+                at all.
             </p>
 
             <p class="settings-section-label" style="margin-top:18px;">Weather</p>
@@ -1247,7 +1222,7 @@
 
     <div id="versionLabel"
         style="text-align:center; padding:18px 0 26px; font-size:11px; letter-spacing:1px; color:var(--muted); font-family:Consolas,'Courier New',monospace;">
-        v013</div>
+        v014</div>
 
     <script>
         (function () {
@@ -1267,8 +1242,7 @@
                 homeLat: null,
                 homeLon: null,
                 units: 'imperial',
-                mapZoom: 13,
-                alwaysSaveToPhotos: false
+                mapZoom: 13
             };
 
             function loadSettings() {
@@ -1415,6 +1389,7 @@
             var waypointCancel = document.getElementById('waypointCancel');
             var waypointSave = document.getElementById('waypointSave');
             var waypointDelete = document.getElementById('waypointDelete');
+            var waypointMapsBtn = document.getElementById('waypointMapsBtn');
             var waypointShare = document.getElementById('waypointShare');
             var wpShareStatus = document.getElementById('wpShareStatus');
             var wpSpeciesInput = document.getElementById('wpSpeciesInput');
@@ -1425,26 +1400,10 @@
             var wpColorInput = document.getElementById('wpColorInput');
             var wpColorPresets = document.getElementById('wpColorPresets');
             var wpPhotoInput = document.getElementById('wpPhotoInput');
+            var wpPhotoGalleryInput = document.getElementById('wpPhotoGalleryInput');
             var wpPhotoStrip = document.getElementById('wpPhotoStrip');
             var wpPhotoAddBtn = document.getElementById('wpPhotoAddBtn');
-            var wpSaveToPhotosToggle = document.getElementById('wpSaveToPhotosToggle');
-
-            // Only offer this at all where the browser can actually hand a file to the OS share sheet —
-            // mostly mobile Safari/Chrome. Desktop browsers generally lack navigator.share entirely, so
-            // there'd be nothing for the toggle to do there.
-            var supportsPhotoShare = typeof navigator.share === 'function';
-            if (!supportsPhotoShare) wpSaveToPhotosToggle.style.display = 'none';
-
-            function renderSaveToPhotosToggle() {
-                wpSaveToPhotosToggle.classList.toggle('active', !!settings.alwaysSaveToPhotos);
-                wpSaveToPhotosToggle.setAttribute('aria-pressed', settings.alwaysSaveToPhotos ? 'true' : 'false');
-            }
-
-            wpSaveToPhotosToggle.addEventListener('click', function () {
-                settings.alwaysSaveToPhotos = !settings.alwaysSaveToPhotos;
-                saveSettingsToStorage(settings);
-                renderSaveToPhotosToggle();
-            });
+            var wpPhotoGalleryBtn = document.getElementById('wpPhotoGalleryBtn');
             var wpPhotoStatus = document.getElementById('wpPhotoStatus');
             var exportWaypointsLink = document.getElementById('exportWaypointsLink');
             var importWaypointsLink = document.getElementById('importWaypointsLink');
@@ -1669,6 +1628,18 @@
                 leafletMap.setView([lat, lon], leafletMap.getZoom());
             }
 
+            // A Google Maps link for a spot — used both by Share's text summary and the dedicated "open in
+            // Google Maps" buttons (table view, edit dialog). Google Maps itself has a satellite toggle
+            // once you're there, which is the whole point: BITEMAP's own map is OpenStreetMap and doesn't
+            // do satellite imagery, so this is how you actually go look at a spot from above.
+            function mapsUrlFor(lat, lon) {
+                return 'https://maps.google.com/?q=' + lat.toFixed(5) + ',' + lon.toFixed(5);
+            }
+            function openInGoogleMaps(lat, lon) {
+                if (typeof lat !== 'number' || typeof lon !== 'number') return;
+                window.open(mapsUrlFor(lat, lon), '_blank', 'noopener');
+            }
+
             // Toolbar action: jump the map back to wherever it centers on a fresh load — same priority
             // order as startup (live position, then saved home, then the fixed default) and the same
             // saved zoom level, not just whatever zoom you happen to be at right now.
@@ -1803,12 +1774,23 @@
                         '<td class="wp-row-icons">' + icons + '</td>' +
                         '<td class="wp-row-locate">' +
                         '<button type="button" class="wp-locate-btn" data-locate-id="' + escapeHtml(wp.id) + '" title="Show on map" aria-label="Show on map"><i class="fa fa-map-o"></i></button>' +
+                        '<button type="button" class="wp-locate-btn wp-maps-btn" data-maps-lat="' + wp.lat + '" data-maps-lon="' + wp.lon + '" title="Open in Google Maps" aria-label="Open in Google Maps"><i class="fa fa-map-signs"></i></button>' +
                         '</td>' +
                         '</tr>';
                 }).join('');
             }
 
             waypointsTableBody.addEventListener('click', function (e) {
+                var mapsBtn = e.target.closest('.wp-maps-btn');
+                if (mapsBtn) {
+                    // Checked before the generic .wp-locate-btn match below, since this button carries both
+                    // classes (for shared sizing) but needs its own, different action.
+                    e.stopPropagation();
+                    var mLat = parseFloat(mapsBtn.dataset.mapsLat);
+                    var mLon = parseFloat(mapsBtn.dataset.mapsLon);
+                    openInGoogleMaps(mLat, mLon);
+                    return;
+                }
                 var locateBtn = e.target.closest('.wp-locate-btn');
                 if (locateBtn) {
                     // Handled separately below — don't also fall through to opening the edit dialog for
@@ -2400,16 +2382,16 @@
                 var photos = waypointDialogState.photos;
                 wpPhotoStrip.innerHTML = '';
 
-                photos.forEach(function (photo, index) {
+                photos.forEach(function (dataUrl, index) {
                     var thumb = document.createElement('div');
                     thumb.className = 'wp-photo-thumb';
 
                     var img = document.createElement('img');
-                    img.src = photo.dataUrl;
+                    img.src = dataUrl;
                     img.alt = 'Catch photo ' + (index + 1);
                     img.title = 'Click to view full size';
                     img.addEventListener('click', function () {
-                        photoLightboxImg.src = photo.dataUrl;
+                        photoLightboxImg.src = dataUrl;
                         photoLightbox.classList.add('open');
                     });
                     thumb.appendChild(img);
@@ -2430,21 +2412,26 @@
                     wpPhotoStrip.appendChild(thumb);
                 });
 
-                wpPhotoAddBtn.style.display = photos.length >= PHOTO_MAX_COUNT ? 'none' : '';
+                var atMax = photos.length >= PHOTO_MAX_COUNT;
+                wpPhotoAddBtn.style.display = atMax ? 'none' : '';
+                wpPhotoGalleryBtn.style.display = atMax ? 'none' : '';
             }
 
             wpPhotoAddBtn.addEventListener('click', function () { wpPhotoInput.click(); });
+            wpPhotoGalleryBtn.addEventListener('click', function () { wpPhotoGalleryInput.click(); });
 
             photoLightboxClose.addEventListener('click', function () { photoLightbox.classList.remove('open'); });
             photoLightbox.addEventListener('click', function (e) {
                 if (e.target === photoLightbox) photoLightbox.classList.remove('open');
             });
 
-            wpPhotoInput.addEventListener('change', function () {
-                var file = wpPhotoInput.files && wpPhotoInput.files[0];
-                wpPhotoInput.value = ''; // so picking the same file again still fires 'change'
+            // Shared by both the camera button and the gallery button — same processing either way, they
+            // just differ in which picker the browser opens.
+            function handlePickedPhotoFile(inputEl) {
+                var file = inputEl.files && inputEl.files[0];
+                inputEl.value = ''; // so picking the same file again still fires 'change'
                 if (!file || !waypointDialogState) return;
-                if (waypointDialogState.photos.length >= PHOTO_MAX_COUNT) return; // Add button is hidden by now, but guard anyway
+                if (waypointDialogState.photos.length >= PHOTO_MAX_COUNT) return; // Add buttons are hidden by now, but guard anyway
                 setWpPhotoStatus('Processing photo…');
                 var isAddMode = waypointDialogState.mode === 'add';
                 // Only the very first photo attached to a brand-new catch can set its location/time from
@@ -2460,7 +2447,7 @@
                     var exif = results[1] || {};
                     if (!waypointDialogState) return; // dialog closed while we were working
 
-                    waypointDialogState.photos.push({ dataUrl: dataUrl, file: file });
+                    waypointDialogState.photos.push(dataUrl);
                     renderWpPhotoStrip();
 
                     var appliedLocation = false, appliedTime = false;
@@ -2492,7 +2479,10 @@
                     console.warn('BITEMAP: photo processing failed', err);
                     setWpPhotoStatus("Couldn't use that photo — try a different file.");
                 });
-            });
+            }
+
+            wpPhotoInput.addEventListener('change', function () { handlePickedPhotoFile(wpPhotoInput); });
+            wpPhotoGalleryInput.addEventListener('change', function () { handlePickedPhotoFile(wpPhotoGalleryInput); });
 
             // Writes whatever's currently in waypointDialogState.photos (in order) to localStorage for
             // this waypoint id — an empty array clears any stored photos entirely. Always writes the
@@ -2501,7 +2491,7 @@
             // saving failed (almost always a storage-quota issue), in which case whatever was already
             // stored is left untouched.
             function persistPhotosForSave(id, previousPhotoCount) {
-                var dataUrls = waypointDialogState.photos.map(function (p) { return p.dataUrl; });
+                var dataUrls = waypointDialogState.photos;
                 if (dataUrls.length === 0) {
                     try { localStorage.removeItem(photosKeyFor(id)); } catch (e) { /* nothing to do */ }
                     try { localStorage.removeItem(photoKeyFor(id)); } catch (e) { /* nothing to do */ }
@@ -2533,11 +2523,8 @@
                     lat: lat,
                     lon: lon,
                     weatherBase: wp ? wp.weather : null,
-                    // Working list of this catch's photos, oldest first. Each entry is
-                    // { dataUrl: <compressed, what gets stored>, file: <original File, or null> } — file is
-                    // only set for photos picked during this dialog session (kept in memory just long enough
-                    // for the "also save to your photo library" share; never persisted), so it's how the save
-                    // handler tells "already had this" apart from "just added this" photos.
+                    // Working list of this catch's photos, oldest first — compressed data URLs, exactly what
+                    // gets stored on Save.
                     photos: [],
                     conditionsToken: 0 // bumped on every conditions fetch so a stale response can be ignored
                 };
@@ -2554,9 +2541,7 @@
                 setWpColor(wp && wp.color ? wp.color : DEFAULT_PIN_COLOR);
                 setWpPhotoStatus('');
                 if (wp && wp.hasPhoto) {
-                    waypointDialogState.photos = loadPhotosArray(wp.id).map(function (dataUrl) {
-                        return { dataUrl: dataUrl, file: null };
-                    });
+                    waypointDialogState.photos = loadPhotosArray(wp.id);
                 }
                 renderWpPhotoStrip();
 
@@ -2619,26 +2604,17 @@
                 if (e.target === waypointModal) closeWaypointDialog();
             });
 
-            // Fires the native share sheet with the full-resolution originals (only the photos actually
-            // picked THIS dialog session — not ones already stored from before) so the OS's "Save Image" /
-            // "Save to Photos" action can put them in your photo library — a browser can't write there
-            // directly, this is the closest thing to it. Silently does nothing if the platform can't share
-            // files (already gated by hiding the toggle on those platforms) or if you back out of the sheet.
-            function maybeShareFullResPhotos(files) {
-                if (!files || !files.length || !settings.alwaysSaveToPhotos) return;
-                if (!(navigator.share && navigator.canShare && navigator.canShare({ files: files }))) return;
-                navigator.share({ files: files }).catch(function (err) {
-                    if (err && err.name === 'AbortError') return; // backed out of the share sheet — fine
-                    console.warn('BITEMAP: save-to-photos share failed', err);
-                });
-            }
+            // Available whether you're editing an existing catch or still setting up a new one — the
+            // dialog always has a lat/lon by the time it's open (add mode gets it from wherever you
+            // tapped/are, edit mode from the saved catch).
+            waypointMapsBtn.addEventListener('click', function () {
+                if (!waypointDialogState) return;
+                openInGoogleMaps(waypointDialogState.lat, waypointDialogState.lon);
+            });
 
             waypointSave.addEventListener('click', function () {
                 if (!waypointDialogState) return;
 
-                var fullResFilesToShare = waypointDialogState.photos
-                    .filter(function (p) { return p.file; })
-                    .map(function (p) { return p.file; });
                 var species = wpSpeciesInput.value.trim() || 'Fish';
                 var lengthVal = parseFloat(wpLengthInput.value);
                 var lengthIn = isNaN(lengthVal) ? 0 : lengthVal;
@@ -2689,9 +2665,6 @@
                 if (photoResult && photoResult.quotaFailed) {
                     showDataActionsStatus("The catch saved, but a photo didn't fit — you're likely low on browser storage. Try removing a photo from an older catch first.");
                 }
-                // Must stay in this same click handler (not a .then()/setTimeout callback) — browsers only
-                // allow navigator.share() to be triggered directly from a user gesture like this click.
-                maybeShareFullResPhotos(fullResFilesToShare);
             });
 
             waypointDelete.addEventListener('click', function () {
@@ -2721,9 +2694,7 @@
                 });
                 var notes = wpNotesInput.value.trim();
                 var lat = waypointDialogState.lat, lon = waypointDialogState.lon;
-                var mapLink = (typeof lat === 'number' && typeof lon === 'number')
-                    ? 'https://maps.google.com/?q=' + lat.toFixed(5) + ',' + lon.toFixed(5)
-                    : '';
+                var mapLink = (typeof lat === 'number' && typeof lon === 'number') ? mapsUrlFor(lat, lon) : '';
 
                 var lines = [];
                 lines.push(species + (lengthIn ? ' — ' + lengthIn + '"' : ''));
@@ -2771,8 +2742,8 @@
                     return;
                 }
 
-                Promise.all(photos.map(function (p, i) {
-                    return dataUrlToFile(p.dataUrl, 'bitemap-catch-' + (i + 1) + '.jpg');
+                Promise.all(photos.map(function (dataUrl, i) {
+                    return dataUrlToFile(dataUrl, 'bitemap-catch-' + (i + 1) + '.jpg');
                 })).then(function (files) {
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: files })) {
                         navigator.share({ title: summary.title, text: summary.text, files: files }).catch(function (err) {
@@ -2981,7 +2952,6 @@
                 settings = Object.assign({}, defaultSettings);
                 saveSettingsToStorage(settings);
                 renderLocationStrip();
-                renderSaveToPhotosToggle();
                 if (leafletMap) {
                     var loc = getActiveLocation();
                     leafletMap.setView([loc.lat, loc.lon], settings.mapZoom);
@@ -2994,7 +2964,6 @@
             // ---------- Init ----------
             renderGeoStatus();
             renderLocationStrip();
-            renderSaveToPhotosToggle();
             sizeMapArea();
             setupMap();
             refreshWeatherChips(true);
