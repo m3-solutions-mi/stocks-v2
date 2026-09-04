@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BITEMAP_VERSION: v006 (bump only on a STABLE snapshot; keep this line and the
+<!-- BITEMAP_VERSION: v007 (bump only on a STABLE snapshot; keep this line and the
      #versionLabel text below in sync — the snapshot workflow greps this line) -->
 <html lang="en">
 
@@ -838,8 +838,10 @@
             <p class="settings-section-label">Conditions at this spot</p>
             <div class="wp-conditions" id="wpConditions">—</div>
 
+            <p class="settings-hint" id="wpShareStatus" style="display:none;"></p>
             <div class="modal-actions">
                 <button class="btn-delete" id="waypointDelete" style="display:none;">Delete</button>
+                <button class="btn-cancel" id="waypointShare" style="display:none;">Share</button>
                 <button class="btn-cancel" id="waypointCancel">Cancel</button>
                 <button class="btn-save" id="waypointSave">Save</button>
             </div>
@@ -860,14 +862,19 @@
                 the time defaults to now — and it grabs the current wind, temperature, pressure, and
                 cloud cover for that exact spot automatically. "Add photo" opens your camera on a
                 phone (or a file picker on desktop) and shrinks the photo down before saving it, so it
-                doesn't eat much storage.
+                doesn't eat much storage. If the photo has location and time info attached (common for
+                photos shared from someone else's phone with location on), picking it when logging a
+                new catch will automatically set the pin's location and catch time from the photo, and
+                pull the weather for that exact date instead of right now.
             </p>
 
-            <p class="settings-section-label" style="margin-top:18px;">Editing or deleting a catch</p>
+            <p class="settings-section-label" style="margin-top:18px;">Editing, deleting, or sharing a catch</p>
             <p class="settings-hint">
-                Click any pin you've added to reopen it, change anything, or delete it. The 5 sample
-                pins you see before you've logged anything are just placeholders — they disappear the
-                moment you add your first real one.
+                Click any pin you've added to reopen it, change anything, or delete it. From there,
+                Share sends the catch's details (and photo, if it has one) through your device's normal
+                share sheet — Messages, Mail, wherever — or copies the details to your clipboard if
+                sharing isn't available. The 5 sample pins you see before you've logged anything are
+                just placeholders — they disappear the moment you add your first real one.
             </p>
 
             <p class="settings-section-label" style="margin-top:18px;">Weather</p>
@@ -939,7 +946,7 @@
 
     <div id="versionLabel"
         style="text-align:center; padding:18px 0 26px; font-size:11px; letter-spacing:1px; color:var(--muted); font-family:Consolas,'Courier New',monospace;">
-        v006</div>
+        v007</div>
 
     <script>
         (function () {
@@ -1105,6 +1112,8 @@
             var waypointCancel = document.getElementById('waypointCancel');
             var waypointSave = document.getElementById('waypointSave');
             var waypointDelete = document.getElementById('waypointDelete');
+            var waypointShare = document.getElementById('waypointShare');
+            var wpShareStatus = document.getElementById('wpShareStatus');
             var wpSpeciesInput = document.getElementById('wpSpeciesInput');
             var wpLengthInput = document.getElementById('wpLengthInput');
             var wpCaughtAtInput = document.getElementById('wpCaughtAtInput');
@@ -1602,6 +1611,18 @@
                     '<span>Clouds <strong>' + base.cloudsPct + '%</strong></span>';
             }
 
+            // Plain-text version of formatConditionsHtml, for the Share summary (no markup there).
+            function formatConditionsText(base) {
+                var units = settings.units || 'imperial';
+                var windUnit = units === 'metric' ? 'km/h' : 'mph';
+                var tempUnit = units === 'metric' ? '°C' : '°F';
+                var baroUnit = units === 'metric' ? ' hPa' : '"';
+                return 'Wind ' + ktTo(units, base.windSpeedKt) + ' ' + windUnit + ' ' + base.windDir +
+                    ', Temp ' + fTo(units, base.tempF) + tempUnit +
+                    ', Baro ' + inHgTo(units, base.baroInHg) + baroUnit +
+                    ', Clouds ' + base.cloudsPct + '%';
+            }
+
             function toDatetimeLocalValue(date) {
                 var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
                 return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) +
@@ -1867,6 +1888,19 @@
                 wpPhotoStatus.style.display = msg ? '' : 'none';
             }
 
+            function setWpShareStatus(msg) {
+                wpShareStatus.textContent = msg || '';
+                wpShareStatus.style.display = msg ? '' : 'none';
+            }
+
+            // data: URL -> File, for handing a photo to navigator.share (fetch() handles data: URLs
+            // locally, no network involved).
+            function dataUrlToFile(dataUrl, filename) {
+                return fetch(dataUrl).then(function (res) { return res.blob(); }).then(function (blob) {
+                    return new File([blob], filename, { type: blob.type || 'image/jpeg' });
+                });
+            }
+
             function showWpPhotoPreview(dataUrl) {
                 wpPhotoPreview.src = dataUrl;
                 wpPhotoPreview.style.display = '';
@@ -1994,6 +2028,8 @@
 
                 waypointModalTitle.textContent = mode === 'edit' ? 'Edit waypoint' : 'New waypoint';
                 waypointDelete.style.display = mode === 'edit' ? '' : 'none';
+                waypointShare.style.display = mode === 'edit' ? '' : 'none';
+                setWpShareStatus('');
 
                 wpSpeciesInput.value = wp ? (wp.species || '') : '';
                 wpLengthInput.value = wp && wp.lengthIn != null ? wp.lengthIn : '';
@@ -2128,6 +2164,88 @@
                 try { localStorage.removeItem(photoKeyFor(id)); } catch (e) { /* nothing to do */ }
                 closeWaypointDialog();
                 plotWaypoints();
+            });
+
+            // Builds the text summary shared alongside (or instead of) the photo: species/length,
+            // catch time, conditions, notes, and a map link to the spot. Reflects whatever is currently
+            // in the dialog's fields, so what you see is what gets shared (no need to Save first).
+            function buildShareSummary() {
+                if (!waypointDialogState) return null;
+                var species = wpSpeciesInput.value.trim() || 'Fish';
+                var lengthVal = parseFloat(wpLengthInput.value);
+                var lengthIn = isNaN(lengthVal) ? 0 : lengthVal;
+                var when = wpCaughtAtInput.value ? new Date(wpCaughtAtInput.value) : new Date();
+                var whenStr = isNaN(when.getTime()) ? '' : when.toLocaleString(undefined, {
+                    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+                });
+                var notes = wpNotesInput.value.trim();
+                var lat = waypointDialogState.lat, lon = waypointDialogState.lon;
+                var mapLink = (typeof lat === 'number' && typeof lon === 'number')
+                    ? 'https://maps.google.com/?q=' + lat.toFixed(5) + ',' + lon.toFixed(5)
+                    : '';
+
+                var lines = [];
+                lines.push(species + (lengthIn ? ' — ' + lengthIn + '"' : ''));
+                if (whenStr) lines.push(whenStr);
+                if (waypointDialogState.weatherBase) lines.push(formatConditionsText(waypointDialogState.weatherBase));
+                if (notes) lines.push(notes);
+                if (mapLink) lines.push(mapLink);
+
+                return { title: 'BITEMAP catch: ' + species, text: lines.join('\n') };
+            }
+
+            function copyShareTextToClipboard(text) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function () {
+                        setWpShareStatus("Sharing isn't available here — copied the catch details to your clipboard instead.");
+                    }).catch(function () {
+                        setWpShareStatus("Couldn't share or copy — your browser may be blocking it.");
+                    });
+                } else {
+                    setWpShareStatus("Sharing isn't available in this browser.");
+                }
+            }
+
+            waypointShare.addEventListener('click', function () {
+                if (!waypointDialogState || waypointDialogState.mode !== 'edit') return;
+                var summary = buildShareSummary();
+                if (!summary) return;
+                setWpShareStatus('');
+
+                function shareTextOnly() {
+                    if (navigator.share) {
+                        navigator.share({ title: summary.title, text: summary.text }).catch(function (err) {
+                            if (err && err.name === 'AbortError') return; // user backed out of the share sheet
+                            console.warn('BITEMAP: share failed', err);
+                            copyShareTextToClipboard(summary.text);
+                        });
+                    } else {
+                        copyShareTextToClipboard(summary.text);
+                    }
+                }
+
+                var photoShown = wpPhotoPreview.style.display !== 'none' && wpPhotoPreview.src;
+                if (!photoShown) {
+                    shareTextOnly();
+                    return;
+                }
+
+                dataUrlToFile(wpPhotoPreview.src, 'bitemap-catch.jpg').then(function (file) {
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        navigator.share({ title: summary.title, text: summary.text, files: [file] }).catch(function (err) {
+                            if (err && err.name === 'AbortError') return;
+                            console.warn('BITEMAP: share with photo failed', err);
+                            shareTextOnly();
+                        });
+                    } else {
+                        // Can't share the photo file on this browser — fall back to text-only share/copy so
+                        // the catch details still get through.
+                        shareTextOnly();
+                    }
+                }).catch(function (err) {
+                    console.warn('BITEMAP: could not prepare photo for sharing', err);
+                    shareTextOnly();
+                });
             });
 
             newWaypointBtn.addEventListener('click', function () {
