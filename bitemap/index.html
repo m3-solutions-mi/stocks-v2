@@ -687,28 +687,33 @@
 
     <header class="banner">
         <div class="banner-inner">
-            <!-- Logo: map pin with a wave cut through it as negative space -->
-            <svg width="52" height="57" viewBox="0 0 200 220">
-                <defs>
-                    <linearGradient id="pinGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stop-color="var(--wind)" />
-                        <stop offset="1" stop-color="var(--pressure)" />
-                    </linearGradient>
-                    <mask id="pinWaveMask">
-                        <rect width="200" height="220" fill="white" />
-                        <path d="M14,112 C46,90 68,134 100,112 C132,90 154,134 186,112" stroke="black" stroke-width="20"
-                            fill="none" stroke-linecap="round" />
-                    </mask>
-                </defs>
-                <path
-                    d="M100,14 C55,14 22,48 22,90 C22,145 100,206 100,206 C100,206 178,145 178,90 C178,48 145,14 100,14 Z"
-                    fill="url(#pinGrad)" mask="url(#pinWaveMask)" />
-            </svg>
+            <!-- Logo: map pin with a wave cut through it as negative space. Also doubles as a manual
+           reload button — handy for a home-screen PWA install, which has no browser chrome
+           (no pull-to-refresh, no reload button) to force a fresh load with. -->
+            <button type="button" id="bannerReloadBtn" title="Reload BITEMAP" aria-label="Reload BITEMAP"
+                style="display:flex; align-items:center; gap:12px; background:none; border:none; padding:0; margin:0; cursor:pointer; font:inherit; color:inherit; text-align:left;">
+                <svg width="52" height="57" viewBox="0 0 200 220">
+                    <defs>
+                        <linearGradient id="pinGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="var(--wind)" />
+                            <stop offset="1" stop-color="var(--pressure)" />
+                        </linearGradient>
+                        <mask id="pinWaveMask">
+                            <rect width="200" height="220" fill="white" />
+                            <path d="M14,112 C46,90 68,134 100,112 C132,90 154,134 186,112" stroke="black"
+                                stroke-width="20" fill="none" stroke-linecap="round" />
+                        </mask>
+                    </defs>
+                    <path
+                        d="M100,14 C55,14 22,48 22,90 C22,145 100,206 100,206 C100,206 178,145 178,90 C178,48 145,14 100,14 Z"
+                        fill="url(#pinGrad)" mask="url(#pinWaveMask)" />
+                </svg>
 
-            <div class="word-block">
-                <p class="wordmark">BITEMAP</p>
-                <p class="subtitle">FISHING WAYPOINT TRACKER</p>
-            </div>
+                <div class="word-block">
+                    <p class="wordmark">BITEMAP</p>
+                    <p class="subtitle">FISHING WAYPOINT TRACKER</p>
+                </div>
+            </button>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:auto;">
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -1106,6 +1111,7 @@
             var mapZoomInput = document.getElementById('mapZoomInput');
             var mapZoomValue = document.getElementById('mapZoomValue');
             var newWaypointBtn = document.getElementById('newWaypointBtn');
+            var bannerReloadBtn = document.getElementById('bannerReloadBtn');
             var waypointModal = document.getElementById('waypointModal');
             var waypointModalTitle = document.getElementById('waypointModalTitle');
             var waypointModalClose = document.getElementById('waypointModalClose');
@@ -2246,6 +2252,13 @@
                     console.warn('BITEMAP: could not prepare photo for sharing', err);
                     shareTextOnly();
                 });
+            });
+
+            // Home-screen PWA installs have no browser chrome — no pull-to-refresh, no reload button —
+            // so tapping the banner is the only way to force a fresh load if it ever gets stuck on stale
+            // cached content.
+            bannerReloadBtn.addEventListener('click', function () {
+                window.location.reload(true);
             });
 
             newWaypointBtn.addEventListener('click', function () {
