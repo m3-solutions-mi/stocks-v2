@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BITEMAP_VERSION: v012 (bump only on a STABLE snapshot; keep this line and the
+<!-- BITEMAP_VERSION: v013 (bump only on a STABLE snapshot; keep this line and the
      #versionLabel text below in sync — the snapshot workflow greps this line) -->
 <html lang="en">
 
@@ -390,6 +390,55 @@
             border-color: var(--ink);
         }
 
+        .wp-photo-strip {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .wp-photo-strip:not(:empty) {
+            margin-bottom: 8px;
+        }
+
+        .wp-photo-thumb {
+            position: relative;
+            width: 64px;
+            height: 64px;
+        }
+
+        .wp-photo-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            cursor: pointer;
+            display: block;
+        }
+
+        .wp-photo-thumb-remove {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--ink);
+            color: #0F1319;
+            border: 1.5px solid var(--panel);
+            font-size: 10px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .wp-photo-thumb-remove:hover {
+            opacity: .85;
+        }
+
         .geo-status {
             display: flex;
             align-items: center;
@@ -692,6 +741,12 @@
             font-size: 12px;
         }
 
+        .wp-photo-count-badge {
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 1px;
+        }
+
         .waypoints-table td.wp-row-locate {
             text-align: right;
             padding-left: 0;
@@ -905,15 +960,15 @@
 
             <div class="banner-actions">
                 <div class="weather-chips">
-                    <button class="chip" id="windChip" style="--c:var(--wind)" title="Refresh"><span
-                            class="chip-label">WIND</span><span class="chip-value" id="windChipValue">—</span></button>
                     <button class="chip" id="tempChip" style="--c:var(--temp)" title="Refresh"><span
                             class="chip-label">TEMP</span><span class="chip-value" id="tempChipValue">—</span></button>
-                    <button class="chip" id="baroChip" style="--c:var(--pressure)" title="Refresh"><span
-                            class="chip-label">BARO</span><span class="chip-value" id="baroChipValue">—</span></button>
                     <button class="chip" id="cloudsChip" style="--c:var(--clouds)" title="Refresh"><span
                             class="chip-label">CLOUDS</span><span class="chip-value"
                             id="cloudsChipValue">—</span></button>
+                    <button class="chip" id="windChip" style="--c:var(--wind)" title="Refresh"><span
+                            class="chip-label">WIND</span><span class="chip-value" id="windChipValue">—</span></button>
+                    <button class="chip" id="baroChip" style="--c:var(--pressure)" title="Refresh"><span
+                            class="chip-label">BARO</span><span class="chip-value" id="baroChipValue">—</span></button>
                 </div>
                 <div class="banner-icon-actions">
                     <button class="chip-settings" id="newWaypointBtn" title="New waypoint" aria-label="New waypoint">
@@ -1019,14 +1074,18 @@
                 <div class="wp-color-presets" id="wpColorPresets" style="display:flex; gap:8px;"></div>
             </div>
 
-            <p class="settings-section-label">Photo</p>
-            <input type="file" accept="image/*" capture="environment" id="wpPhotoInput" style="display:none;">
+            <p class="settings-section-label">Photos</p>
+            <!-- No "capture" attribute on purpose: that would force the camera open directly every
+           time, with no way to instead pick an existing photo from your library — and camera-
+           captured photos never carry EXIF location/device data anyway (iOS strips it for
+           privacy on any photo taken through a website's camera prompt). Leaving this as a
+           plain file picker gives you both: "Take Photo" for a fast capture at cast time, or
+           "Photo Library" later to add a richer photo (with its metadata intact) to the same
+           catch. -->
+            <input type="file" accept="image/*" id="wpPhotoInput" style="display:none;">
+            <div class="wp-photo-strip" id="wpPhotoStrip"></div>
             <div style="display:flex; gap:10px; align-items:center; margin-bottom:6px;">
-                <img id="wpPhotoPreview" alt="Catch photo preview" title="Click to view full size"
-                    style="display:none; width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--line); cursor:pointer;">
                 <button type="button" class="btn-cancel" id="wpPhotoAddBtn" style="margin-top:0;">Add photo</button>
-                <button type="button" class="btn-cancel" id="wpPhotoRemoveBtn"
-                    style="margin-top:0; display:none;">Remove</button>
                 <button type="button" class="icon-toggle" id="wpSaveToPhotosToggle"
                     title="Always save new photos to your device's photo library too"
                     aria-label="Always save new photos to your device's photo library too" aria-pressed="false"><i
@@ -1059,12 +1118,15 @@
                 Click anywhere on the Waypoints map, or tap the pin icon in the header, to log a catch
                 there. Every field has a default so you can log one fast — species defaults to "Fish,"
                 the time defaults to now — and it grabs the current wind, temperature, pressure, and
-                cloud cover for that exact spot automatically. "Add photo" opens your camera on a
-                phone (or a file picker on desktop) and shrinks the photo down before saving it, so it
-                doesn't eat much storage. If the photo has location and time info attached (common for
-                photos shared from someone else's phone with location on), picking it when logging a
-                new catch will automatically set the pin's location and catch time from the photo, and
-                pull the weather for that exact date instead of right now. Next to "Add photo" is a
+                cloud cover for that exact spot automatically. "Add photo" lets you take a fresh photo
+                or pick one from your library, and shrinks whichever you choose down before saving it,
+                so it doesn't eat much storage — tap it again to add more, up to 4 per catch, and tap
+                the × on any thumbnail to drop it. A camera-captured photo never carries location/device
+                info (iOS strips that from any photo taken through a website's camera prompt), so if you
+                want a catch's pin and time set automatically, pick an existing photo that still has its
+                metadata — from your library, or one someone sent you — as the first photo you add to a
+                new catch; later photos on the same catch never move the pin regardless. Next to "Add
+                photo" is a
                 small photo icon toggle — turn it on (it stays on for future catches too) and saving a
                 catch with a newly-added photo will also offer to save the full-resolution original to
                 your phone's photo library via the share sheet, since the copy BITEMAP stores is shrunk
@@ -1074,7 +1136,7 @@
             <p class="settings-section-label" style="margin-top:18px;">Editing, deleting, or sharing a catch</p>
             <p class="settings-hint">
                 Click any pin you've added to reopen it, change anything, or delete it. From there,
-                Share sends the catch's details (and photo, if it has one) through your device's normal
+                Share sends the catch's details (and its photos, if it has any) through your device's normal
                 share sheet — Messages, Mail, wherever — or copies the details to your clipboard if
                 sharing isn't available. The 5 sample pins you see before you've logged anything are
                 just placeholders — they disappear the moment you add your first real one.
@@ -1185,7 +1247,7 @@
 
     <div id="versionLabel"
         style="text-align:center; padding:18px 0 26px; font-size:11px; letter-spacing:1px; color:var(--muted); font-family:Consolas,'Courier New',monospace;">
-        v012</div>
+        v013</div>
 
     <script>
         (function () {
@@ -1363,9 +1425,8 @@
             var wpColorInput = document.getElementById('wpColorInput');
             var wpColorPresets = document.getElementById('wpColorPresets');
             var wpPhotoInput = document.getElementById('wpPhotoInput');
-            var wpPhotoPreview = document.getElementById('wpPhotoPreview');
+            var wpPhotoStrip = document.getElementById('wpPhotoStrip');
             var wpPhotoAddBtn = document.getElementById('wpPhotoAddBtn');
-            var wpPhotoRemoveBtn = document.getElementById('wpPhotoRemoveBtn');
             var wpSaveToPhotosToggle = document.getElementById('wpSaveToPhotosToggle');
 
             // Only offer this at all where the browser can actually hand a file to the OS share sheet —
@@ -1729,8 +1790,10 @@
                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
                     });
                     var lengthStr = wp.lengthIn ? wp.lengthIn + '"' : '—';
+                    var photoCount = wp.photoCount != null ? wp.photoCount : (wp.hasPhoto ? 1 : 0);
                     var icons = '' +
-                        (wp.hasPhoto ? '<i class="fa fa-camera" title="Has a photo"></i> ' : '') +
+                        (photoCount > 0 ? '<i class="fa fa-camera" title="Has ' + photoCount + ' photo' + (photoCount > 1 ? 's' : '') + '"></i>' +
+                            (photoCount > 1 ? '<span class="wp-photo-count-badge">' + photoCount + '</span>' : '') + ' ' : '') +
                         (wp.notes ? '<i class="fa fa-sticky-note-o" title="Has notes"></i>' : '');
                     return '' +
                         '<tr data-id="' + escapeHtml(wp.id) + '">' +
@@ -2063,11 +2126,19 @@
             // and only loaded when that waypoint's dialog is actually open. This keeps the waypoints
             // list itself small and fast, and (per the plan) keeps photos out of Export/Import, which
             // is plain-text copy/paste and isn't a reasonable way to move images between devices.
+            // bitemap_photo_<id> was the original single-photo-per-catch format (one data URL per key).
+            // bitemap_photos_<id> is the current multi-photo format (a JSON array of data URLs, oldest
+            // first). Reads fall back to the old format so catches saved before this existed don't lose
+            // their photo — a save through the app from here on always writes the new format and drops
+            // the old key, so catches migrate the first time you touch them again.
             var PHOTO_KEY_PREFIX = 'bitemap_photo_';
+            var PHOTOS_KEY_PREFIX = 'bitemap_photos_';
             var PHOTO_MAX_DIMENSION = 1000;
             var PHOTO_JPEG_QUALITY = 0.72;
+            var PHOTO_MAX_COUNT = 4;
 
             function photoKeyFor(id) { return PHOTO_KEY_PREFIX + id; }
+            function photosKeyFor(id) { return PHOTOS_KEY_PREFIX + id; }
 
             function loadPhoto(id) {
                 try {
@@ -2078,19 +2149,37 @@
                 }
             }
 
-            // Removes any bitemap_photo_<id> entry whose id no longer belongs to a current waypoint —
-            // called after anything that can remove waypoints out from under their photos (delete,
-            // import-replace) so orphaned images don't quietly eat into the shared storage quota.
+            // Returns every photo for a waypoint, oldest first, from whichever storage format it's
+            // currently in.
+            function loadPhotosArray(id) {
+                try {
+                    var raw = localStorage.getItem(photosKeyFor(id));
+                    if (raw) {
+                        var parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) return parsed.filter(function (v) { return typeof v === 'string'; });
+                    }
+                } catch (e) {
+                    console.warn('BITEMAP: could not read photos from localStorage', e);
+                }
+                var legacy = loadPhoto(id);
+                return legacy ? [legacy] : [];
+            }
+
+            // Removes any bitemap_photo_<id>/bitemap_photos_<id> entry whose id no longer belongs to a
+            // current waypoint — called after anything that can remove waypoints out from under their
+            // photos (delete, import-replace) so orphaned images don't quietly eat into the shared
+            // storage quota.
             function pruneOrphanedPhotos() {
                 var currentIds = {};
                 waypoints.forEach(function (w) { currentIds[w.id] = true; });
                 var toRemove = [];
                 for (var i = 0; i < localStorage.length; i++) {
                     var key = localStorage.key(i);
-                    if (key && key.indexOf(PHOTO_KEY_PREFIX) === 0) {
-                        var id = key.slice(PHOTO_KEY_PREFIX.length);
-                        if (!currentIds[id]) toRemove.push(key);
-                    }
+                    if (!key) continue;
+                    var id = null;
+                    if (key.indexOf(PHOTOS_KEY_PREFIX) === 0) id = key.slice(PHOTOS_KEY_PREFIX.length);
+                    else if (key.indexOf(PHOTO_KEY_PREFIX) === 0) id = key.slice(PHOTO_KEY_PREFIX.length);
+                    if (id !== null && !currentIds[id]) toRemove.push(key);
                 }
                 toRemove.forEach(function (key) { localStorage.removeItem(key); });
             }
@@ -2304,25 +2393,48 @@
                 });
             }
 
-            function showWpPhotoPreview(dataUrl) {
-                wpPhotoPreview.src = dataUrl;
-                wpPhotoPreview.style.display = '';
-                wpPhotoRemoveBtn.style.display = '';
-            }
+            // Renders whatever's currently in waypointDialogState.photos as a strip of thumbnails, each
+            // with its own remove button, and shows/hides "Add photo" once the per-catch cap is hit.
+            function renderWpPhotoStrip() {
+                if (!waypointDialogState) { wpPhotoStrip.innerHTML = ''; return; }
+                var photos = waypointDialogState.photos;
+                wpPhotoStrip.innerHTML = '';
 
-            function clearWpPhotoPreview() {
-                wpPhotoPreview.src = '';
-                wpPhotoPreview.style.display = 'none';
-                wpPhotoRemoveBtn.style.display = 'none';
+                photos.forEach(function (photo, index) {
+                    var thumb = document.createElement('div');
+                    thumb.className = 'wp-photo-thumb';
+
+                    var img = document.createElement('img');
+                    img.src = photo.dataUrl;
+                    img.alt = 'Catch photo ' + (index + 1);
+                    img.title = 'Click to view full size';
+                    img.addEventListener('click', function () {
+                        photoLightboxImg.src = photo.dataUrl;
+                        photoLightbox.classList.add('open');
+                    });
+                    thumb.appendChild(img);
+
+                    var removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'wp-photo-thumb-remove';
+                    removeBtn.title = 'Remove this photo';
+                    removeBtn.setAttribute('aria-label', 'Remove this photo');
+                    removeBtn.innerHTML = '<i class="fa fa-times"></i>';
+                    removeBtn.addEventListener('click', function () {
+                        if (!waypointDialogState) return;
+                        waypointDialogState.photos.splice(index, 1);
+                        renderWpPhotoStrip();
+                    });
+                    thumb.appendChild(removeBtn);
+
+                    wpPhotoStrip.appendChild(thumb);
+                });
+
+                wpPhotoAddBtn.style.display = photos.length >= PHOTO_MAX_COUNT ? 'none' : '';
             }
 
             wpPhotoAddBtn.addEventListener('click', function () { wpPhotoInput.click(); });
 
-            wpPhotoPreview.addEventListener('click', function () {
-                if (!wpPhotoPreview.src) return;
-                photoLightboxImg.src = wpPhotoPreview.src;
-                photoLightbox.classList.add('open');
-            });
             photoLightboxClose.addEventListener('click', function () { photoLightbox.classList.remove('open'); });
             photoLightbox.addEventListener('click', function (e) {
                 if (e.target === photoLightbox) photoLightbox.classList.remove('open');
@@ -2332,26 +2444,27 @@
                 var file = wpPhotoInput.files && wpPhotoInput.files[0];
                 wpPhotoInput.value = ''; // so picking the same file again still fires 'change'
                 if (!file || !waypointDialogState) return;
+                if (waypointDialogState.photos.length >= PHOTO_MAX_COUNT) return; // Add button is hidden by now, but guard anyway
                 setWpPhotoStatus('Processing photo…');
                 var isAddMode = waypointDialogState.mode === 'add';
+                // Only the very first photo attached to a brand-new catch can set its location/time from
+                // EXIF — later photos in the same catch (or any photo added while editing) never move the
+                // pin or rewrite the catch time.
+                var isFirstPhotoForExif = isAddMode && waypointDialogState.photos.length === 0;
 
                 Promise.all([
                     compressImageFile(file),
-                    isAddMode ? extractExifData(file) : Promise.resolve({})
+                    isFirstPhotoForExif ? extractExifData(file) : Promise.resolve({})
                 ]).then(function (results) {
                     var dataUrl = results[0];
                     var exif = results[1] || {};
                     if (!waypointDialogState) return; // dialog closed while we were working
 
-                    waypointDialogState.pendingPhotoDataUrl = dataUrl;
-                    waypointDialogState.pendingFullResFile = file;
-                    waypointDialogState.photoRemoved = false;
-                    showWpPhotoPreview(dataUrl);
+                    waypointDialogState.photos.push({ dataUrl: dataUrl, file: file });
+                    renderWpPhotoStrip();
 
-                    // Only in add mode: a photo's embedded GPS/capture time can set where and when this
-                    // catch happened. Editing an existing waypoint never moves its pin or changes its time.
                     var appliedLocation = false, appliedTime = false;
-                    if (isAddMode) {
+                    if (isFirstPhotoForExif) {
                         if (typeof exif.lat === 'number' && typeof exif.lon === 'number') {
                             waypointDialogState.lat = exif.lat;
                             waypointDialogState.lon = exif.lon;
@@ -2381,33 +2494,27 @@
                 });
             });
 
-            wpPhotoRemoveBtn.addEventListener('click', function () {
-                if (!waypointDialogState) return;
-                waypointDialogState.pendingPhotoDataUrl = null;
-                waypointDialogState.pendingFullResFile = null;
-                waypointDialogState.photoRemoved = true;
-                clearWpPhotoPreview();
-                setWpPhotoStatus('');
-            });
-
-            // Applies whatever photo change the dialog picked up (a new photo, a removal, or nothing)
-            // to localStorage for this waypoint id, and returns the resulting hasPhoto value plus
-            // whether saving a new photo failed (almost always a storage-quota issue).
-            function persistPhotoForSave(id, previousHasPhoto) {
-                if (waypointDialogState.pendingPhotoDataUrl) {
-                    try {
-                        localStorage.setItem(photoKeyFor(id), waypointDialogState.pendingPhotoDataUrl);
-                        return { hasPhoto: true, quotaFailed: false };
-                    } catch (e) {
-                        console.warn('BITEMAP: could not save photo (likely storage quota)', e);
-                        return { hasPhoto: !!previousHasPhoto, quotaFailed: true }; // leaves any prior photo as-is
-                    }
-                }
-                if (waypointDialogState.photoRemoved) {
+            // Writes whatever's currently in waypointDialogState.photos (in order) to localStorage for
+            // this waypoint id — an empty array clears any stored photos entirely. Always writes the
+            // current multi-photo format and drops the old single-photo key, so any catch you touch here
+            // is fully migrated from here on. Returns the resulting hasPhoto/photoCount plus whether
+            // saving failed (almost always a storage-quota issue), in which case whatever was already
+            // stored is left untouched.
+            function persistPhotosForSave(id, previousPhotoCount) {
+                var dataUrls = waypointDialogState.photos.map(function (p) { return p.dataUrl; });
+                if (dataUrls.length === 0) {
+                    try { localStorage.removeItem(photosKeyFor(id)); } catch (e) { /* nothing to do */ }
                     try { localStorage.removeItem(photoKeyFor(id)); } catch (e) { /* nothing to do */ }
-                    return { hasPhoto: false, quotaFailed: false };
+                    return { hasPhoto: false, photoCount: 0, quotaFailed: false };
                 }
-                return { hasPhoto: !!previousHasPhoto, quotaFailed: false };
+                try {
+                    localStorage.setItem(photosKeyFor(id), JSON.stringify(dataUrls));
+                    try { localStorage.removeItem(photoKeyFor(id)); } catch (e) { /* nothing to do */ }
+                    return { hasPhoto: true, photoCount: dataUrls.length, quotaFailed: false };
+                } catch (e) {
+                    console.warn('BITEMAP: could not save photos (likely storage quota)', e);
+                    return { hasPhoto: previousPhotoCount > 0, photoCount: previousPhotoCount, quotaFailed: true };
+                }
             }
 
             // Holds the dialog's working context (mode, id, position, captured weather) between open and
@@ -2426,10 +2533,12 @@
                     lat: lat,
                     lon: lon,
                     weatherBase: wp ? wp.weather : null,
-                    pendingPhotoDataUrl: null, // set once a new photo is picked and compressed
-                    pendingFullResFile: null, // the original, uncompressed File — only kept in memory for the
-                    // "also save to your photo library" share, never persisted
-                    photoRemoved: false, // set if an existing photo was explicitly removed
+                    // Working list of this catch's photos, oldest first. Each entry is
+                    // { dataUrl: <compressed, what gets stored>, file: <original File, or null> } — file is
+                    // only set for photos picked during this dialog session (kept in memory just long enough
+                    // for the "also save to your photo library" share; never persisted), so it's how the save
+                    // handler tells "already had this" apart from "just added this" photos.
+                    photos: [],
                     conditionsToken: 0 // bumped on every conditions fetch so a stale response can be ignored
                 };
 
@@ -2445,12 +2554,11 @@
                 setWpColor(wp && wp.color ? wp.color : DEFAULT_PIN_COLOR);
                 setWpPhotoStatus('');
                 if (wp && wp.hasPhoto) {
-                    var existingPhoto = loadPhoto(wp.id);
-                    if (existingPhoto) showWpPhotoPreview(existingPhoto);
-                    else clearWpPhotoPreview(); // flag says there should be one, but it's missing — treat as none
-                } else {
-                    clearWpPhotoPreview();
+                    waypointDialogState.photos = loadPhotosArray(wp.id).map(function (dataUrl) {
+                        return { dataUrl: dataUrl, file: null };
+                    });
                 }
+                renderWpPhotoStrip();
 
                 if (mode === 'edit') {
                     // Editing shows the conditions captured at catch time — it never re-fetches, so the
@@ -2511,14 +2619,15 @@
                 if (e.target === waypointModal) closeWaypointDialog();
             });
 
-            // Fires the native share sheet with the full-resolution original so the OS's "Save Image" /
-            // "Save to Photos" action can put it in your photo library — a browser can't write there
+            // Fires the native share sheet with the full-resolution originals (only the photos actually
+            // picked THIS dialog session — not ones already stored from before) so the OS's "Save Image" /
+            // "Save to Photos" action can put them in your photo library — a browser can't write there
             // directly, this is the closest thing to it. Silently does nothing if the platform can't share
             // files (already gated by hiding the toggle on those platforms) or if you back out of the sheet.
-            function maybeShareFullResPhoto(file) {
-                if (!file || !settings.alwaysSaveToPhotos) return;
-                if (!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }))) return;
-                navigator.share({ files: [file] }).catch(function (err) {
+            function maybeShareFullResPhotos(files) {
+                if (!files || !files.length || !settings.alwaysSaveToPhotos) return;
+                if (!(navigator.share && navigator.canShare && navigator.canShare({ files: files }))) return;
+                navigator.share({ files: files }).catch(function (err) {
                     if (err && err.name === 'AbortError') return; // backed out of the share sheet — fine
                     console.warn('BITEMAP: save-to-photos share failed', err);
                 });
@@ -2527,7 +2636,9 @@
             waypointSave.addEventListener('click', function () {
                 if (!waypointDialogState) return;
 
-                var fullResFileToShare = waypointDialogState.pendingFullResFile;
+                var fullResFilesToShare = waypointDialogState.photos
+                    .filter(function (p) { return p.file; })
+                    .map(function (p) { return p.file; });
                 var species = wpSpeciesInput.value.trim() || 'Fish';
                 var lengthVal = parseFloat(wpLengthInput.value);
                 var lengthIn = isNaN(lengthVal) ? 0 : lengthVal;
@@ -2538,7 +2649,7 @@
                 var photoResult;
 
                 if (waypointDialogState.mode === 'add') {
-                    photoResult = persistPhotoForSave(waypointDialogState.id, false);
+                    photoResult = persistPhotosForSave(waypointDialogState.id, 0);
                     waypoints.push({
                         id: waypointDialogState.id,
                         species: species,
@@ -2549,6 +2660,7 @@
                         notes: notes,
                         weather: waypointDialogState.weatherBase || null,
                         hasPhoto: photoResult.hasPhoto,
+                        photoCount: photoResult.photoCount,
                         color: color
                     });
                 } else {
@@ -2557,13 +2669,15 @@
                         if (waypoints[i].id === waypointDialogState.id) { idx = i; break; }
                     }
                     if (idx !== -1) {
-                        photoResult = persistPhotoForSave(waypointDialogState.id, waypoints[idx].hasPhoto);
+                        var previousPhotoCount = waypoints[idx].photoCount != null ? waypoints[idx].photoCount : (waypoints[idx].hasPhoto ? 1 : 0);
+                        photoResult = persistPhotosForSave(waypointDialogState.id, previousPhotoCount);
                         waypoints[idx].species = species;
                         waypoints[idx].lengthIn = lengthIn;
                         waypoints[idx].caughtAt = caughtAt;
                         waypoints[idx].notes = notes;
                         waypoints[idx].color = color;
                         waypoints[idx].hasPhoto = photoResult.hasPhoto;
+                        waypoints[idx].photoCount = photoResult.photoCount;
                         // lat/lon/weather intentionally left as originally captured — editing shouldn't move
                         // the pin or rewrite history.
                     }
@@ -2573,11 +2687,11 @@
                 closeWaypointDialog();
                 plotWaypoints();
                 if (photoResult && photoResult.quotaFailed) {
-                    showDataActionsStatus("The catch saved, but the photo didn't fit — you're likely low on browser storage. Try removing a photo from an older catch first.");
+                    showDataActionsStatus("The catch saved, but a photo didn't fit — you're likely low on browser storage. Try removing a photo from an older catch first.");
                 }
                 // Must stay in this same click handler (not a .then()/setTimeout callback) — browsers only
                 // allow navigator.share() to be triggered directly from a user gesture like this click.
-                maybeShareFullResPhoto(fullResFileToShare);
+                maybeShareFullResPhotos(fullResFilesToShare);
             });
 
             waypointDelete.addEventListener('click', function () {
@@ -2588,6 +2702,7 @@
                 waypoints = waypoints.filter(function (w) { return w.id !== id; });
                 saveWaypointsToStorage(waypoints);
                 try { localStorage.removeItem(photoKeyFor(id)); } catch (e) { /* nothing to do */ }
+                try { localStorage.removeItem(photosKeyFor(id)); } catch (e) { /* nothing to do */ }
                 closeWaypointDialog();
                 plotWaypoints();
             });
@@ -2650,26 +2765,28 @@
                     }
                 }
 
-                var photoShown = wpPhotoPreview.style.display !== 'none' && wpPhotoPreview.src;
-                if (!photoShown) {
+                var photos = waypointDialogState.photos;
+                if (!photos.length) {
                     shareTextOnly();
                     return;
                 }
 
-                dataUrlToFile(wpPhotoPreview.src, 'bitemap-catch.jpg').then(function (file) {
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share({ title: summary.title, text: summary.text, files: [file] }).catch(function (err) {
+                Promise.all(photos.map(function (p, i) {
+                    return dataUrlToFile(p.dataUrl, 'bitemap-catch-' + (i + 1) + '.jpg');
+                })).then(function (files) {
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: files })) {
+                        navigator.share({ title: summary.title, text: summary.text, files: files }).catch(function (err) {
                             if (err && err.name === 'AbortError') return;
-                            console.warn('BITEMAP: share with photo failed', err);
+                            console.warn('BITEMAP: share with photos failed', err);
                             shareTextOnly();
                         });
                     } else {
-                        // Can't share the photo file on this browser — fall back to text-only share/copy so
-                        // the catch details still get through.
+                        // Can't share photo files on this browser — fall back to text-only share/copy so the
+                        // catch details still get through.
                         shareTextOnly();
                     }
                 }).catch(function (err) {
-                    console.warn('BITEMAP: could not prepare photo for sharing', err);
+                    console.warn('BITEMAP: could not prepare photos for sharing', err);
                     shareTextOnly();
                 });
             });
