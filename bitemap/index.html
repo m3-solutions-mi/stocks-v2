@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BITEMAP_VERSION: v010 (bump only on a STABLE snapshot; keep this line and the
+<!-- BITEMAP_VERSION: v012 (bump only on a STABLE snapshot; keep this line and the
      #versionLabel text below in sync — the snapshot workflow greps this line) -->
 <html lang="en">
 
@@ -95,6 +95,25 @@
 
         .word-block {
             margin-right: 6px;
+        }
+
+        .banner-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
+        .weather-chips {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .banner-icon-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .chip {
@@ -539,6 +558,39 @@
             cursor: not-allowed;
         }
 
+        /* Icon-only action buttons (recenter to home / to me) — visually distinct (no label, never
+     shows an "active" state) from the view-chip tabs since these are one-shot actions, not
+     persistent view selectors. */
+        .toolbar-divider {
+            width: 1px;
+            align-self: stretch;
+            min-height: 22px;
+            background: var(--line);
+            margin: 0 2px;
+        }
+
+        .action-chip {
+            font-size: 14px;
+            padding: 7px 11px;
+            border-radius: 14px;
+            border: 1.5px solid var(--line);
+            color: var(--muted);
+            background: transparent;
+            cursor: pointer;
+            transition: all .15s ease;
+            line-height: 1;
+        }
+
+        .action-chip:hover {
+            border-color: var(--muted);
+            color: var(--ink);
+            background: color-mix(in srgb, var(--muted) 12%, transparent);
+        }
+
+        .action-chip:active {
+            transform: scale(0.94);
+        }
+
         .map-panel {
             padding: 0;
             overflow: hidden;
@@ -553,6 +605,91 @@
         .weather-frame {
             border: 0;
             display: block;
+        }
+
+        .waypoints-table-wrap {
+            width: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .waypoints-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .waypoints-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--panel);
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .waypoints-table tbody tr {
+            cursor: pointer;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .waypoints-table tbody tr:hover {
+            background: var(--bg2);
+        }
+
+        .waypoints-table td {
+            padding: 10px 14px;
+            color: var(--ink);
+            white-space: nowrap;
+        }
+
+        .waypoints-table td.wp-row-species {
+            font-weight: 700;
+            white-space: normal;
+        }
+
+        .waypoints-table td.wp-row-date {
+            color: var(--muted);
+        }
+
+        .waypoints-table td.wp-row-icons {
+            text-align: right;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .waypoints-table td.wp-row-locate {
+            text-align: right;
+            padding-left: 0;
+        }
+
+        .wp-locate-btn {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            border-radius: 6px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .wp-locate-btn:hover {
+            color: var(--ink);
+            border-color: var(--muted);
+        }
+
+        .waypoints-table-empty {
+            padding: 32px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         .weather-forecast-panel {
@@ -661,18 +798,39 @@
                 display: none;
             }
 
+            .banner-actions {
+                width: 100%;
+                margin-left: 0;
+                flex-direction: column;
+            }
+
+            /* Weather chips matter more here than in the general "info card" pattern this UI started
+       from — they're the at-a-glance read the whole app is built around — so on phones they get
+       a full-width 2x2 grid and noticeably bigger type instead of being squeezed into a
+       single cramped row next to the logo. */
+            .weather-chips {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                width: 100%;
+            }
+
             .chip {
-                padding: 4px 10px;
-                border-radius: 10px;
-                gap: 0;
+                padding: 10px 8px;
+                border-radius: 12px;
+                gap: 3px;
             }
 
             .chip-label {
-                font-size: 9px;
+                font-size: 12px;
             }
 
             .chip-value {
-                font-size: 13px;
+                font-size: 22px;
+            }
+
+            .banner-icon-actions {
+                justify-content: flex-end;
             }
 
             .chip-settings {
@@ -716,8 +874,8 @@
                 </div>
             </button>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:auto;">
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="banner-actions">
+                <div class="weather-chips">
                     <button class="chip" id="windChip" style="--c:var(--wind)" title="Refresh"><span
                             class="chip-label">WIND</span><span class="chip-value" id="windChipValue">—</span></button>
                     <button class="chip" id="tempChip" style="--c:var(--temp)" title="Refresh"><span
@@ -728,15 +886,17 @@
                             class="chip-label">CLOUDS</span><span class="chip-value"
                             id="cloudsChipValue">—</span></button>
                 </div>
-                <button class="chip-settings" id="newWaypointBtn" title="New waypoint" aria-label="New waypoint">
-                    <i class="fa fa-map-marker"></i>
-                </button>
-                <button class="chip-settings" id="settingsBtn" title="Settings" aria-label="Settings">
-                    <i class="fa fa-cog"></i>
-                </button>
-                <button class="chip-settings" id="helpBtn" title="Help" aria-label="Help">
-                    <i class="fa fa-info-circle"></i>
-                </button>
+                <div class="banner-icon-actions">
+                    <button class="chip-settings" id="newWaypointBtn" title="New waypoint" aria-label="New waypoint">
+                        <i class="fa fa-map-marker"></i>
+                    </button>
+                    <button class="chip-settings" id="settingsBtn" title="Settings" aria-label="Settings">
+                        <i class="fa fa-cog"></i>
+                    </button>
+                    <button class="chip-settings" id="helpBtn" title="Help" aria-label="Help">
+                        <i class="fa fa-info-circle"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -883,6 +1043,14 @@
                 just placeholders — they disappear the moment you add your first real one.
             </p>
 
+            <p class="settings-section-label" style="margin-top:18px;">Table view</p>
+            <p class="settings-hint">
+                The second Waypoints tab (table icon) is a simple list of every catch you've logged,
+                most recent first — tap a row to open it for editing, same as tapping its pin on the
+                map. Handy once you've got enough pins that finding the right one on the map takes a
+                second look.
+            </p>
+
             <p class="settings-section-label" style="margin-top:18px;">Weather</p>
             <p class="settings-hint">
                 The Wind / Temp / Baro / Clouds chips in the header show current conditions at your
@@ -924,8 +1092,17 @@
     <div class="wrap">
         <div class="map-toolbar" id="mapViewTabs">
             <span class="map-toolbar-label">View</span>
-            <button type="button" class="view-chip active" id="tabWaypointsBtn" data-tab="waypoints">Waypoints</button>
-            <button type="button" class="view-chip" id="tabWeatherBtn" data-tab="weather">Weather</button>
+            <button type="button" class="view-chip active" id="tabWaypointsBtn" data-tab="waypoints"><i
+                    class="fa fa-map-marker"></i> Waypoints</button>
+            <button type="button" class="view-chip" id="tabTableBtn" data-tab="table"><i class="fa fa-table"></i>
+                Waypoints</button>
+            <button type="button" class="view-chip" id="tabWeatherBtn" data-tab="weather"><i class="fa fa-sun-o"></i>
+                Weather</button>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <button type="button" class="action-chip" id="recenterHomeBtn" title="Reset map to home view"
+                aria-label="Reset map to home view"><i class="fa fa-home"></i></button>
+            <button type="button" class="action-chip" id="recenterMeBtn" title="Center map on my location"
+                aria-label="Center map on my location"><i class="fa fa-location-arrow"></i></button>
         </div>
         <div class="map-status" id="mapStatus">
             <i class="fa fa-circle-o-notch fa-spin"></i>
@@ -933,6 +1110,25 @@
         </div>
         <div class="panel map-panel" id="waypointsPanel">
             <div id="map"></div>
+        </div>
+        <div class="panel map-panel waypoints-table-panel" id="waypointsTablePanel" style="display:none;">
+            <div class="waypoints-table-wrap" id="waypointsTableWrap">
+                <table class="waypoints-table" id="waypointsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Species</th>
+                            <th>Length</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="waypointsTableBody"></tbody>
+                </table>
+                <p class="waypoints-table-empty" id="waypointsTableEmpty" style="display:none;">
+                    No catches logged yet — tap the map or the pin button in the header to add your first one.
+                </p>
+            </div>
         </div>
         <div class="panel map-panel" id="weatherPanel" style="display:none;">
             <iframe id="weatherFrame" class="weather-frame" title="Windy weather map widget" loading="lazy"></iframe>
@@ -952,7 +1148,7 @@
 
     <div id="versionLabel"
         style="text-align:center; padding:18px 0 26px; font-size:11px; letter-spacing:1px; color:var(--muted); font-family:Consolas,'Courier New',monospace;">
-        v010</div>
+        v012</div>
 
     <script>
         (function () {
@@ -1151,8 +1347,16 @@
             var geoRetryBtn = document.getElementById('geoRetryBtn');
             var mapStatus = document.getElementById('mapStatus');
             var tabWaypointsBtn = document.getElementById('tabWaypointsBtn');
+            var tabTableBtn = document.getElementById('tabTableBtn');
             var tabWeatherBtn = document.getElementById('tabWeatherBtn');
+            var recenterHomeBtn = document.getElementById('recenterHomeBtn');
+            var recenterMeBtn = document.getElementById('recenterMeBtn');
             var waypointsPanel = document.getElementById('waypointsPanel');
+            var waypointsTablePanel = document.getElementById('waypointsTablePanel');
+            var waypointsTableWrap = document.getElementById('waypointsTableWrap');
+            var waypointsTable = document.getElementById('waypointsTable');
+            var waypointsTableBody = document.getElementById('waypointsTableBody');
+            var waypointsTableEmpty = document.getElementById('waypointsTableEmpty');
             var weatherPanel = document.getElementById('weatherPanel');
             var mapEl = document.getElementById('map');
             var weatherFrame = document.getElementById('weatherFrame');
@@ -1298,6 +1502,7 @@
                 var height = Math.max(280, Math.round(available));
                 mapEl.style.height = height + 'px';
                 weatherFrame.style.height = height + 'px';
+                waypointsTableWrap.style.maxHeight = height + 'px';
             }
 
             function setupMap() {
@@ -1347,6 +1552,36 @@
                 leafletMap.setView([lat, lon], leafletMap.getZoom());
             }
 
+            // Toolbar action: jump the map back to wherever it centers on a fresh load — same priority
+            // order as startup (live position, then saved home, then the fixed default) and the same
+            // saved zoom level, not just whatever zoom you happen to be at right now.
+            function recenterToHome() {
+                switchMapTab('waypoints');
+                var loc = getActiveLocation();
+                setTimeout(function () {
+                    if (!leafletMap) return;
+                    leafletMap.invalidateSize();
+                    leafletMap.setView([loc.lat, loc.lon], settings.mapZoom);
+                }, 60);
+            }
+
+            // Toolbar action: jump the map to your current GPS position. If we don't have permission yet,
+            // this triggers the same browser prompt as the Settings location button — requestLocation()
+            // already recenters and drops the "you are here" marker itself once/if it's granted.
+            function recenterToMe() {
+                switchMapTab('waypoints');
+                if (currentPosition.status === 'granted') {
+                    setTimeout(function () {
+                        if (!leafletMap) return;
+                        leafletMap.invalidateSize();
+                        recenterMap(currentPosition.lat, currentPosition.lon);
+                        showYouAreHere(currentPosition.lat, currentPosition.lon);
+                    }, 60);
+                } else {
+                    requestLocation();
+                }
+            }
+
             function ktTo(units, kt) {
                 return units === 'metric' ? Math.round(kt * 1.852) : Math.round(kt * 1.15078);
             }
@@ -1380,6 +1615,7 @@
             }
 
             function plotWaypoints() {
+                renderWaypointsTable(); // keeps the Log tab in sync with the map, whether or not it's visible right now
                 if (!leafletMap) return;
                 waypointMarkers.forEach(function (m) { leafletMap.removeLayer(m); });
                 waypointMarkers = [];
@@ -1410,6 +1646,78 @@
                     }
                     waypointMarkers.push(marker);
                 });
+            }
+
+            // A simple table view of your logged catches — easier to scan and edit than hunting for the
+            // right pin on the map, especially once you've got a lot of them. Doesn't show the 5 sample
+            // placeholders (those are map-only visual filler, not real data to browse). Most recent first.
+            function renderWaypointsTable() {
+                if (!waypointsTableBody) return;
+
+                if (waypoints.length === 0) {
+                    waypointsTableBody.innerHTML = '';
+                    waypointsTable.style.display = 'none';
+                    waypointsTableEmpty.style.display = '';
+                    return;
+                }
+                waypointsTable.style.display = '';
+                waypointsTableEmpty.style.display = 'none';
+
+                var sorted = waypoints.slice().sort(function (a, b) {
+                    return new Date(b.caughtAt).getTime() - new Date(a.caughtAt).getTime();
+                });
+
+                waypointsTableBody.innerHTML = sorted.map(function (wp) {
+                    var when = new Date(wp.caughtAt);
+                    var whenStr = isNaN(when.getTime()) ? '' : when.toLocaleString(undefined, {
+                        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                    });
+                    var lengthStr = wp.lengthIn ? wp.lengthIn + '"' : '—';
+                    var icons = '' +
+                        (wp.hasPhoto ? '<i class="fa fa-camera" title="Has a photo"></i> ' : '') +
+                        (wp.notes ? '<i class="fa fa-sticky-note-o" title="Has notes"></i>' : '');
+                    return '' +
+                        '<tr data-id="' + escapeHtml(wp.id) + '">' +
+                        '<td class="wp-row-date">' + escapeHtml(whenStr) + '</td>' +
+                        '<td class="wp-row-species">' + escapeHtml(wp.species || 'Fish') + '</td>' +
+                        '<td>' + lengthStr + '</td>' +
+                        '<td class="wp-row-icons">' + icons + '</td>' +
+                        '<td class="wp-row-locate">' +
+                        '<button type="button" class="wp-locate-btn" data-locate-id="' + escapeHtml(wp.id) + '" title="Show on map" aria-label="Show on map"><i class="fa fa-map-o"></i></button>' +
+                        '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            waypointsTableBody.addEventListener('click', function (e) {
+                var locateBtn = e.target.closest('.wp-locate-btn');
+                if (locateBtn) {
+                    // Handled separately below — don't also fall through to opening the edit dialog for
+                    // the row it's sitting in.
+                    e.stopPropagation();
+                    var located = waypoints.find(function (w) { return w.id === locateBtn.dataset.locateId; });
+                    if (located) showWaypointOnMap(located);
+                    return;
+                }
+                var row = e.target.closest('tr[data-id]');
+                if (!row) return;
+                var wp = waypoints.find(function (w) { return w.id === row.dataset.id; });
+                if (!wp) return;
+                openWaypointDialog({ mode: 'edit', waypoint: wp });
+            });
+
+            // Switches to the map tab and centers/zooms on a specific waypoint — the "show on map" action
+            // from the table view.
+            function showWaypointOnMap(wp) {
+                switchMapTab('waypoints');
+                if (!leafletMap) return;
+                var targetZoom = Math.max(leafletMap.getZoom(), 15);
+                // The map panel was just made visible again after being hidden — Leaflet needs a beat to
+                // pick up its real size before panning, same as the existing tab-switch resize nudge.
+                setTimeout(function () {
+                    leafletMap.invalidateSize();
+                    leafletMap.setView([wp.lat, wp.lon], targetZoom);
+                }, 60);
             }
 
             // ---------- Weather tab (Windy's free public embed widget — no API key) ----------
@@ -1454,24 +1762,36 @@
             }
 
             function switchMapTab(tab) {
-                var showingWaypoints = tab !== 'weather';
+                var showingWaypoints = tab === 'waypoints';
+                var showingTable = tab === 'table';
+                var showingWeather = tab === 'weather';
+
                 tabWaypointsBtn.classList.toggle('active', showingWaypoints);
-                tabWeatherBtn.classList.toggle('active', !showingWaypoints);
+                tabTableBtn.classList.toggle('active', showingTable);
+                tabWeatherBtn.classList.toggle('active', showingWeather);
+
                 waypointsPanel.style.display = showingWaypoints ? '' : 'none';
-                weatherPanel.style.display = showingWaypoints ? 'none' : '';
-                weatherForecastPanel.style.display = showingWaypoints ? 'none' : '';
+                waypointsTablePanel.style.display = showingTable ? '' : 'none';
+                weatherPanel.style.display = showingWeather ? '' : 'none';
+                weatherForecastPanel.style.display = showingWeather ? '' : 'none';
                 mapStatus.style.display = showingWaypoints ? '' : 'none';
+
                 if (showingWaypoints) {
                     // Leaflet miscalculates its size if it was hidden (display:none) when a resize/tile
                     // layout happened, so nudge it once the panel is visible again.
                     if (leafletMap) { setTimeout(function () { leafletMap.invalidateSize(); }, 50); }
-                } else {
+                } else if (showingTable) {
+                    renderWaypointsTable();
+                } else if (showingWeather) {
                     ensureWeatherFrameLoaded(false);
                 }
             }
 
             tabWaypointsBtn.addEventListener('click', function () { switchMapTab('waypoints'); });
+            tabTableBtn.addEventListener('click', function () { switchMapTab('table'); });
             tabWeatherBtn.addEventListener('click', function () { switchMapTab('weather'); });
+            recenterHomeBtn.addEventListener('click', recenterToHome);
+            recenterMeBtn.addEventListener('click', recenterToMe);
 
             // ---------- Weather data (Open-Meteo — free, no key/signup required) ----------
             var OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast';
